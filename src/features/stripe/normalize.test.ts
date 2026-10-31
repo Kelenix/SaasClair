@@ -62,6 +62,21 @@ describe("conversion des objets Stripe", () => {
     );
   });
 
+  it("abonnement : nom de l'offre retrouvé par la liste des produits", () => {
+    const row = toSubscriptionRow(
+      "p1",
+      {
+        id: "sub_2",
+        customer: "cus_1",
+        status: "active",
+        created: 1_790_000_000,
+        items: { data: [{ price: { ...price(2900, "month"), product: "prod_starter" } }] },
+      },
+      new Map([["prod_starter", "Starter"]]),
+    );
+    expect(row.plan_name).toBe("Starter");
+  });
+
   it("facture : abonnement retrouvé aussi dans la nouvelle structure de l'API", () => {
     const row = toInvoiceRow("p1", {
       id: "in_1",

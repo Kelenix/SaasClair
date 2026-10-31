@@ -78,9 +78,21 @@ export function toCustomerRow(projectId: string, customer: StripeCustomer) {
   };
 }
 
-export function toSubscriptionRow(projectId: string, subscription: StripeSubscription) {
+export type StripeProduct = { id: string; name?: string | null };
+
+/**
+ * Le nom de l'offre vient du produit : lu à part (liste des produits), car Stripe limite le
+ * dépliage des objets à 4 niveaux (data.items.data.price.product en ferait 5).
+ */
+export function toSubscriptionRow(
+  projectId: string,
+  subscription: StripeSubscription,
+  productNames: Map<string, string> = new Map(),
+) {
   const items = subscription.items?.data ?? [];
   const product = items[0]?.price?.product;
+  const productName =
+    typeof product === "object" ? product?.name : product ? productNames.get(product) : null;
   return {
     project_id: projectId,
     id: subscription.id,
@@ -88,10 +100,7 @@ export function toSubscriptionRow(projectId: string, subscription: StripeSubscri
     status: subscription.status,
     mrr_cents: Math.round(items.reduce((sum, item) => sum + monthlyCents(item), 0)),
     currency: subscription.currency ?? "eur",
-    plan_name:
-      (typeof product === "object" ? product?.name : null) ??
-      items[0]?.price?.nickname?.slice(0, 200) ??
-      null,
+    plan_name: (productName ?? items[0]?.price?.nickname ?? null)?.slice(0, 200) ?? null,
     created_at: iso(subscription.created)!,
     canceled_at: iso(subscription.canceled_at),
     ended_at: iso(subscription.ended_at),

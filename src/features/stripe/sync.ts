@@ -7,6 +7,7 @@ import {
   toSubscriptionRow,
   type StripeCustomer,
   type StripeInvoice,
+  type StripeProduct,
   type StripeSubscription,
 } from "./normalize";
 
@@ -37,21 +38,22 @@ export async function syncStripeAccount(config: StripeConfig, projectId: string,
   await service.from("projects").update({ stripe_sync_status: "importing" }).eq("id", projectId);
   try {
     const since = Math.floor(Date.now() / 1000) - 365 * DAY_S;
-    const [customers, subscriptions, invoices] = await Promise.all([
+    const [customers, subscriptions, invoices, products] = await Promise.all([
       listAll<StripeCustomer>(config, account, "/v1/customers"),
-      listAll<StripeSubscription>(config, account, "/v1/subscriptions", {
-        status: "all",
-        "expand[]": "data.items.data.price.product",
-      }),
+      listAll<StripeSubscription>(config, account, "/v1/subscriptions", { status: "all" }),
       listAll<StripeInvoice>(config, account, "/v1/invoices", { "created[gte]": String(since) }),
+      listAll<StripeProduct>(config, account, "/v1/products"),
     ]);
+    const productNames = new Map(
+      products.flatMap((product) => (product.name ? [[product.id, product.name] as const] : [])),
+    );
     await upsertInBatches(
       "stripe_customers",
       customers.filter((customer) => !customer.deleted).map((c) => toCustomerRow(projectId, c)),
     );
     await upsertInBatches(
       "stripe_subscriptions",
-      subscriptions.map((subscription) => toSubscriptionRow(projectId, subscription)),
+      subscriptions.map((subscription) => toSubscriptionRow(projectId, subscription, productNames)),
     );
     await upsertInBatches(
       "stripe_invoices",

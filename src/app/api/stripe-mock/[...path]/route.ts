@@ -9,10 +9,11 @@ const ACCOUNT = /^acct_mock[0-9a-z]+$/;
 const DAY = 24 * 60 * 60;
 const now = () => Math.floor(Date.now() / 1000);
 
-const price = (amount: number, interval: "month" | "year", name: string) => ({
+// Comme le vrai Stripe sans dépliage : le produit n'est qu'un identifiant (nom : /v1/products).
+const price = (amount: number, interval: "month" | "year", product: string) => ({
   unit_amount: amount,
   recurring: { interval, interval_count: 1 },
-  product: { name },
+  product,
 });
 
 function lists(path: string) {
@@ -48,7 +49,11 @@ function lists(path: string) {
           created: t - 300 * DAY,
           items: {
             data: [
-              { quantity: 1, current_period_end: t + 12 * DAY, price: price(7900, "month", "Pro") },
+              {
+                quantity: 1,
+                current_period_end: t + 12 * DAY,
+                price: price(7900, "month", "prod_pro"),
+              },
             ],
           },
         },
@@ -63,7 +68,7 @@ function lists(path: string) {
               {
                 quantity: 1,
                 current_period_end: t + 5 * DAY,
-                price: price(75840, "year", "Pro annuel"),
+                price: price(75840, "year", "prod_pro_annuel"),
               },
             ],
           },
@@ -75,7 +80,7 @@ function lists(path: string) {
           created: t - 40 * DAY,
           canceled_at: t - 3 * DAY,
           ended_at: t - 3 * DAY,
-          items: { data: [{ quantity: 1, price: price(2900, "month", "Starter") }] },
+          items: { data: [{ quantity: 1, price: price(2900, "month", "prod_starter") }] },
         },
       ];
     case "v1/invoices":
@@ -101,6 +106,12 @@ function lists(path: string) {
           created: t - 2 * DAY,
           next_payment_attempt: t + 2 * DAY,
         },
+      ];
+    case "v1/products":
+      return [
+        { id: "prod_pro", name: "Pro" },
+        { id: "prod_pro_annuel", name: "Pro annuel" },
+        { id: "prod_starter", name: "Starter" },
       ];
     default:
       return null;
@@ -132,6 +143,16 @@ export async function GET(request: NextRequest, { params }: Context) {
 
   const data = lists(path);
   if (!data) return notFound();
+  // Règle du vrai Stripe : 4 niveaux de dépliage au plus (sinon HTTP 400).
+  const tooDeep = request.nextUrl.searchParams
+    .getAll("expand[]")
+    .some((expand) => expand.split(".").length > 4);
+  if (tooDeep) {
+    return NextResponse.json(
+      { error: { message: "You cannot expand more than 4 levels of a property." } },
+      { status: 400 },
+    );
+  }
   if (!authorized(request) || !ACCOUNT.test(request.headers.get("stripe-account") ?? "")) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }

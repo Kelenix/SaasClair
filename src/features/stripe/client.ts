@@ -93,7 +93,13 @@ export async function listAll<T extends { id: string }>(
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${config.secretKey}`, "Stripe-Account": account },
     });
-    if (!response.ok) throw new Error(`Stripe ${path} : HTTP ${response.status}`);
+    if (!response.ok) {
+      // Message de Stripe (jamais de clé) : paramètre refusé, droits insuffisants…
+      const body = (await response.json().catch(() => null)) as {
+        error?: { message?: string };
+      } | null;
+      throw new Error(`Stripe ${path} : HTTP ${response.status} — ${body?.error?.message ?? ""}`);
+    }
     const page = (await response.json()) as { data: T[]; has_more: boolean };
     items.push(...page.data);
     if (!page.has_more || page.data.length === 0 || items.length >= max) return items;
