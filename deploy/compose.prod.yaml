@@ -1,0 +1,174 @@
+# SaasClair — production sur le VPS (copié par la CD dans /srv/saasclair/deploy, jamais édité sur
+# le serveur). Toujours lancé via deploy/scripts/lib.sh : `--env-file /srv/saasclair/.env`.
+#
+# Supabase auto-hébergé réduit à ce que l'application utilise : PostgreSQL, Auth (GoTrue) et l'API
+# de données (PostgREST). Ni stockage de fichiers, ni temps réel, ni Kong : Nginx route
+# api.<domaine>/auth/v1 et /rest/v1 directement (deploy/nginx/saasclair.conf).
+#
+# Tous les ports sont liés à 127.0.0.1 : rien n'est joignable sans passer par Nginx. La plage
+# 3110-3130 évite les ports 3000-3002 déjà pris par les autres sites du serveur.
+name: saasclair
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+# Application : deux couleurs, une seule en service. Le déploiement démarre l'autre, vérifie sa
+# santé, puis arrête l'ancienne (Nginx connaît les deux ports et ignore celui qui est éteint).
+# Une seule réplique active : le cache des contenus du site reste cohérent (updateTag).
+x-web: &web
+  restart: unless-stopped
+  logging: *logging
+  mem_limit: 512m
+  environment:
+    NEXT_PUBLIC_SUPABASE_URL: ${API_EXTERNAL_URL}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
+    NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+    SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+    NODE_OPTIONS: --max-old-space-size=384
+  healthcheck:
+    test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+    interval: 10s
+    timeout: 3s
+    retries: 5
+    start_period: 20s
+
+services:
+  db:
+    image: public.ecr.aws/supabase/postgres:17.11.0.006
+    restart: unless-stopped
+    logging: *logging
+    mem_limit: 768m
+    ports: ["127.0.0.1:${DB_PORT}:5432"]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+      - ./db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:ro
+    environment:
+      POSTGRES_HOST: /var/run/postgresql
+      PGPORT: 5432
+      POSTGRES_PORT: 5432
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      POSTGRES_DB: postgres
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXP: 3600
+    # Réglages pour un petit serveur partagé (KVM 1) : mémoire bornée, connexions limitées.
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - log_min_messages=fatal
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - effective_cache_size=384MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - max_connections=60
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  auth:
+    image: public.ecr.aws/supabase/gotrue:v2.197.0
+    restart: unless-stopped
+    logging: *logging
+    mem_limit: 128m
+    depends_on: { db: { condition: service_healthy } }
+    ports: ["127.0.0.1:${AUTH_PORT}:9999"]
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${SITE_URL}/**,https://www.${DOMAIN}/**
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      # Indispensable malgré l'avertissement « deprecated » au démarrage : sans lui, le jeton des
+      # comptes connectés n'a pas de rôle et l'API de données le refuse (vérifié en répétition).
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_PASSWORD_MIN_LENGTH: 8
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED: "false"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      # Même comportement qu'en local (supabase/config.toml : enable_confirmations = false).
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_INVITE: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      # Modèles d'emails de la marque, servis par Nginx depuis supabase/templates.
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Confirmez votre compte SaasClair
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: Choisissez un nouveau mot de passe
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: ${API_EXTERNAL_URL}/modeles-email/confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: ${API_EXTERNAL_URL}/modeles-email/recovery.html
+      GOTRUE_SMTP_HOST: ${SMTP_HOST:-}
+      GOTRUE_SMTP_PORT: ${SMTP_PORT:-587}
+      GOTRUE_SMTP_USER: ${SMTP_USER:-}
+      GOTRUE_SMTP_PASS: ${SMTP_PASS:-}
+      GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_SENDER:-}
+      GOTRUE_SMTP_SENDER_NAME: SaasClair
+      # Connexion Google / GitHub : facultative (docs/configuration.md).
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${GOOGLE_ENABLED:-false}
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_SECRET:-}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${API_EXTERNAL_URL}/auth/v1/callback
+      GOTRUE_EXTERNAL_GITHUB_ENABLED: ${GITHUB_ENABLED:-false}
+      GOTRUE_EXTERNAL_GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_GITHUB_SECRET: ${GITHUB_SECRET:-}
+      GOTRUE_EXTERNAL_GITHUB_REDIRECT_URI: ${API_EXTERNAL_URL}/auth/v1/callback
+      # Le client Supabase du navigateur envoie « apikey » (sans Kong, Auth doit l'accepter lui-même).
+      GOTRUE_CORS_ALLOWED_HEADERS: apikey
+      # Limitation par adresse IP réelle (posée par Nginx).
+      GOTRUE_RATE_LIMIT_HEADER: X-Real-IP
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9999/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rest:
+    image: public.ecr.aws/supabase/postgrest:v16.5
+    restart: unless-stopped
+    logging: *logging
+    mem_limit: 128m
+    depends_on: { db: { condition: service_healthy } }
+    ports: ["127.0.0.1:${REST_PORT}:3000"]
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_EXTRA_SEARCH_PATH: public,extensions
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_DB_MAX_ROWS: 1000
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+      PGRST_APP_SETTINGS_JWT_EXP: 3600
+
+  web-blue:
+    <<: *web
+    image: saasclair-web:blue
+    profiles: [web]
+    ports: ["127.0.0.1:${WEB_PORT_BLUE}:3000"]
+
+  web-green:
+    <<: *web
+    image: saasclair-web:green
+    profiles: [web]
+    ports: ["127.0.0.1:${WEB_PORT_GREEN}:3000"]
+
+volumes:
+  db-data:

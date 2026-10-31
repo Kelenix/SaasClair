@@ -5,30 +5,38 @@
 
 ## 1. Le site ne répond plus
 
+Raccourci utilisé ci-dessous, sur le VPS :
+`dc="docker compose --env-file /srv/saasclair/.env -f /srv/saasclair/deploy/compose.prod.yaml"`
+
 **Diagnostic**
-1. `curl https://votre-domaine/api/health` : pas de réponse → application ou Nginx en panne.
-2. Sur le VPS : `docker compose ps` puis `docker compose logs --tail=100 web`.
-3. `df -h` (disque plein ?) et `docker stats` (mémoire ?).
+1. `curl https://saasclair.com/api/health` : pas de réponse → application ou Nginx en panne.
+2. `$dc ps` (quelle couleur tourne ?), puis `$dc logs --tail=100 web-blue` (ou `web-green`).
+3. `systemctl status nginx` et `nginx -t` : une erreur dans **un autre site** du serveur peut
+   empêcher Nginx de recharger.
+4. `df -h` (disque plein ?) et `docker stats --no-stream` (mémoire ?).
 
 **Résolution**
-- Conteneur arrêté : `docker compose up -d`.
-- Disque plein : `docker image prune -a` (images anciennes), vider les anciens journaux.
-- Après un déploiement fautif : revenir à l'image précédente (étiquette de version) et relancer.
+- Après un déploiement fautif, ou aucune couleur en service :
+  `sudo -u deploy bash /srv/saasclair/deploy/scripts/deploy.sh --rollback` (instantané), ou
+  relancer un déploiement depuis GitHub (Actions › Deploy).
+- Disque plein : `docker image ls ghcr.io/kelenix/saasclair`, puis `docker rmi` des plus anciennes.
+  Jamais `docker system prune` : il toucherait les autres sites du serveur.
 
 ## 2. La sonde complète renvoie « degrade » (503)
 
 `/api/health?complet=1` indique `auth` ou `database` en échec.
 
-- **Supabase en panne** : vérifier https://status.supabase.com ; rien à faire côté SaasClair.
-- **Clé ou adresse Supabase erronées** : vérifier `NEXT_PUBLIC_SUPABASE_URL` et
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans `.env` du VPS (voir `docs/configuration.md`).
+- **Service arrêté** : `$dc ps`, puis `sudo -u deploy bash /srv/saasclair/deploy/scripts/deploy.sh --restart`.
+- **Mémoire saturée** (le serveur héberge d'autres sites) : `docker stats --no-stream`,
+  `dmesg | grep -i oom`. Les limites par service sont dans `deploy/compose.prod.yaml`.
+- **Certificat expiré** sur `api.saasclair.com` : `certbot renew`, puis `systemctl reload nginx`.
 - **Premier appel après redémarrage** : un délai unique est normal ; relancer la sonde.
 
 ## 3. Personne ne peut se connecter
 
-- Message « Email ou mot de passe incorrect » pour tous : vérifier le service Auth (sonde).
-- Les emails de confirmation n'arrivent pas : service d'envoi SMTP non configuré dans Supabase
-  (Authentication › Emails), ou adresse du site absente des URL de redirection autorisées.
+- « Email ou mot de passe incorrect » pour tous : `$dc logs --tail=100 auth`.
+- « Mot de passe oublié » ne part pas : SMTP non renseigné dans `/srv/saasclair/.env` (tâche n° 11).
+- Retour vers une mauvaise adresse après connexion : `SITE_URL` dans le `.env`.
 - Google / GitHub : « fournisseur désactivé » → tâches manuelles n° 3 et 4.
 
 ## 4. Un client signale un écran vide ou une erreur
@@ -52,9 +60,15 @@ puis changer son mot de passe (`npm run admin:create` avec le même email).
 
 ## 7. Fuite ou soupçon de fuite d'un secret
 
-1. Clé de service Supabase : la régénérer (Project Settings › API), mettre à jour `.env` du VPS,
-   redéployer.
-2. Secrets OAuth : les régénérer chez Google / GitHub, puis dans Supabase.
+1. **Clé de service ou secret JWT** : régénérer ensemble `JWT_SECRET`, `ANON_KEY` et
+   `SERVICE_ROLE_KEY` (tout le monde est déconnecté). Mettre l'ancien `.env` de côté, relancer
+   `gen-env.sh`, y reporter le mot de passe de la base, le SMTP et l'OAuth, mettre à jour la
+   variable GitHub `NEXT_PUBLIC_SUPABASE_ANON_KEY`, puis redéployer.
+2. **Mot de passe de la base** : `alter user … with password` pour `postgres`, `authenticator`
+   et `supabase_auth_admin`, puis `POSTGRES_PASSWORD` dans le `.env` et `deploy.sh --restart`.
+3. **Clé SSH de déploiement** : la retirer de `/home/deploy/.ssh/authorized_keys`, en créer une
+   nouvelle, mettre à jour le secret GitHub `VPS_SSH_KEY`.
+4. Secrets OAuth : les régénérer chez Google / GitHub, puis dans le `.env` du serveur.
 3. Webhook Slack d'un client : le client le retire depuis ses Paramètres d'alertes.
 4. Consigner l'incident (date, portée, mesures) ; si des données personnelles sont exposées,
    notification à la CNIL sous 72 heures.
@@ -69,9 +83,17 @@ npx supabase db reset
 psql "postgresql://postgres:postgres@127.0.0.1:55322/postgres" -f backups/AAAA-MM-JJ_HHMM/donnees.sql
 ```
 
-En production : restaurer depuis le tableau de bord Supabase (Database › Backups) de
-préférence ; la restauration manuelle (`schema.sql`, `roles.sql` puis `donnees.sql`) se fait
-sur une base vide, après une sauvegarde de l'état courant.
+**En production**, à partir des sauvegardes de `/srv/saasclair/backups` (prises chaque nuit et
+avant chaque migration) :
+
+```bash
+sudo -u deploy bash /srv/saasclair/deploy/scripts/backup.sh avant-restauration
+$dc stop web-blue web-green auth rest
+$dc exec -T db pg_restore -h localhost -U supabase_admin -d postgres --clean --if-exists --single-transaction < /srv/saasclair/backups/<fichier>.dump
+sudo -u deploy bash /srv/saasclair/deploy/scripts/deploy.sh --restart
+```
+
+`--restart` relance Auth, l'API, puis la dernière version de l'application.
 
 ## 9. Problèmes connus en développement (Windows)
 

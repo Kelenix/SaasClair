@@ -13,7 +13,10 @@
 | 6 | Historique du revenu (administration) | Estimé à partir des abonnés actuels | Historique réel depuis Stripe Billing | P2 |
 | 7 | État « lu » des notifications | Gardé dans le navigateur | Table par compte, alimentée par le moteur d'alertes | P2 |
 | 8 | Liste des utilisateurs | 5 000 profils lus puis filtrés dans le navigateur | Recherche et pagination côté serveur au-delà de 5 000 comptes | P3 |
-| 9 | Limite de débit | Assurée par Supabase Auth seulement | Limites Nginx sur l'inscription à la newsletter et les actions publiques | P1 (déploiement) |
+| 9 | Limite de débit | Nginx limite le site, l'API et plus strictement la connexion (`deploy/nginx/saasclair.conf`) | Limite dédiée sur l'inscription à la newsletter si des abus apparaissent | P3 |
+| 16 | Sauvegardes hors serveur | Chaque nuit sur le VPS, 14 jours (ADR-021) | Copie chiffrée hors du VPS (stockage objet, ou sauvegardes Hostinger activées) | P1 |
+| 17 | Mises à jour de Supabase auto-hébergé | Versions figées dans `deploy/compose.prod.yaml` | Revue trimestrielle des versions, répétition (`deploy/rehearsal.sh`) puis livraison | P2 |
+| 18 | Surveillance externe | Sonde `/api/health?complet=1`, pas d'alerte automatique | Sonde externe gratuite (UptimeRobot, Better Stack) toutes les 5 minutes, alerte par email | P1 |
 | 10 | CSP | `'unsafe-inline'` pour les scripts (scripts en ligne de Next.js) | Nonce par requête | P2 |
 | 11 | Double authentification | Non exposée | TOTP Supabase pour les super administrateurs en priorité | P2 |
 | 12 | Mises à jour majeures | TypeScript 5.9, ESLint 9, @types/node 24 | TypeScript 7, ESLint 10 (corrige les alertes des outils de développement), @types/node 26, une à la fois | P2 |

@@ -1,0 +1,20 @@
+# Répétition locale de la production (deploy/rehearsal.sh) : ajoute à compose.prod.yaml le Nginx
+# du serveur, dans un conteneur. saasclair.localhost et api.saasclair.localhost remplacent les
+# vrais domaines (les navigateurs les envoient d'eux-mêmes vers 127.0.0.1).
+services:
+  proxy:
+    image: nginx:1.29-alpine
+    ports: ["3150:80"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes:
+      - ../.rehearsal/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../.rehearsal/nginx:/srv/saasclair/nginx:ro
+      - ../supabase/templates:/srv/saasclair/supabase/templates:ro
+
+  # Côté serveur, l'API « publique » est jointe à travers ce même Nginx, comme en production.
+  auth:
+    extra_hosts: ["api.saasclair.localhost:host-gateway"]
+  web-blue:
+    extra_hosts: ["api.saasclair.localhost:host-gateway"]
+  web-green:
+    extra_hosts: ["api.saasclair.localhost:host-gateway"]

@@ -4,10 +4,10 @@
 
 ## Snapshot
 
-- **Phase courante** : 6 — Mise en production (en attente des accès) ; implémentation ouverte aux ajouts de l'utilisateur
+- **Phase courante** : 6 — Mise en production : **site en ligne sur https://saasclair.com** (1re version déployée à la main) ; reste le déploiement automatique GitHub
 - **Dernière mise à jour** : 2026-10-31 — version `1.0.0-rc.1`
 - **Santé** : 🟢 OK — lint, types, 115 tests unitaires, 52 tests de bout en bout, build ; 0 vulnérabilité en production
-- **Prochaine action** : Incrément 9 (mise en production sur VPS) dès que le serveur, le domaine et le dépôt GitHub sont fournis
+- **Prochaine action** : commit + push, secrets de l’environnement GitHub `production`, compte super administrateur (tâche 12), SMTP (tâche 11)
 
 ## Avancement par phase
 
@@ -19,7 +19,7 @@
 | 3 — Architecture & design   | ✅ fait | `docs/architecture.md`, `docs/system-design.md`, `docs/data-model.md`, `docs/design/design-system.md`, `docs/design/flows.md` |
 | 4 — Implémentation          | 🔄 en cours | Inc-0 à Inc-8 et espace super administrateur faits ; reste ouverte aux ajouts de l'utilisateur et à la dette technique P1 (`docs/tech-debt.md`) |
 | 5 — Qualité                 | ✅ fait | Plan de test `docs/qa/test-plan.md`, performance `docs/performance.md` |
-| 6 — Mise en production      | ⏸️ en attente | VPS Hostinger, domaine et dépôt GitHub à fournir (`docs/manual-tasks.md`) |
+| 6 — Mise en production      | 🔄 en cours | **En ligne** sur https://saasclair.com (ADR-021, `docs/deployment.md`) ; reste la CD GitHub et les tâches 11-12 |
 | 7 — Documentation           | ✅ fait | Portail illustré avec logo + PDF (`npm run docs:build`, `docs/SaasClair-documentation.pdf`), `docs/handover.md`, `docs/configuration.md`, `docs/style-guide.md`, `CHANGELOG.md` |
 | 8 — Maintenance             | ✅ fait (passe avant lancement) | Dépendances à jour, 0 vulnérabilité en production, code mort retiré, `npm run db:backup`, sonde `/api/health?complet=1`, `docs/maintenance.md`, `docs/runbook.md`, `docs/tech-debt.md`. Se poursuit après la mise en ligne (calendrier dans `docs/maintenance.md`) |
 
@@ -39,7 +39,7 @@
 | 7 | Insights, alertes, paramètres | CLAUDE.md §5.4, .docx F5–F6 | Must | ✅ (à valider) |
 | 8 | Qualité & optimisation | CLAUDE.md §7 | Must | ✅ (à valider) |
 | 8b | Espace super administrateur | Demande utilisateur (ADR-020) | Must | ✅ (à valider) |
-| 9 | Mise en production VPS | Skill (DevOps) | Must | ⏸️ |
+| 9 | Mise en production VPS | Skill (DevOps) | Must | 🔄 |
 | 10 | Documentation & passation | Skill | Must | ✅ (à valider) |
 
 ## Décisions ouvertes / questions à l'utilisateur
@@ -57,6 +57,8 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-10-31 — **Mise en ligne** sur le VPS Hostinger : inspection en lecture seule (Nginx déjà en place, 7 sites, ports 3110-3130 libres, 1,2 Go de mémoire disponible), amorçage (Supabase réduit, 4 migrations, Nginx, HTTPS Let’s Encrypt pour saasclair.com, www et api, sauvegarde de nuit, utilisateur `deploy`), 1re version construite sur le poste et envoyée par SSH. Vérifié : santé complète, redirections, pages protégées, en-têtes, console sans erreur, autres sites du serveur intacts. SaasClair occupe ≈ 200 Mo.
+- 2026-10-31 — Inc-9 préparé : Supabase auto-hébergé réduit (base, Auth, API), ports 3110-3130 sur 127.0.0.1, Nginx à part (`api.saasclair.com`), bascule blue/green sans coupure, secrets nés sur le serveur, migrations et sauvegardes sur le VPS, pipeline `deploy.yml` (désactivé tant que `DEPLOY_ENABLED` n’est pas posé) — ADR-021. Répétition locale complète (`deploy/rehearsal.sh`) : 49/52 tests de bout en bout, les 3 autres vérifiés à la main (environnement Windows ou charge). Corrigé grâce à la répétition : en-têtes Nginx trop petits pour les cookies de session (502 à la connexion), rôle absent du jeton, CORS `apikey`, hôte sans port, connexions réutilisées fermées par Node.
 - 2026-10-31 — Phases 3, 7 et 8 terminées. Architecture : `architecture.md`, `system-design.md`, `data-model.md`, `design/flows.md`. Maintenance : mises à jour mineures, 0 vulnérabilité en production, 13 exports morts retirés, sauvegarde (`npm run db:backup`), sonde complète, `maintenance.md`, `runbook.md`, `tech-debt.md`, version `1.0.0-rc.1`. Documentation : portail HTML avec logo et 15 captures réelles, PDF de 28 pages, kit de remise, configuration des clés, charte éditoriale, `CHANGELOG.md`.
 - 2026-10-30 — Compte super administrateur de l'utilisateur créé en local par `npm run admin:create` (identifiants hors du projet, connexion vérifiée). La même commande servira en production (tâche n° 12).
 - 2026-10-30 — Espace super administrateur (ADR-020). Migration `super_admin` : profils et rôles, provenance, abonnements, FAQ, témoignages, À propos, newsletter, réglages, journal ; RLS vérifiée. `/admin` en 9 écrans : tableau de bord, utilisateurs (fiche et actions), abonnements, newsletter (export CSV), témoignages, FAQ, À propos, paramètres (pixels Google Ads, GA4, Meta, LinkedIn), état du système. Site vitrine branché sur ces contenus, page `/a-propos`, newsletter dans le pied de page, bandeau de consentement, conversion « inscription ». Seed : compte `admin@demo.saasclair.fr` et 60 clients de démonstration.

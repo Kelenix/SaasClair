@@ -5,6 +5,35 @@
 
 ---
 
+## ADR-021 — Production sur un VPS partagé, Supabase auto-hébergé
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (domaine `saasclair.com`, VPS Hostinger KVM 1 qui héberge déjà 3 à 4 sites, ports 3000 à 3002 pris, « tout sur le VPS, Supabase compris ») ; mise en œuvre Claude
+- **Contexte** : le guide DevOps prévoit Supabase Cloud et un serveur dédié. Ici :
+  - Supabase tourne sur le même VPS ;
+  - le serveur a peu de mémoire libre (≈ 35 % de 4 Go) ;
+  - les autres sites ne doivent ni bouger ni tomber.
+- **Décision** :
+  - **Supabase réduit à 3 services** (`deploy/compose.prod.yaml`) : PostgreSQL, Auth (GoTrue) et API de données (PostgREST), aux versions exactes de la CLI locale. L'application n'utilise ni stockage de fichiers, ni temps réel, ni fonctions : Storage, Realtime, Kong, Studio, Analytics et Edge Runtime sont écartés (≈ 2 Go de mémoire évités). Mémoire bornée par service.
+  - **Nginx route l'API** sur `api.saasclair.com`, avec les chemins de Supabase Cloud (`/auth/v1`, `/rest/v1`) : aucun changement dans le code. Débit limité, plus strict sur la connexion.
+  - **Ports internes 3110 à 3130, liés à 127.0.0.1** ; un fichier Nginx à part, des noms préfixés `saasclair_`. L'amorçage n'écrase rien d'existant : ni les autres sites, ni SSH, ni le pare-feu. Il s'arrête net en cas de conflit.
+  - **Une seule réplique, deux couleurs** (blue et green) : la nouvelle version démarre à côté de l'ancienne, la bascule n'a lieu qu'après un contrôle de santé complet, puis l'ancienne est arrêtée et gardée pour un retour arrière immédiat. Une seule réplique garde le cache des contenus cohérent (`updateTag`) et économise la mémoire.
+  - **Secrets nés sur le serveur** (`gen-env.sh`) : mot de passe de la base, secret JWT, clé de service. GitHub ne reçoit que la clé SSH de déploiement et la clé publique `anon`.
+  - **Migrations appliquées sur le serveur** par la CD (`migrate.sh`) : même table de suivi que la CLI Supabase, une transaction par migration, sauvegarde automatique avant. La base n'est jamais exposée à Internet.
+  - **Image construite par GitHub Actions** et publiée sur GHCR : le VPS ne compile rien.
+  - **Répétition locale fidèle** (`deploy/rehearsal.sh`) : mêmes fichiers, même Nginx, sur Docker Desktop.
+- **Alternatives écartées** :
+  - Supabase Cloud : refusé par l'utilisateur.
+  - Pile Supabase officielle complète : trop gourmande pour ce serveur.
+  - Deux répliques en permanence : cache incohérent et mémoire doublée.
+  - Migrations par tunnel depuis GitHub : le mot de passe de la base aurait quitté le serveur.
+- **Conséquences** :
+  - Les mises à jour de Supabase se font à la main, après répétition (`docs/deployment.md`).
+  - L'utilisateur `deploy` est membre du groupe `docker`, donc équivalent root : sa clé est restreinte (`restrict`) et réservée à la CD.
+  - Les sauvegardes restent sur le VPS ; une copie hors serveur reste à mettre en place (dette P1).
+- **Impact** : technique — élevé ; coût — nul (VPS existant).
+
 ## ADR-020 — Espace super administrateur
 
 - **Date** : 2026-10-30

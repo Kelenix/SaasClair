@@ -5,14 +5,16 @@
 //
 // Lit NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY et SUPABASE_SERVICE_ROLE_KEY dans
 // .env. La clé de service reste sur cette machine : elle n'est jamais envoyée au navigateur.
+// Sans ADMIN_PASSWORD, le mot de passe est demandé au clavier sans s'afficher (production :
+// deploy/scripts/create-admin.sh).
 
 import { createClient } from "@supabase/supabase-js";
+import { createInterface } from "node:readline";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-const password = process.env.ADMIN_PASSWORD;
 const firstName = process.env.ADMIN_FIRST_NAME?.trim() || "";
 
 function fail(message) {
@@ -20,8 +22,29 @@ function fail(message) {
   process.exit(1);
 }
 
+function askHidden(question) {
+  return new Promise((resolve) => {
+    const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    rl._writeToOutput = (text) => {
+      if (text.startsWith(question)) process.stdout.write(question);
+    };
+    rl.question(question, (answer) => {
+      rl.close();
+      process.stdout.write("\n");
+      resolve(answer);
+    });
+  });
+}
+
 if (!url || !anonKey || !serviceKey) fail("Variables Supabase absentes (voir .env.example).");
 if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("ADMIN_EMAIL manquant ou invalide.");
+
+let password = process.env.ADMIN_PASSWORD;
+if (!password && process.stdin.isTTY) {
+  password = await askHidden("Mot de passe (8 caractères minimum) : ");
+  if (password !== (await askHidden("Confirmez le mot de passe : ")))
+    fail("Les deux saisies sont différentes.");
+}
 if (!password || password.length < 8)
   fail("ADMIN_PASSWORD manquant ou trop court (8 caractères minimum).");
 

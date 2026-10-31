@@ -1,4 +1,4 @@
-# Tâches manuelles (à faire par vous)
+| 12 | En production, créer votre compte **super administrateur**, dans votre session SSH : `sudo -u deploy bash /srv/saasclair/deploy/scripts/create-admin.sh <email> <prénom>` (mot de passe demandé au clavier, jamais affiché ni enregistré). Le compte `admin@demo.saasclair.fr` n’existe qu’en local | Après le 1er déploiement | Oui, pour administrer | ⬜ || 11 | **Emails d’authentification** (mot de passe oublié, confirmation) : créer un compte SMTP (Brevo, Resend, Postmark… ou l’email Hostinger) et reporter hôte, port, utilisateur et mot de passe dans `/srv/saasclair/.env` (`SMTP_*`), puis `deploy.sh --restart`. Les modèles de la marque sont déjà branchés. Ensuite seulement, activer la confirmation d’email (`GOTRUE_MAILER_AUTOCONFIRM: "false"` dans `deploy/compose.prod.yaml`) | Avant d’ouvrir les inscriptions au public | Oui, pour « mot de passe oublié » | ⬜ || 6 | **DNS de saasclair.com** chez Hostinger : 3 enregistrements `A` vers `69.62.116.243` (`@`, `www`, `api`) et suppression de l’ancien `A` vers `2.57.91.91`. Puis l’environnement GitHub `production` (secrets et variables listés dans `docs/deployment.md`, étape 5) | Incrément 9 | Oui, pour la mise en ligne | ⬜ || 5 | **Accès SSH par clé au VPS** : ajouter la clé publique `~/.ssh/saasclair_admin.pub` (créée sur votre poste) aux clés de `root`, en tapant vous-même le mot de passe root une dernière fois (procédure ci-dessous) | Incrément 9 | Oui, pour la mise en ligne | ⬜ |# Tâches manuelles (à faire par vous)
 
 > Tout ce que Claude ne peut pas faire à votre place : comptes, clés, accès. Rien ici ne bloque
 > le développement local, sauf mention contraire.
@@ -20,20 +20,33 @@
 | 13 | (Facultatif) Coller vos identifiants **Google Ads** (ID et libellé de conversion « inscription »), **GA4**, **Meta** et **LinkedIn** dans **Administration › Paramètres** | Quand vous lancez des campagnes | Non | ⬜ |
 | 14 | Compléter la **politique de confidentialité** avec les traceurs publicitaires utilisés (le bandeau de consentement est déjà en place) | Avant d'activer un pixel | Oui, pour la publicité | ⬜ |
 
+## Procédure — accès SSH par clé (n° 5)
+
+Dans PowerShell, sur votre poste (vous tapez le mot de passe root vous-même, une dernière fois) :
+
+```powershell
+type $env:USERPROFILE.sshsaasclair_admin.pub | ssh root@69.62.116.243 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+```
+
+Vérification : `ssh -i $env:USERPROFILE.sshsaasclair_admin root@69.62.116.243 hostname` répond
+`srv1681209` sans demander de mot de passe. Variante sans terminal : hPanel › VPS › Paramètres ›
+Clés SSH › Ajouter, en collant le contenu du fichier `.pub`. Rien d’autre ne change sur le serveur :
+la connexion par mot de passe reste possible tant que vous ne la désactivez pas vous-même.
+
 ## Procédure — connexion avec Google (n° 3)
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → créez un projet « SaasClair ».
 2. **API et services → Écran de consentement OAuth** : type « Externe », nom « SaasClair », votre email.
 3. **Identifiants → Créer des identifiants → ID client OAuth** → « Application Web ».
 4. **URI de redirection autorisés** : `http://127.0.0.1:55321/auth/v1/callback` (local). En production,
-   ajoutez celui de votre projet Supabase : `https://<ref>.supabase.co/auth/v1/callback`.
+   ajoutez `https://api.saasclair.com/auth/v1/callback`, puis reportez l’identifiant et le secret dans `/srv/saasclair/.env` (`GOOGLE_ENABLED=true`, `GOOGLE_CLIENT_ID`, `GOOGLE_SECRET`) et lancez `deploy.sh --restart`.
 5. Copiez l'ID client et le secret dans `supabase/.env` (`SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` et `…_SECRET`).
 6. Dans `supabase/config.toml`, section `[auth.external.google]`, passez `enabled = true`, puis `npm run down` et `npm run up`.
 
 ## Procédure — connexion avec GitHub (n° 4)
 
 1. GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**.
-2. Homepage URL : `http://localhost:3000` ; Authorization callback URL : `http://127.0.0.1:55321/auth/v1/callback`.
+2. Homepage URL : `http://localhost:3000` ; Authorization callback URL : `http://127.0.0.1:55321/auth/v1/callback`. En production, une seconde application OAuth avec `https://saasclair.com` et `https://api.saasclair.com/auth/v1/callback`, reportée dans `/srv/saasclair/.env` (`GITHUB_ENABLED=true`, `GITHUB_CLIENT_ID`, `GITHUB_SECRET`), puis `deploy.sh --restart`.
 3. Générez un secret, puis copiez l'ID client et le secret dans `supabase/.env` (`SUPABASE_AUTH_EXTERNAL_GITHUB_…`).
 4. Dans `supabase/config.toml`, section `[auth.external.github]`, passez `enabled = true`, puis `npm run down` et `npm run up`.
 

@@ -9,3 +9,5 @@ test-results
 supabase/.temp
 *.jpeg
 *.docx
+.rehearsal
+backups

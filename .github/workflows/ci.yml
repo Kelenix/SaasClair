@@ -1,9 +1,9 @@
 name: CI
 
+# Chaque pull request, et chaque envoi sur main via deploy.yml (une seule définition des contrôles).
 on:
   pull_request:
-  push:
-    branches: [main]
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}

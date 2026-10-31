@@ -14,7 +14,9 @@ services:
         - { action: rebuild, path: package-lock.json }
   web-prod: # l'image de PROD en local, avant push → http://localhost:3001
     profiles: [prod]
-    build: { context: ., args: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY] }
+    build:
+      context: .
+      args: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_SITE_URL]
     network_mode: service:net
     env_file: .env
     environment: { PORT: 3001 }
