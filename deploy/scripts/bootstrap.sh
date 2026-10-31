@@ -127,6 +127,8 @@ fi
 cat >/etc/cron.d/saasclair <<EOF
 # SaasClair : sauvegarde quotidienne de la base (deploy/scripts/backup.sh)
 15 3 * * * deploy ROOT=$ROOT bash $ROOT/deploy/scripts/backup.sh >>$ROOT/backups/backup.log 2>&1
+# SaasClair : resynchronisation des comptes Stripe connectés, chaque heure (deploy/scripts/stripe-sync.sh)
+7 * * * * deploy ROOT=$ROOT bash $ROOT/deploy/scripts/stripe-sync.sh >>$ROOT/backups/stripe-sync.log 2>&1
 EOF
 
 log "SaasClair amorcé."

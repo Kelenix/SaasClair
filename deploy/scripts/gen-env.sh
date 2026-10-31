@@ -30,6 +30,7 @@ jwt() {
 
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
 JWT_SECRET=$(openssl rand -hex 32)
+CRON_SECRET=$(openssl rand -hex 32)
 ANON_KEY=$(jwt anon)
 SERVICE_ROLE_KEY=$(jwt service_role)
 suffix=${PUBLIC_PORT:+:$PUBLIC_PORT}
@@ -49,6 +50,8 @@ API_EXTERNAL_URL=$SCHEME://$API_DOMAIN$suffix
 POSTGRES_PASSWORD=$POSTGRES_PASSWORD
 JWT_SECRET=$JWT_SECRET
 SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
+# Resynchronisation horaire de Stripe (deploy/scripts/stripe-sync.sh)
+CRON_SECRET=$CRON_SECRET
 # Clé publique (présente dans le site) : variable GitHub NEXT_PUBLIC_SUPABASE_ANON_KEY
 ANON_KEY=$ANON_KEY
 

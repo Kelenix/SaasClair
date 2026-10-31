@@ -5,6 +5,9 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Mise à jour automatique des données Stripe**, chaque heure : nouveaux clients, résiliations
+  et paiements échoués apparaissent sans reconnexion. Les écrans gardent leurs chiffres pendant
+  la mise à jour.
 - **Revenus, Churn et Accueil sur les vraies données Stripe** : revenu mensuel récurrent,
   nouveau revenu, revenu perdu, churn clients et en revenu, paiements échoués, clients à risque
   avec leurs vraies raisons (résiliation programmée, retard, impayé, paiement échoué).

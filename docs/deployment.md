@@ -130,6 +130,16 @@ bash deploy/rehearsal.sh down       # efface tout
 Mêmes fichiers que la production (compose, Nginx, scripts), sur Docker Desktop.
 `saasclair.localhost` et `api.saasclair.localhost` remplacent les vrais domaines.
 
+## Tâches programmées (`/etc/cron.d/saasclair`)
+
+| Quand | Script | Rôle |
+|---|---|---|
+| Chaque nuit à 3 h 15 | `deploy/scripts/backup.sh` | Sauvegarde de la base (14 jours) |
+| Chaque heure, à la 7ᵉ minute | `deploy/scripts/stripe-sync.sh` | Resynchronisation des comptes Stripe connectés (ADR-026) |
+
+Journaux : `/srv/saasclair/backups/backup.log` et `/srv/saasclair/backups/stripe-sync.log`.
+La resynchronisation utilise `CRON_SECRET` (`.env` du serveur), né sur le serveur.
+
 ## Sauvegardes
 
 - Chaque nuit à 3 h 15 et avant chaque migration : `/srv/saasclair/backups/*.dump`, 14 jours.

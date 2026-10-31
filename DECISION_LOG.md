@@ -5,6 +5,19 @@
 
 ---
 
+## ADR-026 — Resynchronisation horaire des comptes Stripe
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (« mise à jour auto ») ; conception Claude
+- **Contexte** : les données Stripe n'étaient importées qu'à la connexion. Un nouveau client ou une résiliation n'apparaissait qu'après une reconnexion.
+- **Décision** :
+  - Chaque heure, une tâche du serveur (`/etc/cron.d/saasclair`, `deploy/scripts/stripe-sync.sh`) appelle `POST /api/stripe/sync` sur la version en service, en local (127.0.0.1). La route est protégée par `CRON_SECRET` (comparaison à durée constante), un secret né sur le serveur, jamais lisible par d'autres comptes. Elle répond aussitôt, puis réimporte tous les comptes connectés l'un après l'autre (`after()`).
+  - Les écrans dépendent de la **première** importation réussie (`stripe_connected_at`), plus de l'état de la synchronisation en cours : ils gardent leurs chiffres pendant une resynchronisation, et même après un échec.
+- **Alternatives écartées pour l'instant** : webhooks Stripe Connect (temps réel, mais un réglage de plus dans le compte Stripe de l'utilisateur et la gestion des événements manqués), à ajouter en complément.
+- **Conséquences** : délai d'une heure au plus. Import complet à chaque passage, ce qui convient aux petits comptes ; un import incrémental viendra avec le volume. Les clients supprimés dans Stripe restent en base (dette).
+- **Impact** : métier — moyen.
+
 ## ADR-025 — Stripe en lecture et écriture, promesse sur ce que fait SaasClair
 
 - **Date** : 2026-10-31

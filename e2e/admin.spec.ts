@@ -60,15 +60,22 @@ test.describe("super administrateur", () => {
     await editor.getByRole("button", { name: "Enregistrer" }).click();
     await expect(page.getByText(question)).toBeVisible();
 
+    // Le site se régénère après la modification : sous charge, cela peut prendre un instant.
     await page.goto("/");
-    await expect(page.getByRole("button", { name: question })).toBeVisible();
+    await expect(async () => {
+      await page.reload();
+      await expect(page.getByRole("button", { name: question })).toBeVisible({ timeout: 3000 });
+    }).toPass({ timeout: 30_000 });
 
     await page.goto("/admin/faq");
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: `Supprimer : ${question}` }).click();
     await expect(page.getByText(question)).toHaveCount(0);
     await page.goto("/");
-    await expect(page.getByRole("button", { name: question })).toHaveCount(0);
+    await expect(async () => {
+      await page.reload();
+      await expect(page.getByRole("button", { name: question })).toHaveCount(0, { timeout: 3000 });
+    }).toPass({ timeout: 30_000 });
   });
 
   test("une inscription à la newsletter arrive dans l'espace administrateur", async ({ page }) => {

@@ -16,10 +16,11 @@ export const getRealRevenue = cache(
     // Filtre explicite : le super administrateur voit aussi les projets des autres (RLS).
     const { data: project } = await supabase
       .from("projects")
-      .select("stripe_account_id, stripe_sync_status")
+      .select("stripe_account_id, stripe_connected_at")
       .eq("owner_id", user.id)
       .maybeSingle();
-    if (!project?.stripe_account_id || project.stripe_sync_status !== "done") return null;
+    // Première importation réussie : ensuite, les resynchronisations n'effacent pas l'écran.
+    if (!project?.stripe_account_id || !project.stripe_connected_at) return null;
 
     const [subscriptions, invoices, customers] = await Promise.all([
       supabase

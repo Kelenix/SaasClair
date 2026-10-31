@@ -45,6 +45,21 @@ test("Stripe se connecte, ses données sont importées et l'étape est validée"
   await expect(main).toContainText("Client test Beta");
   await expect(main).toContainText("Résiliation programmée");
   await expect(main).toContainText("Paiement en retard");
+
+  // Resynchronisation horaire : refusée sans le secret, acceptée avec, puis terminée ; l'écran
+  // garde ses chiffres pendant l'import.
+  expect((await page.request.post("/api/stripe/sync")).status()).toBe(401);
+  const sync = await page.request.post("/api/stripe/sync", {
+    headers: { Authorization: `Bearer ${process.env.CRON_SECRET ?? "cron_secret_local_test"}` },
+  });
+  expect(sync.status()).toBe(202);
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(main).toContainText("Client test Beta");
+  await expect
+    .poll(async () => (await (await page.request.get("/api/stripe/status")).json()).status, {
+      timeout: 30_000,
+    })
+    .toBe("done");
 });
 
 test("le Stripe simulé n'est jamais ouvert sans autorisation", async ({ request }) => {

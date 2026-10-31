@@ -69,3 +69,21 @@ export async function syncStripeAccount(config: StripeConfig, projectId: string,
     await service.from("projects").update({ stripe_sync_status: "error" }).eq("id", projectId);
   }
 }
+
+/**
+ * Resynchronisation de tous les comptes Stripe connectés, l'un après l'autre (lancée chaque heure
+ * par le serveur : deploy/scripts/stripe-sync.sh). Les écrans gardent les données précédentes
+ * pendant l'import.
+ */
+export async function syncAllStripeAccounts(config: StripeConfig) {
+  const service = createServiceClient();
+  if (!service) return 0;
+  const { data: projects } = await service
+    .from("projects")
+    .select("id, stripe_account_id")
+    .not("stripe_account_id", "is", null);
+  for (const project of projects ?? []) {
+    await syncStripeAccount(config, project.id, project.stripe_account_id!);
+  }
+  return projects?.length ?? 0;
+}

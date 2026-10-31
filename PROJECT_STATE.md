@@ -57,6 +57,7 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-10-31 — Resynchronisation horaire des comptes Stripe (ADR-026) : route `/api/stripe/sync` protégée par `CRON_SECRET`, script et tâche programmée sur le VPS, écrans stables pendant l’import.
 - 2026-10-31 — Écrans Revenus, Churn et Accueil calculés sur les vraies données Stripe (`src/features/stripe/metrics.ts`, testé) ; vraies données d’abord, exemple seulement en local. Connexion Stripe réelle validée en production par l’utilisateur (compte encore vide). Corrigés : portée `read_write` (ADR-025), dépliage Stripe limité à 4 niveaux (produits lus à part).
 - 2026-10-31 — Connexion Stripe réelle (ADR-024) : OAuth Connect lecture seule, import clients, abonnements et factures en arrière-plan, avancement réel à l’écran, Stripe simulé pour les tests (`/api/stripe-mock`, jamais en production). Installation du script simplifiée (une seule fois, plateforme détectée, WPCode, envoi au développeur). 136 tests unitaires, 56 de bout en bout. Attend la tâche n° 7 (Stripe Connect) de l’utilisateur. Suite : écrans Revenus et Churn réels.
 - 2026-10-31 — Collecte réelle, étape 1 (ADR-023) : script `public/s.js` (2,7 Ko), réception `/api/collect`, table `events` (RLS), détection réelle du script, écran Acquisition sur les vraies visites, appels internes exemptés de la limite Nginx. Test de bout en bout avec un faux site client. 129 tests unitaires, 54 de bout en bout. Étape 2 : Stripe Connect (nécessite le compte Stripe de l’utilisateur).
