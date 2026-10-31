@@ -65,6 +65,8 @@ jobs:
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            # Base Supabase locale et jetable de la CI : sa clé de service n’est pas un secret.
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
             echo "NEXT_PUBLIC_SITE_URL=http://localhost:3001"
             # Données d’exemple : seulement pour les tests (jamais en production).
             echo "DEMO_DATA=true"
