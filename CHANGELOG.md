@@ -5,6 +5,10 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Collecte réelle des visites** : la ligne à installer charge `https://saasclair.com/s.js` ;
+  chaque page vue est reçue, classée par canal et affichée sur l'écran Acquisition (visiteurs,
+  canaux, sites d'origine, pages d'entrée, campagnes). La configuration détecte d'elle-même la
+  première vraie visite.
 - **Configuration « plus tard »** : chaque étape (adresse du SaaS, script, Stripe) a un bouton
   « Passer cette étape », et l'en-tête propose « Terminer plus tard ». À la connexion suivante,
   l'utilisateur arrive sur son tableau de bord, qui affiche un bandeau des étapes restantes, chacune

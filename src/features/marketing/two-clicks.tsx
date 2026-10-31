@@ -18,7 +18,7 @@ function ScriptVisual() {
       className="block overflow-x-auto rounded-xl bg-forest-deep px-4 py-3 font-mono text-[12px] leading-relaxed whitespace-nowrap text-cream/90 outline-none focus-visible:outline-2 focus-visible:outline-emerald"
     >
       <span className="text-emerald">&lt;script</span> async
-      src=&quot;https://cdn.saasclair.fr/s.js&quot;
+      src=&quot;https://saasclair.com/s.js&quot;
       <span className="text-emerald">&gt;&lt;/script&gt;</span>
     </code>
   );

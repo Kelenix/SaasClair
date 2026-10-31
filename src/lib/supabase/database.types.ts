@@ -51,6 +51,26 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"events": {
+                  Row: {
+                    "channel": string,"device": string | null,"email_hash": string | null,"id": number,"occurred_at": string,"path": string,"project_id": string,"referrer_host": string | null,"type": string,"utm_campaign": string | null,"utm_medium": string | null,"utm_source": string | null,"visitor_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "channel": string,"device"?: string | null,"email_hash"?: string | null,"id"?: never,"occurred_at"?: string,"path"?: string,"project_id": string,"referrer_host"?: string | null,"type": string,"utm_campaign"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"visitor_id": string
+                  }
+                  Update: {
+                    "channel"?: string,"device"?: string | null,"email_hash"?: string | null,"id"?: never,"occurred_at"?: string,"path"?: string,"project_id"?: string,"referrer_host"?: string | null,"type"?: string,"utm_campaign"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"visitor_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "events_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"faq_items": {
                   Row: {
                     "answer": string,"created_at": string,"id": string,"is_published": boolean,"position": number,"question": string,"updated_at": string
@@ -109,14 +129,14 @@ export type Database = {
                   ]
                 },"projects": {
                   Row: {
-                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"setup_skipped_at": string | null,"site_url": string | null,"stripe_connected_at": string | null,"updated_at": string
+                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"setup_skipped_at": string | null,"site_key": string | null,"site_url": string | null,"stripe_connected_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     

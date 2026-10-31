@@ -7,6 +7,8 @@ import {
   ChannelTable,
   SourceTabs,
 } from "@/features/dashboard/acquisition/channel-views";
+import { getRealAcquisition } from "@/features/collect/queries";
+import { RealAcquisitionView } from "@/features/collect/real-acquisition";
 import { COVERAGE, getAcquisitionData } from "@/features/dashboard/acquisition/data";
 import { getDashboardContext } from "@/features/dashboard/context";
 import { getPeriod } from "@/features/dashboard/get-period";
@@ -14,11 +16,29 @@ import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { NoData } from "@/features/dashboard/no-data";
 import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
+import { formatNumber, formatPercent } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Acquisition" };
 
 async function Acquisition() {
   const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
+
+  // Les vraies visites d'abord ; l'exemple seulement en local ; sinon l'écran vide.
+  const real = await getRealAcquisition(period, new Date());
+  if (real.visitors > 0) {
+    const first = real.channels[0];
+    return (
+      <>
+        <PageHeader
+          title="Acquisition"
+          summary={`${formatNumber(real.visitors)} visiteur${real.visitors > 1 ? "s" : ""} sur la période${first ? `, ${first.name} en tête (${formatPercent(first.share)}).` : "."}`}
+          period={period}
+          liveLabel="Visites suivies en direct"
+        />
+        <RealAcquisitionView data={real} />
+      </>
+    );
+  }
   if (!context.demo) {
     return (
       <NoData

@@ -28,6 +28,8 @@ import { scriptSnippet } from "./steps";
 // Démonstration : sans collecte réelle, la « première visite » est simulée peu après la copie.
 const SIMULATED_DETECTION_MS = 5000;
 const ADVANCE_AFTER_SUCCESS_MS = 1800;
+/** Détection réelle : la configuration demande au serveur si la première visite est arrivée. */
+const STATUS_POLL_MS = 4000;
 const COPIED_FEEDBACK_MS = 2500;
 
 export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied: () => void }) {
@@ -189,6 +191,16 @@ export function StepScript({ siteKey, siteUrl, demo, onBack, onDone }: StepScrip
   }, [demo, hasCopied, isDetected]);
 
   useEffect(() => {
+    if (isDetected) return;
+    const timer = setInterval(async () => {
+      const response = await fetch("/api/script-status", { cache: "no-store" }).catch(() => null);
+      const status = (await response?.json().catch(() => null)) as { detected?: boolean } | null;
+      if (status?.detected) setIsDetected(true);
+    }, STATUS_POLL_MS);
+    return () => clearInterval(timer);
+  }, [isDetected]);
+
+  useEffect(() => {
     if (!isDetected) return;
     const timer = setTimeout(advance, ADVANCE_AFTER_SUCCESS_MS);
     return () => clearTimeout(timer);
@@ -253,11 +265,11 @@ export function StepScript({ siteKey, siteUrl, demo, onBack, onDone }: StepScrip
       </div>
 
       <LiveCheck isDetected={isDetected} />
-      {demo && (
-        <p className="mt-3 text-xs text-slate">
-          Démonstration : la première visite est simulée quelques secondes après la copie.
-        </p>
-      )}
+      <p className="mt-3 text-xs text-slate">
+        {demo
+          ? "Démonstration : la première visite est simulée quelques secondes après la copie."
+          : "Une fois la ligne en place, ouvrez votre site dans un autre onglet : la première visite s'affiche ici en quelques secondes."}
+      </p>
     </Card>
   );
 }

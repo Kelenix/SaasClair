@@ -45,8 +45,8 @@ describe("étapes passées", () => {
 
 describe("scriptSnippet", () => {
   it("produit une seule ligne asynchrone avec la clé du site", () => {
-    expect(scriptSnippet("14d5d609")).toBe(
-      '<script async src="https://cdn.saasclair.fr/s.js" data-site="14d5d609"></script>',
+    expect(scriptSnippet("14d5d609", "https://saasclair.com")).toBe(
+      '<script async src="https://saasclair.com/s.js" data-site="14d5d609"></script>',
     );
   });
 });

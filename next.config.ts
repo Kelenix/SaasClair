@@ -46,7 +46,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Pastille « N » de Next.js en développement : elle chevauchait le bas de la barre latérale.
   devIndicators: false,
-  headers: async () => [{ source: "/:path*", headers: securityHeaders }],
+  headers: async () => [
+    { source: "/:path*", headers: securityHeaders },
+    // Script de collecte chargé par les sites des clients : mis en cache une heure.
+    { source: "/s.js", headers: [{ key: "Cache-Control", value: "public, max-age=3600" }] },
+  ],
   turbopack: {
     rules: {
       "*.css": {

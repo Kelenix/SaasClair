@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import type { Database } from "@/lib/supabase/database.types";
 import type { SiteAudit } from "./site-analysis";
 
@@ -61,6 +62,9 @@ export type SetupState = {
   demo: boolean;
 };
 
-/** Ligne de code à installer : la clé identifie le projet, jamais l'utilisateur. */
-export const scriptSnippet = (siteKey: string) =>
-  `<script async src="https://cdn.saasclair.fr/s.js" data-site="${siteKey}"></script>`;
+/**
+ * Ligne de code à installer : la clé identifie le projet, jamais l'utilisateur. Le script est
+ * servi par SaasClair lui-même (public/s.js).
+ */
+export const scriptSnippet = (siteKey: string, origin = SITE_URL) =>
+  `<script async src="${origin}/s.js" data-site="${siteKey}"></script>`;

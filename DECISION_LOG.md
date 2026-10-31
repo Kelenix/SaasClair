@@ -5,6 +5,27 @@
 
 ---
 
+## ADR-023 — Collecte réelle des visites
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (« commence la collecte réelle ») ; conception Claude
+- **Contexte** : sans collecte, la production n'affichait que des écrans vides (ADR-022). La ligne à installer pointait vers `cdn.saasclair.fr`, un domaine qui n'existe pas.
+- **Décision** :
+  - **Script** `public/s.js` servi par SaasClair (`https://saasclair.com/s.js`, 2,7 Ko, mis en cache une heure). Il envoie chaque page vue, y compris dans les applications à page unique : page, site d'origine, UTM, largeur d'écran, identifiant aléatoire du visiteur (stockage local du site client). Pas de cookie tiers, pas d'adresse IP. Les robots et `localhost` sont ignorés. `saasclair("identify", email)` envoie une empreinte SHA-256, jamais l'email.
+  - **Réception** `POST /api/collect` (texte brut, ouvert à toutes les origines) : validation stricte (Zod, 4 Ko au plus). Le projet est retrouvé par `projects.site_key` (colonne générée, unique). La page doit appartenir au site du projet (avec ou sans www, sous-domaines compris). Le chemin est gardé **sans paramètres** (ils peuvent contenir des données personnelles), et le canal est classé avec la même règle que la provenance des inscrits. La première visite marque le script comme détecté.
+  - **Table `events`** : lecture par le propriétaire du site uniquement (RLS), écriture par la clé de service uniquement.
+  - **Détection réelle** dans la configuration : interrogation de `/api/script-status` toutes les 4 secondes.
+  - **Écran Acquisition** : vraies visites d'abord (visiteurs uniques, pages vues, canaux, sites d'origine, pages d'entrée, campagnes), puis l'exemple (en local seulement), sinon l'écran vide.
+  - **Nginx** : les appels internes (adresses privées des conteneurs) ne sont plus limités en débit ; sinon le site et la collecte partageaient une seule limite.
+- **Alternatives écartées** : un sous-domaine CDN (un domaine et un certificat de plus, sans gain à ce volume) ; des cookies (consentement plus lourd sur les sites clients) ; une file d'attente (inutile au volume actuel).
+- **Conséquences** :
+  - Agrégation en JavaScript jusqu'à 50 000 pages vues par période ; au-delà, passage en SQL (dette).
+  - Pas encore de durée de conservation des visites.
+  - Les inscrits, clients et revenus par canal arrivent avec Stripe (étape 2).
+  - Les clients doivent mentionner SaasClair dans leur politique de confidentialité (mesure d'audience).
+- **Impact** : technique et métier — élevé.
+
 ## ADR-022 — Aucune donnée d'exemple en production
 
 - **Date** : 2026-10-31

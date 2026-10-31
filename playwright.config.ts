@@ -14,6 +14,10 @@ export default defineConfig({
     locale: "fr-FR",
     trace: "retain-on-failure",
     channel: process.env.CI ? undefined : "chrome",
+    // Test de la collecte (e2e/collect.spec.ts) : le faux site client charge le script depuis
+    // localhost, ce que Chrome bloque désormais (« accès au réseau local »). Sans objet en
+    // production, où le site du client et saasclair.com sont publics.
+    launchOptions: { args: ["--disable-features=LocalNetworkAccessChecks"] },
   },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/ },
