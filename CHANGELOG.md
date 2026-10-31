@@ -5,6 +5,9 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Revenus, Churn et Accueil sur les vraies données Stripe** : revenu mensuel récurrent,
+  nouveau revenu, revenu perdu, churn clients et en revenu, paiements échoués, clients à risque
+  avec leurs vraies raisons (résiliation programmée, retard, impayé, paiement échoué).
 - **Connexion Stripe réelle, en lecture seule** : le client accepte sur la page de Stripe, puis ses
   clients, abonnements et factures (12 mois) sont importés ; l'étape affiche les vrais nombres
   pendant l'import. Activée dès que les clés Stripe de la plateforme sont renseignées.

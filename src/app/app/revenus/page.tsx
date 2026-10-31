@@ -9,11 +9,34 @@ import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { getRevenueData } from "@/features/dashboard/revenue/data";
 import { FailedPayments, MrrChart, RevenueFlows } from "@/features/dashboard/revenue/revenue-views";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
+import { getRealRevenue } from "@/features/stripe/queries";
+import { hasRevenueData, RealRevenueView } from "@/features/stripe/real-views";
+import { formatEuro } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Revenus" };
 
 async function Revenue() {
   const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
+
+  // Les vraies données Stripe d'abord ; l'exemple seulement en local ; sinon l'écran vide.
+  const real = await getRealRevenue(period, new Date());
+  if (real) {
+    return (
+      <>
+        <PageHeader
+          title="Revenus"
+          summary={
+            hasRevenueData(real)
+              ? `Revenu mensuel récurrent : ${formatEuro(real.mrr)}.`
+              : "Stripe est connecté."
+          }
+          period={period}
+          liveLabel="Données Stripe"
+        />
+        <RealRevenueView data={real} />
+      </>
+    );
+  }
   if (!context.demo) {
     return (
       <NoData

@@ -32,6 +32,19 @@ test("Stripe se connecte, ses données sont importées et l'étape est validée"
   const banner = page.getByRole("region", { name: "Configuration à terminer" });
   await expect(banner).toContainText("Plus que 2 étapes");
   await expect(banner).not.toContainText("Connecter Stripe");
+
+  // Les écrans affichent les vraies données importées (Stripe simulé : 79 € + 758,40 € / an).
+  // Next.js garde la page précédente cachée : seule la zone visible compte.
+  const main = page.locator("main").filter({ visible: true });
+  await expect(main).toContainText("Revenu mensuel récurrent");
+  await expect(main).toContainText("Client test Beta");
+  await page.goto("/app/revenus", { waitUntil: "networkidle" });
+  await expect(main).toContainText(/Revenu mensuel récurrent : 142/);
+  await expect(main).toContainText(/1 facture à récupérer/);
+  await page.goto("/app/churn", { waitUntil: "networkidle" });
+  await expect(main).toContainText("Client test Beta");
+  await expect(main).toContainText("Résiliation programmée");
+  await expect(main).toContainText("Paiement en retard");
 });
 
 test("le Stripe simulé n'est jamais ouvert sans autorisation", async ({ request }) => {

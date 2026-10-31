@@ -11,6 +11,8 @@ import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { NoData } from "@/features/dashboard/no-data";
 import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
+import { getRealRevenue } from "@/features/stripe/queries";
+import { hasRevenueData, RealChurnView } from "@/features/stripe/real-views";
 
 export const metadata: Metadata = { title: "Churn et rétention" };
 
@@ -22,6 +24,27 @@ async function Churn({ searchParams }: Props) {
     getPeriod(),
     searchParams,
   ]);
+  const real = await getRealRevenue(period, new Date());
+  if (real) {
+    const count = real.atRisk.length;
+    return (
+      <>
+        <PageHeader
+          title="Churn et rétention"
+          summary={
+            !hasRevenueData(real)
+              ? "Stripe est connecté."
+              : count
+                ? `${count} client${count > 1 ? "s" : ""} à surveiller.`
+                : "Aucun client à risque pour l'instant."
+          }
+          period={period}
+          liveLabel="Données Stripe"
+        />
+        <RealChurnView data={real} />
+      </>
+    );
+  }
   if (!context.demo) {
     return (
       <NoData
