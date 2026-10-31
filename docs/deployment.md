@@ -64,7 +64,7 @@ Un port pris ? L'amorçage s'arrête en le nommant. Changer la valeur dans le `.
    |---|---|---|
    | Secret | `VPS_HOST` | `69.62.116.243` |
    | Secret | `VPS_SSH_KEY` | contenu de `~/.ssh/saasclair_deploy` (clé privée de la CD) |
-   | Secret | `VPS_FINGERPRINT` | affiché par l'amorçage (`SHA256:…`) |
+   | Secret | `VPS_FINGERPRINT` | empreinte de la clé **ECDSA** du serveur, affichée par l’amorçage (`SHA256:4401XTnN…`) |
    | Variable | `NEXT_PUBLIC_SUPABASE_URL` | `https://api.saasclair.com` |
    | Variable | `NEXT_PUBLIC_SITE_URL` | `https://saasclair.com` |
    | Variable | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | affichée par l'amorçage (clé publique) |

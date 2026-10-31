@@ -130,5 +130,6 @@ cat >/etc/cron.d/saasclair <<EOF
 EOF
 
 log "SaasClair amorcé."
-echo "VPS_FINGERPRINT=$(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | cut -d' ' -f2)"
+# Empreinte de la clé ECDSA : celle que choisit l’action SSH de GitHub (client Go), pas ED25519.
+echo "VPS_FINGERPRINT=$(ssh-keygen -lf /etc/ssh/ssh_host_ecdsa_key.pub | cut -d" " -f2)"
 echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(env_value ANON_KEY)"

@@ -5,6 +5,9 @@ ROOT=${ROOT:-/srv/saasclair}
 ENV_FILE=${ENV_FILE:-$ROOT/.env}
 COMPOSE_FILE=${COMPOSE_FILE:-$ROOT/deploy/compose.prod.yaml}
 UPSTREAM_FILE=${UPSTREAM_FILE:-$ROOT/nginx/upstream.conf}
+# Toujours depuis le dossier de l’application : lancé en « deploy » depuis le dossier de root,
+# docker compose échoue (« stat .: permission denied »).
+cd "$ROOT"
 
 # COMPOSE_OVERRIDE (facultatif) : second fichier compose, pour la répétition locale.
 dc() { docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ${COMPOSE_OVERRIDE:+-f "$COMPOSE_OVERRIDE"} "$@"; }
