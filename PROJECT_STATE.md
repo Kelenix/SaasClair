@@ -4,10 +4,10 @@
 
 ## Snapshot
 
-- **Phase courante** : 6 — Mise en production : **site en ligne sur https://saasclair.com** (1re version déployée à la main) ; reste le déploiement automatique GitHub
+- **Phase courante** : 6 — Mise en production : **en ligne sur https://saasclair.com**, déploiement automatique à chaque envoi sur `main`
 - **Dernière mise à jour** : 2026-10-31 — version `1.0.0-rc.1`
 - **Santé** : 🟢 OK — lint, types, 115 tests unitaires, 52 tests de bout en bout, build ; 0 vulnérabilité en production
-- **Prochaine action** : commit + push, secrets de l’environnement GitHub `production`, compte super administrateur (tâche 12), SMTP (tâche 11)
+- **Prochaine action** : compte super administrateur (tâche 12), SMTP (tâche 11), mentions légales et vrais témoignages (tâches 8, 9, 14)
 
 ## Avancement par phase
 
@@ -57,6 +57,7 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-10-31 — Déploiement automatique activé (environnement GitHub `production` créé par l’utilisateur). Contrôles CI réparés : la construction exigeait une base Supabase (contenus publics lus au pré-rendu).
 - 2026-10-31 — **Mise en ligne** sur le VPS Hostinger : inspection en lecture seule (Nginx déjà en place, 7 sites, ports 3110-3130 libres, 1,2 Go de mémoire disponible), amorçage (Supabase réduit, 4 migrations, Nginx, HTTPS Let’s Encrypt pour saasclair.com, www et api, sauvegarde de nuit, utilisateur `deploy`), 1re version construite sur le poste et envoyée par SSH. Vérifié : santé complète, redirections, pages protégées, en-têtes, console sans erreur, autres sites du serveur intacts. SaasClair occupe ≈ 200 Mo.
 - 2026-10-31 — Inc-9 préparé : Supabase auto-hébergé réduit (base, Auth, API), ports 3110-3130 sur 127.0.0.1, Nginx à part (`api.saasclair.com`), bascule blue/green sans coupure, secrets nés sur le serveur, migrations et sauvegardes sur le VPS, pipeline `deploy.yml` (désactivé tant que `DEPLOY_ENABLED` n’est pas posé) — ADR-021. Répétition locale complète (`deploy/rehearsal.sh`) : 49/52 tests de bout en bout, les 3 autres vérifiés à la main (environnement Windows ou charge). Corrigé grâce à la répétition : en-têtes Nginx trop petits pour les cookies de session (502 à la connexion), rôle absent du jeton, CORS `apikey`, hôte sans port, connexions réutilisées fermées par Node.
 - 2026-10-31 — Phases 3, 7 et 8 terminées. Architecture : `architecture.md`, `system-design.md`, `data-model.md`, `design/flows.md`. Maintenance : mises à jour mineures, 0 vulnérabilité en production, 13 exports morts retirés, sauvegarde (`npm run db:backup`), sonde complète, `maintenance.md`, `runbook.md`, `tech-debt.md`, version `1.0.0-rc.1`. Documentation : portail HTML avec logo et 15 captures réelles, PDF de 28 pages, kit de remise, configuration des clés, charte éditoriale, `CHANGELOG.md`.
