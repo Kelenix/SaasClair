@@ -13,3 +13,11 @@ export const createPublicClient = () =>
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
+
+/**
+ * Faux seulement pour la construction de contrôle de la CI, sans base : les pages publiques
+ * sont alors construites sans les contenus gérés. En production l'adresse est toujours fournie
+ * (et la sonde de santé bloque un déploiement sans elle).
+ */
+export const isPublicSupabaseConfigured = () =>
+  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);

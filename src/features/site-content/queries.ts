@@ -1,6 +1,6 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { createPublicClient } from "@/lib/supabase/public";
+import { createPublicClient, isPublicSupabaseConfigured } from "@/lib/supabase/public";
 import { SITE_CONTENT_TAG } from "./tags";
 
 // Contenus du site vitrine gérés depuis l'espace administrateur. Mis en cache (le site reste
@@ -10,6 +10,7 @@ export async function getPublishedFaq() {
   "use cache";
   cacheTag(SITE_CONTENT_TAG);
   cacheLife("hours");
+  if (!isPublicSupabaseConfigured()) return [];
   const { data } = await createPublicClient()
     .from("faq_items")
     .select("id, question, answer")
@@ -22,6 +23,7 @@ export async function getPublishedTestimonials() {
   "use cache";
   cacheTag(SITE_CONTENT_TAG);
   cacheLife("hours");
+  if (!isPublicSupabaseConfigured()) return [];
   const { data } = await createPublicClient()
     .from("testimonials")
     .select("id, quote, author, role")
@@ -34,6 +36,7 @@ export async function getAboutPage() {
   "use cache";
   cacheTag(SITE_CONTENT_TAG);
   cacheLife("hours");
+  if (!isPublicSupabaseConfigured()) return null;
   const { data } = await createPublicClient()
     .from("site_pages")
     .select("title, intro, body")
@@ -57,11 +60,9 @@ export async function getPublicSettings(): Promise<PublicSettings> {
   "use cache";
   cacheTag(SITE_CONTENT_TAG);
   cacheLife("hours");
-  const { data } = await createPublicClient()
-    .from("site_settings")
-    .select("*")
-    .eq("id", 1)
-    .maybeSingle();
+  const { data } = isPublicSupabaseConfigured()
+    ? await createPublicClient().from("site_settings").select("*").eq("id", 1).maybeSingle()
+    : { data: null };
   return {
     googleAdsId: data?.google_ads_id ?? null,
     googleAdsConversionLabel: data?.google_ads_conversion_label ?? null,
