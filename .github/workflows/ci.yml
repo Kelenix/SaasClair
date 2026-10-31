@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test -- --run
+      - run: npm audit --audit-level=high
+      - run: npm run build
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --no-banner
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build --target runner -t saasclair:ci .
+
+  # Parcours complet, accessibilité (axe) et sécurité sur le build de production, avec la base
+  # Supabase locale et ses données de démonstration (supabase/seed.sql).
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Fournisseurs OAuth désactivés en CI : valeurs factices exigées par supabase/config.toml.
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID: ci
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET: ci
+      SUPABASE_AUTH_EXTERNAL_GITHUB_CLIENT_ID: ci
+      SUPABASE_AUTH_EXTERNAL_GITHUB_SECRET: ci
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Supabase local
+        run: npx supabase start -x studio,imgproxy,edge-runtime,logflare,vector
+      - name: Variables de l'application
+        run: |
+          eval "$(npx supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3001"
+          } > .env
+      - run: npm run build
+      - name: Application (build autonome, port 3001)
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          PORT=3001 HOSTNAME=0.0.0.0 nohup node .next/standalone/server.js > app.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health && break; sleep 2; done
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-e2e
+          path: |
+            test-results/
+            app.log
+          retention-days: 7

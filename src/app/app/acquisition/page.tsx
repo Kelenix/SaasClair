@@ -1,0 +1,59 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import {
+  ChannelEvolution,
+  ChannelShare,
+  ChannelTable,
+  SourceTabs,
+} from "@/features/dashboard/acquisition/channel-views";
+import { COVERAGE, getAcquisitionData } from "@/features/dashboard/acquisition/data";
+import { getPeriod } from "@/features/dashboard/get-period";
+import { KpiCards } from "@/features/dashboard/home/kpi-cards";
+import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
+import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
+
+export const metadata: Metadata = { title: "Acquisition" };
+
+async function Acquisition() {
+  const period = await getPeriod();
+  const data = getAcquisitionData(period);
+
+  return (
+    <>
+      <PageHeader
+        title="Acquisition"
+        summary={data.summary}
+        period={period}
+        liveLabel="Visites suivies en direct"
+      />
+      <KpiCards kpis={data.kpis} />
+
+      <SectionTitle
+        title="Ce que rapporte chaque canal"
+        detail={
+          <p className="text-sm text-slate">
+            {COVERAGE} % de vos clients sont reliés à leur provenance.
+          </p>
+        }
+      />
+      <ChannelTable channels={data.channels} />
+
+      <SectionTitle title="Répartition et évolution" />
+      <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-[1fr_1.6fr]">
+        <ChannelShare channels={data.channels} />
+        <ChannelEvolution slots={data.evolution} channels={data.channels} />
+      </div>
+
+      <SectionTitle title="Campagnes et pages d'entrée" />
+      <SourceTabs campaigns={data.campaigns} landingPages={data.landingPages} />
+    </>
+  );
+}
+
+export default function AcquisitionPage() {
+  return (
+    <Suspense fallback={<ScreenSkeleton label="Acquisition" />}>
+      <Acquisition />
+    </Suspense>
+  );
+}

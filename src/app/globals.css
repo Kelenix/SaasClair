@@ -1,0 +1,375 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ==========================================================================
+   SaasClair — système de design (source : SaasClair_brand_kit.html)
+   Toutes les valeurs visuelles de l'application passent par ces jetons.
+   ========================================================================== */
+
+:root {
+  /* Marque */
+  --forest: #064e3b;
+  --forest-deep: #043a2c;
+  --emerald: #10b981;
+  --gold: #f5b700;
+  --cream: #faf7f0;
+  --white: #ffffff;
+
+  /* Jauge de risque élevé (brand kit) et bouton « Connecter Stripe » (charte Stripe) */
+  --risk-high: #d97706;
+  --stripe: #635bff;
+
+  /* Neutres (brand kit) */
+  --ink: #0f1f1a;
+  --slate: #5b6b65;
+  --line: #e6e0d2;
+  --sand: #efebe1;
+  --paper: #fcfbf8;
+
+  /* Variantes de texte accessibles (AA) : l'émeraude et l'or purs restent des accents */
+  --emerald-ink: #047857;
+  --gold-ink: #8f5f00;
+  --danger: #b4432f;
+  --emerald-tint: #e8f7f0;
+  --gold-tint: #fdf4d8;
+  --danger-tint: #fbeae6;
+
+  /* Ombres douces teintées de vert */
+  --shadow-card: 0 1px 2px rgb(6 78 59 / 0.04), 0 12px 32px -18px rgb(6 78 59 / 0.22);
+  --shadow-lift: 0 2px 4px rgb(6 78 59 / 0.05), 0 24px 48px -24px rgb(6 78 59 / 0.32);
+  --shadow-float: 0 30px 60px -30px rgb(6 78 59 / 0.35);
+
+  /* Animation — mêmes valeurs que src/lib/motion.ts */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-micro: 200ms;
+  --dur-screen: 400ms;
+  --dur-data: 900ms;
+
+  /* Correspondance avec les variables attendues par shadcn/ui */
+  --background: var(--cream);
+  --foreground: var(--ink);
+  --card: var(--white);
+  --card-foreground: var(--ink);
+  --popover: var(--white);
+  --popover-foreground: var(--ink);
+  --primary: var(--forest);
+  --primary-foreground: var(--cream);
+  --secondary: var(--white);
+  --secondary-foreground: var(--forest);
+  --muted: var(--sand);
+  --muted-foreground: var(--slate);
+  --accent: var(--emerald-tint);
+  --accent-foreground: var(--forest);
+  --destructive: var(--danger);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--emerald);
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-emerald: var(--emerald);
+  --color-emerald-ink: var(--emerald-ink);
+  --color-emerald-tint: var(--emerald-tint);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-tint: var(--gold-tint);
+  --color-risk-high: var(--risk-high);
+  --color-stripe: var(--stripe);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-slate: var(--slate);
+  --color-line: var(--line);
+  --color-sand: var(--sand);
+  --color-paper: var(--paper);
+  --color-danger: var(--danger);
+  --color-danger-tint: var(--danger-tint);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-heading: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-card: 20px;
+  --radius-panel: 24px;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+  --shadow-float: var(--shadow-float);
+
+  --ease-out: var(--ease-out);
+  --ease-spring: var(--ease-spring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    line-height: 1.6;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif font-semibold text-forest;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  :focus-visible {
+    outline: 2px solid var(--emerald-ink);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: rgb(245 183 0 / 0.35);
+  }
+}
+
+/* Petit libellé en majuscules espacées (« eyebrow » du brand kit) */
+@utility eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--emerald-ink);
+}
+
+/* Surlignage or du brand kit */
+@utility mark-gold {
+  background: linear-gradient(transparent 62%, rgb(245 183 0 / 0.45) 62%);
+}
+
+/* ---------- Icônes animées (apparition, survol, clic) — voir components/brand/icon.tsx ---------- */
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  animation: icon-in 420ms var(--ease-spring) both;
+}
+.icon > svg {
+  transition: scale var(--dur-micro) var(--ease-spring);
+}
+:is(a, button, [role="button"], [data-icon-trigger]):is(:hover, :focus-visible) .icon > svg,
+.icon:hover > svg {
+  animation: var(--icon-hover, icon-pop) 600ms var(--ease-out);
+}
+:is(a, button, [role="button"]):active .icon > svg {
+  scale: 0.86;
+}
+.icon[data-anim="wiggle"] {
+  --icon-hover: icon-wiggle;
+}
+.icon[data-anim="nudge"] {
+  --icon-hover: icon-nudge;
+}
+.icon[data-anim="bounce"] {
+  --icon-hover: icon-bounce;
+}
+.icon[data-anim="spin"] {
+  --icon-hover: icon-spin;
+}
+.icon[data-anim="tilt"] {
+  --icon-hover: icon-tilt;
+}
+
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-20deg);
+  }
+}
+@keyframes icon-pop {
+  40% {
+    transform: scale(1.22);
+  }
+}
+@keyframes icon-wiggle {
+  20% {
+    transform: rotate(-14deg);
+  }
+  40% {
+    transform: rotate(12deg);
+  }
+  60% {
+    transform: rotate(-8deg);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes icon-nudge {
+  40% {
+    transform: translateX(4px);
+  }
+  70% {
+    transform: translateX(-1px);
+  }
+}
+@keyframes icon-bounce {
+  35% {
+    transform: translateY(-4px);
+  }
+  65% {
+    transform: translateY(1px);
+  }
+}
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes icon-tilt {
+  40% {
+    transform: rotate(-12deg) scale(1.1);
+  }
+}
+
+/* ---------- Pulsations : point « en direct » et badge or des clients à risque ---------- */
+
+.pulse-ring {
+  position: relative;
+  isolation: isolate;
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: currentColor;
+  animation: pulse-ring 2.4s var(--ease-out) infinite;
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.pulse-soft {
+  animation: pulse-soft 2.8s ease-in-out infinite;
+}
+/* Échelle seule : une baisse d'opacité ferait passer le texte sous le contraste AA. */
+@keyframes pulse-soft {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Halo de marque derrière la maquette du hero : émeraude diffus, pointe d'or, fond crème */
+.hero-glow {
+  background:
+    radial-gradient(
+      55% 38% at 50% 72%,
+      color-mix(in oklab, var(--emerald) 26%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      30% 22% at 82% 60%,
+      color-mix(in oklab, var(--gold) 14%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      40% 30% at 15% 55%,
+      color-mix(in oklab, var(--forest) 12%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(to bottom, var(--paper), var(--cream) 30%);
+}
+
+/* Ligne lumineuse qui parcourt la vignette du site pendant l'analyse */
+@keyframes scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(420%);
+  }
+}
+
+/* Flottement lent des aperçus du tableau de bord */
+@keyframes float {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ---------- Squelettes de chargement avec brillance ---------- */
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.65), transparent);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* « Réduire les animations » : tout devient un simple fondu. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .icon {
+    animation: fade-in var(--dur-micro) ease both;
+  }
+  .icon > svg,
+  .pulse-ring::after,
+  .pulse-soft,
+  .shimmer::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .pulse-ring::after {
+    opacity: 0.25;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

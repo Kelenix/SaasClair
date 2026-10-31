@@ -1,0 +1,20 @@
+services:
+  net: # porte le réseau : publie les ports et relaie 127.0.0.1:55321 → Supabase local de l'hôte
+    image: alpine/socat:1.8.0.3
+    command: tcp-listen:55321,fork,reuseaddr tcp-connect:host.docker.internal:55321
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    ports: ["3000:3000", "3001:3001"]
+  web: # Next.js en dev, hot reload par synchronisation de fichiers
+    build: { context: ., target: dev }
+    network_mode: service:net # même URL Supabase (127.0.0.1:55321) côté navigateur ET serveur
+    env_file: .env
+    develop:
+      watch:
+        - { action: sync, path: ., target: /app }
+        - { action: rebuild, path: package-lock.json }
+  web-prod: # l'image de PROD en local, avant push → http://localhost:3001
+    profiles: [prod]
+    build: { context: ., args: [NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY] }
+    network_mode: service:net
+    env_file: .env
+    environment: { PORT: 3001 }

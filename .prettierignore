@@ -1,0 +1,7 @@
+.claude
+.next
+node_modules
+supabase
+package-lock.json
+*.md
+SaasClair_brand_kit.html

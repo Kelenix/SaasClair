@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SaasClair — Brand Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#064E3B; --emerald:#10B981; --gold:#F5B700; --cream:#FAF7F0;
+    --ink:#0F1F1A; --muted:#5B6B65; --line:#E6E0D2; --white:#FFFFFF;
+    --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans:'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 40px}
+  section{padding:88px 0;border-top:1px solid var(--line)}
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--emerald);margin-bottom:14px}
+  .eyebrow .num{color:var(--muted);margin-right:10px}
+  h2{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.15;color:var(--forest);letter-spacing:-.01em;margin-bottom:14px}
+  .lead{color:var(--muted);max-width:640px;font-size:17px;margin-bottom:44px}
+
+  /* COVER */
+  .cover{background:var(--forest);color:var(--cream);padding:120px 0 104px;position:relative;overflow:hidden}
+  .cover::after{content:"";position:absolute;right:-180px;top:-180px;width:560px;height:560px;border-radius:50%;
+    border:70px solid rgba(16,185,129,.14)}
+  .cover .eyebrow{color:var(--gold)}
+  .cover h1{font-family:var(--serif);font-weight:600;font-size:76px;line-height:1.02;letter-spacing:-.02em;margin:10px 0 26px;position:relative;z-index:1}
+  .cover h1 em{font-style:normal;color:var(--emerald)}
+  .cover p{max-width:560px;font-size:19px;color:rgba(250,247,240,.82);position:relative;z-index:1}
+  .cover .meta{display:flex;gap:40px;margin-top:64px;font-size:13px;color:rgba(250,247,240,.6);position:relative;z-index:1}
+  .cover .meta b{display:block;color:var(--cream);font-weight:600;font-size:15px}
+
+  /* LOGO */
+  .logo-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:20px}
+  .tile{border-radius:20px;padding:44px;display:flex;flex-direction:column;justify-content:space-between;min-height:280px;border:1px solid var(--line)}
+  .tile .cap{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  .tile.dark .cap{color:rgba(250,247,240,.6)}
+  .t-white{background:var(--white)} .t-cream{background:var(--cream)} .dark{background:var(--forest);border-color:var(--forest)}
+  .lockup{display:flex;align-items:center;gap:18px}
+  .wordmark{font-family:var(--serif);font-weight:600;font-size:40px;letter-spacing:-.02em;color:var(--forest)}
+  .wordmark span{color:var(--emerald)}
+  .dark .wordmark{color:var(--cream)}
+  .center{display:flex;align-items:center;justify-content:center;flex:1}
+  .rules{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px}
+  .rule{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px 24px;font-size:14px;color:var(--muted)}
+  .rule b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+
+  /* PALETTE */
+  .palette{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr;gap:16px}
+  .swatch{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:var(--white)}
+  .chip{height:220px;padding:22px;display:flex;align-items:flex-end;font-family:var(--serif);font-size:26px;font-weight:600}
+  .swatch .info{padding:20px 22px}
+  .swatch .name{font-weight:600;font-size:16px}
+  .swatch .hex{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:14px;color:var(--ink);background:var(--cream);
+    display:inline-block;padding:3px 9px;border-radius:6px;margin:8px 0 10px;border:1px solid var(--line);cursor:pointer}
+  .swatch .hex:hover{border-color:var(--emerald)}
+  .swatch .role{font-size:13px;color:var(--muted);line-height:1.5}
+  .ratio{display:flex;height:14px;border-radius:999px;overflow:hidden;margin-top:28px}
+  .ratio-legend{display:flex;gap:28px;font-size:12px;color:var(--muted);margin-top:12px}
+  .ratio-legend span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px;background:var(--c);border:1px solid var(--line)}
+
+  /* TYPO */
+  .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .type-card{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:44px}
+  .type-card .sample{font-size:96px;line-height:1;color:var(--forest);margin:18px 0 24px}
+  .type-card .fname{font-weight:600;font-size:20px}
+  .type-card .use{color:var(--muted);font-size:14px;margin:6px 0 22px}
+  .weights{display:flex;flex-wrap:wrap;gap:8px}
+  .weights span{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 12px;color:var(--muted)}
+  .scale{margin-top:20px;background:var(--white);border:1px solid var(--line);border-radius:20px;padding:12px 44px}
+  .scale-row{display:grid;grid-template-columns:150px 1fr;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--line)}
+  .scale-row:last-child{border-bottom:none}
+  .scale-row .lbl{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+
+  /* VOICE */
+  .voice{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .vcard{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:36px;position:relative}
+  .vcard .idx{font-family:var(--serif);font-size:15px;color:var(--gold);font-weight:700}
+  .vcard h3{font-family:var(--serif);font-size:38px;color:var(--forest);font-weight:600;margin:8px 0 12px}
+  .vcard p{color:var(--muted);font-size:15px;margin-bottom:22px}
+  .do,.dont{font-size:14px;padding:12px 14px;border-radius:10px;margin-top:8px}
+  .do{background:#E8F7F0;color:#064E3B}
+  .dont{background:#F7F3EA;color:#7A6F5A;text-decoration:line-through;text-decoration-color:rgba(122,111,90,.5)}
+  .do b,.dont b{font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;text-decoration:none}
+  .anchor{margin-top:20px;background:var(--forest);color:var(--cream);border-radius:20px;padding:30px 36px;display:flex;align-items:center;gap:24px}
+  .anchor .k{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--gold);white-space:nowrap}
+  .anchor p{color:rgba(250,247,240,.85);font-size:15px}
+
+  /* TAGLINE */
+  .tag-hero{background:var(--white);border:1px solid var(--line);border-radius:24px;padding:64px;position:relative;overflow:hidden}
+  .tag-hero .q{font-family:var(--serif);font-size:38px;line-height:1.3;color:var(--forest);font-weight:600;max-width:900px;position:relative}
+  .tag-hero .q mark{background:linear-gradient(transparent 62%, rgba(245,183,0,.45) 62%);color:inherit}
+  .tag-hero .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+  .tag-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+  .tag-small{background:var(--forest);color:var(--cream);border-radius:20px;padding:36px}
+  .tag-small .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:rgba(250,247,240,.55);margin-bottom:12px}
+  .tag-small .t{font-family:var(--serif);font-size:30px;line-height:1.2;font-weight:600}
+  .tag-small .t span{color:var(--emerald)}
+  .tag-small.alt{background:var(--white);color:var(--forest);border:1px solid var(--line)}
+  .tag-small.alt .lbl{color:var(--muted)}
+
+  /* PERSONA */
+  .persona{display:grid;grid-template-columns:300px 1fr;gap:20px}
+  .pcard{background:var(--forest);color:var(--cream);border-radius:20px;padding:36px}
+  .avatar{width:84px;height:84px;border-radius:50%;background:var(--gold);color:var(--forest);font-family:var(--serif);font-weight:700;font-size:34px;
+    display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .pcard h3{font-family:var(--serif);font-size:30px;font-weight:600}
+  .pcard .sub{color:rgba(250,247,240,.7);font-size:14px;margin-bottom:26px}
+  .stat{border-top:1px solid rgba(250,247,240,.15);padding:14px 0;display:flex;justify-content:space-between;font-size:14px}
+  .stat b{font-family:var(--serif);font-size:20px;color:var(--emerald)}
+  .stat b.warn{color:var(--gold)}
+  .pbody{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:40px}
+  .pbody .quote{font-family:var(--serif);font-size:28px;line-height:1.35;color:var(--forest);margin-bottom:28px}
+  .pcols{display:grid;grid-template-columns:1fr 1fr;gap:28px;font-size:15px;color:var(--muted)}
+  .pcols h4{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin-bottom:10px}
+  .pcols li{list-style:none;padding-left:20px;position:relative;margin-bottom:8px}
+  .pcols li::before{content:"";position:absolute;left:0;top:10px;width:8px;height:8px;border-radius:50%;background:var(--emerald)}
+
+  /* EXAMPLES */
+  .ex-label{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 14px}
+  .ex-label h3{font-family:var(--serif);font-size:24px;color:var(--forest);font-weight:600}
+  .ex-label span{font-size:13px;color:var(--muted)}
+  .browser{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--white);box-shadow:0 30px 60px -30px rgba(6,78,59,.35)}
+  .bar{height:40px;background:#EFEBE1;display:flex;align-items:center;gap:8px;padding:0 16px}
+  .bar i{width:11px;height:11px;border-radius:50%;background:#D8D1C0;display:block}
+  .bar .url{margin-left:16px;background:var(--white);border-radius:6px;font-size:12px;color:var(--muted);padding:4px 14px}
+  .site{background:var(--cream);padding:28px 48px 56px}
+  .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:64px}
+  .nav .links{display:flex;gap:28px;font-size:14px;color:var(--muted);align-items:center}
+  .btn{display:inline-block;border-radius:999px;font-weight:600;font-size:15px;padding:13px 24px;text-decoration:none}
+  .btn-p{background:var(--forest);color:var(--cream)}
+  .btn-s{color:var(--forest);border:1.5px solid var(--forest);background:transparent}
+  .btn-sm{padding:9px 18px;font-size:13px}
+  .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--line);border-radius:999px;font-size:13px;padding:6px 14px;color:var(--forest);margin-bottom:22px}
+  .pill i{width:8px;height:8px;border-radius:50%;background:var(--gold);display:block}
+  .hero h1{font-family:var(--serif);font-size:52px;line-height:1.05;letter-spacing:-.02em;color:var(--forest);font-weight:600;margin-bottom:20px}
+  .hero h1 span{color:var(--emerald)}
+  .hero p{color:var(--muted);font-size:17px;margin-bottom:30px;max-width:460px}
+  .hero .ctas{display:flex;gap:12px;align-items:center}
+  .hero .note{font-size:13px;color:var(--muted);margin-top:16px}
+  .dash{background:var(--white);border-radius:18px;border:1px solid var(--line);padding:24px;box-shadow:0 20px 40px -24px rgba(6,78,59,.3)}
+  .dash .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .kpi{background:var(--cream);border-radius:12px;padding:12px 14px}
+  .kpi small{font-size:11px;color:var(--muted);display:block}
+  .kpi b{font-family:var(--serif);font-size:22px;color:var(--forest)}
+  .kpi em{font-style:normal;font-size:11px;font-weight:600;display:block}
+  .up{color:var(--emerald)} .down{color:#B7791F}
+  .risk h5{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .rrow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+  .rrow .who{display:flex;align-items:center;gap:10px}
+  .rrow .ini{width:28px;height:28px;border-radius:50%;background:var(--cream);font-size:11px;font-weight:700;color:var(--forest);display:flex;align-items:center;justify-content:center}
+  .meter{width:90px;height:6px;background:#EFEBE1;border-radius:6px;overflow:hidden}
+  .meter i{display:block;height:100%;background:var(--gold)}
+  .meter i.hi{background:#D97706}
+
+  .mail{max-width:640px;margin:0 auto;background:var(--white);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(6,78,59,.35)}
+  .mail-head{padding:18px 28px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .mail-head b{color:var(--ink);font-weight:600}
+  .mail-top{background:var(--forest);padding:28px 36px;display:flex;align-items:center;justify-content:space-between}
+  .mail-body{padding:36px}
+  .mail-body h3{font-family:var(--serif);font-size:30px;line-height:1.2;color:var(--forest);font-weight:600;margin-bottom:14px}
+  .mail-body p{color:var(--muted);font-size:15px;margin-bottom:18px}
+  .insight{border-left:4px solid var(--gold);background:var(--cream);border-radius:0 12px 12px 0;padding:18px 20px;margin:20px 0;font-size:14px}
+  .insight b{color:var(--forest)}
+  .insight .tagx{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#B7791F;font-weight:700;display:block;margin-bottom:6px}
+  .mail-foot{padding:18px 36px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);background:#FCFBF8}
+
+  footer{background:var(--forest);color:rgba(250,247,240,.6);padding:40px 0;font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--forest);color:var(--cream);
+    padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:transform .25s ease,opacity .25s ease}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+  @media (max-width:900px){
+    .logo-grid,.palette,.type-grid,.voice,.tag-row,.persona,.hero,.rules,.pcols{grid-template-columns:1fr}
+    .cover h1{font-size:52px} .wrap{padding:0 22px} .site{padding:24px} .nav .links a.hide{display:none}
+    .type-card .sample{font-size:72px} .tag-hero{padding:36px} .tag-hero .q{font-size:28px}
+  }
+  @media print{ section{break-inside:avoid} .toast{display:none} }
+</style>
+</head>
+<body>
+
+<!-- Monogramme réutilisable -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mono" viewBox="0 0 120 120">
+      <rect width="120" height="120" rx="30" fill="#064E3B"/>
+      <path d="M93 37 A40 40 0 1 0 93 83" fill="none" stroke="#10B981" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="93" cy="37" r="6.5" fill="#F5B700"/>
+      <text x="60" y="73" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="38" fill="#FAF7F0" letter-spacing="-1">SC</text>
+    </symbol>
+    <symbol id="mono-inv" viewBox="0 0 120 120">
+      <rect width="120" height="120" rx="30" fill="#FAF7F0"/>
+      <path d="M93 37 A40 40 0 1 0 93 83" fill="none" stroke="#10B981" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="93" cy="37" r="6.5" fill="#F5B700"/>
+      <text x="60" y="73" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="38" fill="#064E3B" letter-spacing="-1">SC</text>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- COVER -->
+<header class="cover">
+  <div class="wrap">
+    <div class="lockup" style="margin-bottom:56px">
+      <svg width="52" height="52"><use href="#mono-inv"/></svg>
+      <div class="wordmark" style="font-size:28px;color:var(--cream)">Saas<span>Clair</span></div>
+    </div>
+    <div class="eyebrow">Brand Kit · Version 1.0</div>
+    <h1>Captez plus de clients.<br><em>Gardez-les plus longtemps.</em></h1>
+    <p>Les fondations visuelles et verbales de SaasClair : l'outil qui révèle d'où viennent vos clients, pourquoi ils n'achètent pas et qui va partir.</p>
+    <div class="meta">
+      <div><b>Logo</b>Monogramme SC</div>
+      <div><b>Palette</b>4 couleurs</div>
+      <div><b>Typographies</b>Fraunces · Inter</div>
+      <div><b>Ton</b>Clair · Direct · Rassurant</div>
+    </div>
+  </div>
+</header>
+
+<!-- 01 LOGO -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">01</span>Logo</div>
+    <h2>Un monogramme qui boucle</h2>
+    <p class="lead">Les initiales SC entourées d'une boucle émeraude : le client qu'on capte et qu'on garde. Le point doré marque le moment d'alerte, celui où l'on sait qu'un client va partir. <em>Logo provisoire, à confier à un designer pour la version finale.</em></p>
+
+    <div class="logo-grid">
+      <div class="tile t-white">
+        <div class="center"><div class="lockup">
+          <svg width="88" height="88"><use href="#mono"/></svg>
+          <div class="wordmark" style="font-size:52px">Saas<span>Clair</span></div>
+        </div></div>
+        <div class="cap">Logo principal — sur fond clair</div>
+      </div>
+      <div class="tile dark">
+        <div class="center"><div class="lockup">
+          <svg width="64" height="64"><use href="#mono-inv"/></svg>
+          <div class="wordmark" style="font-size:34px">Saas<span>Clair</span></div>
+        </div></div>
+        <div class="cap">Version inversée — sur fond vert forêt</div>
+      </div>
+      <div class="tile t-cream">
+        <div class="center" style="gap:18px">
+          <svg width="96" height="96"><use href="#mono"/></svg>
+          <svg width="48" height="48"><use href="#mono"/></svg>
+          <svg width="24" height="24"><use href="#mono"/></svg>
+        </div>
+        <div class="cap">Monogramme seul — icône d'app, favicon, avatar</div>
+      </div>
+    </div>
+    <div class="rules">
+      <div class="rule"><b>Zone de protection</b>Laisser autour du logo un espace vide au moins égal à la hauteur du point doré × 2.</div>
+      <div class="rule"><b>Taille minimale</b>24 px pour le monogramme seul, 120 px de large pour le logo complet.</div>
+      <div class="rule"><b>À éviter</b>Déformer, changer les couleurs, ajouter une ombre ou poser le logo sur une photo chargée.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 PALETTE -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">02</span>Couleurs</div>
+    <h2>Une palette de confiance et de croissance</h2>
+    <p class="lead">Le vert forêt inspire la solidité, l'émeraude la croissance, l'or attire l'œil sur l'essentiel : le revenu en jeu. Le crème apporte la chaleur d'un outil humain. Cliquez sur un code pour le copier.</p>
+
+    <div class="palette">
+      <div class="swatch">
+        <div class="chip" style="background:#064E3B;color:#FAF7F0">Forêt</div>
+        <div class="info"><div class="name">Vert forêt</div><span class="hex">#064E3B</span>
+          <div class="role">Couleur principale. Titres, boutons, fonds de marque, logo.</div></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#10B981;color:#064E3B">Émeraude</div>
+        <div class="info"><div class="name">Émeraude</div><span class="hex">#10B981</span>
+          <div class="role">Croissance et rétention. Hausses, graphiques, mots-clés. Pas pour le texte courant sur fond clair.</div></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#F5B700;color:#064E3B">Or</div>
+        <div class="info"><div class="name">Or</div><span class="hex">#F5B700</span>
+          <div class="role">Alerte et attention. Risques de churn, surlignages. Toujours en petite touche.</div></div>
+      </div>
+      <div class="swatch">
+        <div class="chip" style="background:#FAF7F0;color:#064E3B;border-bottom:1px solid var(--line)">Crème</div>
+        <div class="info"><div class="name">Crème</div><span class="hex">#FAF7F0</span>
+          <div class="role">Fond principal des pages et des emails. Remplace le blanc pur.</div></div>
+      </div>
+    </div>
+
+    <div class="ratio">
+      <div style="flex:55;background:#FAF7F0;border:1px solid var(--line);border-right:none;border-radius:999px 0 0 999px"></div>
+      <div style="flex:30;background:#064E3B"></div>
+      <div style="flex:10;background:#10B981"></div>
+      <div style="flex:5;background:#F5B700"></div>
+    </div>
+    <div class="ratio-legend"><span style="--c:#FAF7F0">Crème 55 %</span><span style="--c:#064E3B">Forêt 30 %</span><span style="--c:#10B981">Émeraude 10 %</span><span style="--c:#F5B700">Or 5 %</span><span style="margin-left:auto">Proportions recommandées sur une page</span></div>
+  </div>
+</section>
+
+<!-- 03 TYPO -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">03</span>Typographies</div>
+    <h2>Un duo élégant et lisible</h2>
+    <p class="lead">Deux polices gratuites de Google Fonts : une serif pleine de caractère pour les titres, une sans-serif ultra-lisible pour l'interface et les chiffres.</p>
+
+    <div class="type-grid">
+      <div class="type-card">
+        <div class="fname">Fraunces</div>
+        <div class="use">Titres, accroches, grands chiffres. Donne une touche premium et humaine, rare dans l'univers SaaS.</div>
+        <div class="sample" style="font-family:var(--serif);font-weight:600">Aa</div>
+        <div class="weights"><span>Regular 400</span><span>Semibold 600</span><span>Bold 700</span></div>
+      </div>
+      <div class="type-card">
+        <div class="fname">Inter</div>
+        <div class="use">Texte courant, interface, tableaux de bord. Conçue pour l'écran, avec des chiffres alignés parfaits pour les données.</div>
+        <div class="sample" style="font-family:var(--sans);font-weight:600">Aa</div>
+        <div class="weights"><span>Regular 400</span><span>Medium 500</span><span>Semibold 600</span><span>Bold 700</span></div>
+      </div>
+    </div>
+
+    <div class="scale">
+      <div class="scale-row"><span class="lbl">H1 · Fraunces 600 · 56</span><span style="font-family:var(--serif);font-size:48px;font-weight:600;color:var(--forest);line-height:1.1">Qui va partir ce mois-ci ?</span></div>
+      <div class="scale-row"><span class="lbl">H2 · Fraunces 600 · 32</span><span style="font-family:var(--serif);font-size:30px;font-weight:600;color:var(--forest)">Vos clients à risque, en un coup d'œil</span></div>
+      <div class="scale-row"><span class="lbl">Texte · Inter 400 · 16</span><span style="font-size:16px;color:var(--muted)">SaasClair relie chaque visiteur à son paiement pour vous montrer quels canaux rapportent vraiment.</span></div>
+      <div class="scale-row"><span class="lbl">Chiffre · Fraunces 600</span><span style="font-family:var(--serif);font-size:40px;font-weight:600;color:var(--emerald)">25 000 €<span style="font-size:16px;color:var(--muted);font-family:var(--sans);font-weight:500"> MRR</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 VOICE -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">04</span>Ton de voix</div>
+    <h2>Clair. Direct. Rassurant.</h2>
+    <p class="lead">Trois mots qui traduisent la promesse « capte et retient » : on parle comme un associé lucide qui a déjà regardé les chiffres pour vous.</p>
+
+    <div class="voice">
+      <div class="vcard">
+        <div class="idx">01</div><h3>Clair</h3>
+        <p>Pas de jargon d'analyste. On parle clients, euros et décisions, jamais « événements » ou « segments ».</p>
+        <div class="do"><b>Oui</b>3 clients risquent de partir cette semaine.</div>
+        <div class="dont"><b>Non</b>Le score de propension au churn de la cohorte a augmenté.</div>
+      </div>
+      <div class="vcard">
+        <div class="idx">02</div><h3>Direct</h3>
+        <p>Phrases courtes, chiffre d'abord, action ensuite. On va droit à ce qui coûte ou rapporte de l'argent.</p>
+        <div class="do"><b>Oui</b>Instagram vous coûte 40 % de vos inscriptions. Voici pourquoi.</div>
+        <div class="dont"><b>Non</b>Nous avons remarqué certaines tendances intéressantes dans vos données.</div>
+      </div>
+      <div class="vcard">
+        <div class="idx">03</div><h3>Rassurant</h3>
+        <p>Le churn fait peur. On ne dramatise pas : on montre que c'est mesurable, prévisible et réparable.</p>
+        <div class="do"><b>Oui</b>Bonne nouvelle : vous avez encore 10 jours pour les retenir.</div>
+        <div class="dont"><b>Non</b>Alerte critique ! Votre revenu est en danger !</div>
+      </div>
+    </div>
+    <div class="anchor">
+      <div class="k">Capte et retient</div>
+      <p>Chaque message doit soit aider à capter un client (acquisition, conversion), soit aider à le retenir (rétention, churn). S'il ne fait ni l'un ni l'autre, on le coupe.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 TAGLINE -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">05</span>Tagline et messages</div>
+    <h2>Ce que l'on dit de nous</h2>
+    <p class="lead">Une proposition de valeur complète pour les pages de vente, et des variantes courtes pour les titres.</p>
+
+    <div class="tag-hero">
+      <div class="lbl">Proposition de valeur</div>
+      <div class="q">Deux clics, et vous savez enfin d'où viennent vos clients, pourquoi ils n'achètent pas et <mark>qui va partir</mark>, sans rien configurer.</div>
+    </div>
+    <div class="tag-row">
+      <div class="tag-small">
+        <div class="lbl">Variante courte — titre de site</div>
+        <div class="t">Comprenez votre SaaS en <span>5 minutes</span>, pas en 5 semaines.</div>
+      </div>
+      <div class="tag-small alt">
+        <div class="lbl">Signature de marque</div>
+        <div class="t">Captez plus de clients, gardez-les plus longtemps.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 PERSONA -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">06</span>Pour qui on parle</div>
+    <h2>Nadia, notre cliente idéale</h2>
+    <p class="lead">Chaque texte, chaque écran, chaque email est écrit pour elle.</p>
+    <div class="persona">
+      <div class="pcard">
+        <div class="avatar">N</div>
+        <h3>Nadia, 37 ans</h3>
+        <div class="sub">Cofondatrice d'un SaaS B2B</div>
+        <div class="stat"><span>Revenu mensuel</span><b>25 000 €</b></div>
+        <div class="stat"><span>Churn mensuel</span><b class="warn">7 %</b></div>
+        <div class="stat"><span>Revenu perdu / mois</span><b class="warn">≈ 1 750 €</b></div>
+      </div>
+      <div class="pbody">
+        <div class="quote">« Je veux savoir qui va partir <em>avant</em> qu'il parte. »</div>
+        <div class="pcols">
+          <div><h4>Ce qu'elle veut</h4><ul>
+            <li>Repérer les clients à risque assez tôt pour agir</li>
+            <li>Savoir quels canaux amènent des clients qui restent</li>
+            <li>Des réponses, pas des tableaux à décrypter</li></ul></div>
+          <div><h4>Ce qui la freine</h4><ul>
+            <li>Pas de temps pour configurer un outil de plus</li>
+            <li>Données éparpillées entre Stripe et son site</li>
+            <li>Elle découvre les départs une fois l'abonnement résilié</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 EXEMPLES -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow"><span class="num">07</span>La marque en action</div>
+    <h2>Deux exemples d'utilisation</h2>
+    <p class="lead">Comment logo, couleurs, typographies et ton de voix s'assemblent sur des supports réels. Les chiffres affichés sont fictifs.</p>
+
+    <div class="ex-label"><h3>Exemple 1 — Page d'accueil du site</h3><span>Fond crème · titre Fraunces · bouton forêt · touche d'or</span></div>
+    <div class="browser">
+      <div class="bar"><i></i><i></i><i></i><span class="url">saasclair.com</span></div>
+      <div class="site">
+        <div class="nav">
+          <div class="lockup"><svg width="34" height="34"><use href="#mono"/></svg><div class="wordmark" style="font-size:22px">Saas<span>Clair</span></div></div>
+          <div class="links"><a class="hide">Fonctionnalités</a><a class="hide">Tarifs</a><a class="hide">Connexion</a><span class="btn btn-p btn-sm">Essai gratuit</span></div>
+        </div>
+        <div class="hero">
+          <div>
+            <div class="pill"><i></i>Installation en 2 clics, zéro configuration</div>
+            <h1>Comprenez votre SaaS en <span>5 minutes</span>, pas en 5 semaines.</h1>
+            <p>Sachez d'où viennent vos clients, pourquoi ils n'achètent pas et qui va partir, avant qu'il ne soit trop tard.</p>
+            <div class="ctas"><span class="btn btn-p">Analyser mon SaaS</span><span class="btn btn-s">Voir une démo</span></div>
+            <div class="note">Gratuit 14 jours · Connexion Stripe en lecture seule</div>
+          </div>
+          <div class="dash">
+            <div class="kpis">
+              <div class="kpi"><small>MRR</small><b>25 400 €</b> <em class="up">+3,1 %</em></div>
+              <div class="kpi"><small>Churn</small><b>5,2 %</b> <em class="up">−1,8 pt</em></div>
+              <div class="kpi"><small>MRR à risque</small><b>1 180 €</b> <em class="down">4 clients</em></div>
+            </div>
+            <div class="risk">
+              <h5>Clients à risque cette semaine</h5>
+              <div class="rrow"><div class="who"><span class="ini">LB</span>Lumbr Studio</div><div class="meter"><i class="hi" style="width:86%"></i></div></div>
+              <div class="rrow"><div class="who"><span class="ini">OK</span>Okta Formation</div><div class="meter"><i class="hi" style="width:72%"></i></div></div>
+              <div class="rrow"><div class="who"><span class="ini">VR</span>Verso RH</div><div class="meter"><i style="width:54%"></i></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ex-label" style="margin-top:64px"><h3>Exemple 2 — Email d'alerte hebdomadaire</h3><span>Ton direct et rassurant · or pour l'alerte · émeraude pour l'action</span></div>
+    <div class="mail">
+      <div class="mail-head"><b>SaasClair</b> &lt;insights@saasclair.com&gt; · à Nadia<br>Objet : <b>3 clients risquent de partir. Vous avez 10 jours.</b></div>
+      <div class="mail-top">
+        <div class="lockup"><svg width="34" height="34"><use href="#mono-inv"/></svg><div class="wordmark" style="font-size:22px;color:var(--cream)">Saas<span>Clair</span></div></div>
+        <span style="font-size:12px;color:rgba(250,247,240,.7)">Votre lundi en 2 minutes</span>
+      </div>
+      <div class="mail-body">
+        <h3>Bonjour Nadia, 840 € de revenu mensuel sont en jeu cette semaine.</h3>
+        <p>Trois clients montrent les signaux qui précèdent généralement un départ. Bonne nouvelle : leur renouvellement est dans 10 jours, vous avez le temps d'agir.</p>
+        <div class="insight">
+          <span class="tagx">Pourquoi ils risquent de partir</span>
+          Ils ne se sont pas connectés depuis 18 jours et n'ont jamais utilisé <b>l'export automatique</b>, la fonctionnalité que vos clients fidèles adoptent dès la première semaine.
+        </div>
+        <p><b style="color:var(--forest)">Notre conseil :</b> un email personnel de votre part, avec un lien vers un tutoriel de 2 minutes sur l'export.</p>
+        <span class="btn btn-p" style="background:var(--emerald);color:var(--forest)">Voir les 3 clients</span>
+      </div>
+      <div class="mail-foot">Captez plus de clients, gardez-les plus longtemps. · SaasClair</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="lockup"><svg width="30" height="30"><use href="#mono-inv"/></svg><div class="wordmark" style="font-size:20px;color:var(--cream)">Saas<span>Clair</span></div></div>
+    <span>Brand Kit v1.0 · Octobre 2026</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copié</div>
+<script>
+  document.querySelectorAll('.hex').forEach(function(el){
+    el.title = 'Cliquer pour copier';
+    el.addEventListener('click', function(){
+      var t = el.textContent.trim(), toast = document.getElementById('toast');
+      try { navigator.clipboard.writeText(t); } catch(e) {}
+      toast.textContent = t + ' copié';
+      toast.classList.add('show');
+      setTimeout(function(){ toast.classList.remove('show'); }, 1400);
+    });
+  });
+</script>
+</body>
+</html>
