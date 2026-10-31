@@ -58,7 +58,9 @@ test.describe("super administrateur", () => {
       .getByRole("textbox", { name: /^Réponse/ })
       .fill("Réponse de test, supprimée à la fin du test.");
     await editor.getByRole("button", { name: "Enregistrer" }).click();
-    await expect(page.getByText(question)).toBeVisible();
+    // Repère unique de la question dans la liste (sous charge, l'enregistrement prend un instant).
+    const deleteButton = page.getByRole("button", { name: `Supprimer : ${question}` });
+    await expect(deleteButton).toBeVisible({ timeout: 15_000 });
 
     // Le site se régénère après la modification : sous charge, cela peut prendre un instant.
     await page.goto("/");
@@ -69,8 +71,8 @@ test.describe("super administrateur", () => {
 
     await page.goto("/admin/faq");
     page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: `Supprimer : ${question}` }).click();
-    await expect(page.getByText(question)).toHaveCount(0);
+    await deleteButton.click();
+    await expect(deleteButton).toHaveCount(0, { timeout: 15_000 });
     await page.goto("/");
     await expect(async () => {
       await page.reload();

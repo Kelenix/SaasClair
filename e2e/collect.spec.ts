@@ -61,4 +61,11 @@ test("une vraie visite est détectée puis affichée dans l'acquisition", async 
   await expect(page.getByText("Canal n° 1 : LinkedIn")).toBeVisible();
   await expect(page.getByText("/tarifs", { exact: true })).toBeVisible();
   await expect(page.getByText("lancement", { exact: true })).toBeVisible();
+
+  // L'accueil réunit les sources : la visite y figure, et Stripe y est proposé.
+  await page.goto("/app", { waitUntil: "networkidle" });
+  const home = page.locator("main").filter({ visible: true });
+  await expect(home.getByRole("heading", { name: "Vos visiteurs" })).toBeVisible();
+  await expect(home).toContainText(/1 visiteur sur la période/);
+  await expect(home.getByRole("heading", { name: "Vos revenus" })).toBeVisible();
 });

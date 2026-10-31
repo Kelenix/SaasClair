@@ -5,6 +5,9 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Accueil complet sur les vraies données** : vos revenus (Stripe), vos visiteurs (script) et
+  votre site (analyse : pages clés, référencement, vitesse, technologies). Les sections qui ont
+  des données passent devant ; les autres indiquent l'action à faire. Plus jamais de page vide.
 - **Mise à jour automatique des données Stripe**, chaque heure : nouveaux clients, résiliations
   et paiements échoués apparaissent sans reconnexion. Les écrans gardent leurs chiffres pendant
   la mise à jour.

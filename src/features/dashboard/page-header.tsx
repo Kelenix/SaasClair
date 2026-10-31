@@ -24,10 +24,20 @@ export function PageHeader({
   );
 }
 
-export function SectionTitle({ title, detail }: { title: string; detail?: React.ReactNode }) {
+export function SectionTitle({
+  title,
+  detail,
+  id,
+}: {
+  title: string;
+  detail?: React.ReactNode;
+  id?: string;
+}) {
   return (
     <div className="mt-10 mb-4 flex flex-wrap items-end justify-between gap-2">
-      <h2 className="text-2xl">{title}</h2>
+      <h2 id={id} className="text-2xl">
+        {title}
+      </h2>
       {detail}
     </div>
   );

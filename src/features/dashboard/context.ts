@@ -14,6 +14,8 @@ export type DashboardContext = {
   firstName: string;
   email: string;
   siteUrl: string | null;
+  /** Analyse du site faite à l'étape 0 (pages clés, vitesse, référencement, technologies). */
+  audit: SiteAudit | null;
   isSetupComplete: boolean;
   /** Étapes de la configuration passées ou pas encore faites, rappelées par le bandeau. */
   setupRemaining: ActionStep[];
@@ -53,6 +55,7 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
     firstName: (user.user_metadata.first_name as string | undefined) ?? "",
     email: user.email ?? "",
     siteUrl: project?.site_url ?? null,
+    audit: audit ?? null,
     isSetupComplete: setupRemaining.length === 0,
     setupRemaining,
     checkoutUrl: project?.checkout_url ?? audit?.pages.checkout ?? null,

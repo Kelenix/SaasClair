@@ -4,10 +4,19 @@ import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { SectionTitle } from "@/features/dashboard/page-header";
 import { formatNumber, formatPercent } from "@/lib/format";
 import { STAGGER } from "@/lib/motion";
+import type { Kpi } from "@/features/dashboard/demo-data";
 import type { RealAcquisition, Ranked } from "./aggregate";
 
 /** Classement (canaux, pages, campagnes, sites d'origine) avec barres qui poussent. */
-function RankedCard({ title, rows, empty }: { title: string; rows: Ranked[]; empty: string }) {
+export function RankedCard({
+  title,
+  rows,
+  empty,
+}: {
+  title: string;
+  rows: Ranked[];
+  empty: string;
+}) {
   const top = rows[0]?.visitors || 1;
   return (
     <Card>
@@ -35,51 +44,54 @@ function RankedCard({ title, rows, empty }: { title: string; rows: Ranked[]; emp
   );
 }
 
+/** Indicateurs des vraies visites (écran Acquisition et accueil). */
+export function visitKpis(data: RealAcquisition): Kpi[] {
+  const first = data.channels[0];
+  return [
+    {
+      id: "visitors",
+      label: "Visiteurs uniques",
+      value: data.visitors,
+      format: "number",
+      delta: "sur la période",
+      isGood: null,
+      trend: data.trend,
+    },
+    {
+      id: "pageviews",
+      label: "Pages vues",
+      value: data.pageviews,
+      format: "number",
+      delta: `${(data.pageviews / Math.max(1, data.visitors)).toFixed(1).replace(".", ",")} par visiteur`,
+      isGood: null,
+      trend: data.trend,
+    },
+    {
+      id: "top-channel",
+      label: first ? `Canal n° 1 : ${first.name}` : "Canal n° 1",
+      value: first?.share ?? 0,
+      format: "percent",
+      delta: "des visiteurs",
+      isGood: null,
+      trend: data.trend,
+    },
+    {
+      id: "mobile",
+      label: "Visiteurs sur mobile",
+      value: data.mobileShare,
+      format: "percent",
+      delta: "de vos visiteurs",
+      isGood: null,
+      trend: data.trend,
+    },
+  ];
+}
+
 /** Écran Acquisition sur les vraies visites reçues par le script. */
 export function RealAcquisitionView({ data }: { data: RealAcquisition }) {
-  const first = data.channels[0];
   return (
     <>
-      <KpiCards
-        kpis={[
-          {
-            id: "visitors",
-            label: "Visiteurs uniques",
-            value: data.visitors,
-            format: "number",
-            delta: "sur la période",
-            isGood: null,
-            trend: data.trend,
-          },
-          {
-            id: "pageviews",
-            label: "Pages vues",
-            value: data.pageviews,
-            format: "number",
-            delta: `${(data.pageviews / Math.max(1, data.visitors)).toFixed(1).replace(".", ",")} par visiteur`,
-            isGood: null,
-            trend: data.trend,
-          },
-          {
-            id: "top-channel",
-            label: first ? `Canal n° 1 : ${first.name}` : "Canal n° 1",
-            value: first?.share ?? 0,
-            format: "percent",
-            delta: "des visiteurs",
-            isGood: null,
-            trend: data.trend,
-          },
-          {
-            id: "mobile",
-            label: "Visiteurs sur mobile",
-            value: data.mobileShare,
-            format: "percent",
-            delta: "de vos visiteurs",
-            isGood: null,
-            trend: data.trend,
-          },
-        ]}
-      />
+      <KpiCards kpis={visitKpis(data)} />
 
       <SectionTitle
         title="D'où viennent vos visiteurs"
