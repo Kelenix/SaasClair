@@ -120,6 +120,7 @@ export function SetupFlow({ initial }: { initial: SetupState }) {
             {state.step === "stripe" && (
               <StepStripe
                 available={state.stripeAvailable}
+                readOnly={state.stripeReadOnly}
                 demo={state.demo}
                 result={state.stripeResult}
                 onDone={() => complete("stripe")}

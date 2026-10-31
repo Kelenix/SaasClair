@@ -47,7 +47,7 @@ export const SETUP_STEPS = [
   {
     title: "Connectez Stripe",
     duration: "≈ 1 minute",
-    text: "Un clic, en lecture seule. Nous ne pouvons rien modifier sur votre compte.",
+    text: "Un clic. SaasClair ne fait que lire : nous ne modifions jamais rien sur votre compte.",
     done: "Stripe connecté",
   },
   {
@@ -84,7 +84,7 @@ export const PLANS = [
     features: [
       "1 SaaS suivi",
       "Jusqu'à 50 000 visites par mois",
-      "Connexion Stripe en lecture seule",
+      "Connexion Stripe en un clic, lecture uniquement",
       "3 recommandations chaque lundi",
       "Rapport hebdomadaire par email",
     ],

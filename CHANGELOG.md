@@ -20,6 +20,7 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
   automatique sans coupure, sauvegardes de nuit) : `docs/deployment.md`.
 
 ### Modifié
+- **Connexion Stripe en lecture et écriture** (la lecture seule est réservée par Stripe aux extensions) : SaasClair ne fait que lire, et les textes le disent ainsi partout.
 - **Installation du script plus simple** : « une seule fois, dans l’en-tête commun », onglet de la plateforme détectée ouvert d’office (nouvel onglet Next.js), envoi au développeur mis en avant, instructions WordPress avec l’extension gratuite WPCode (l’extension « SaasClair » annoncée n’existait pas). En-tête de la configuration lisible à 360 px, chaque étape s’ouvre en haut de page.
 - **Plus aucune donnée inventée en production** : tableau de bord vide (avec l'étape à faire) tant
   que l'utilisateur n'a pas de données ; plus de notifications, de réponses ni de chiffres

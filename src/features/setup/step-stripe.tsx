@@ -53,13 +53,15 @@ const NEXT_PHASE: Partial<Record<Phase, Phase>> = { importing: "linking", linkin
 type StepStripeProps = {
   /** Stripe configuré sur le serveur : vraie connexion (sinon simulation, en local seulement). */
   available: boolean;
+  /** Autorisation en lecture seule : la promesse « rien modifier » porte alors sur la permission. */
+  readOnly: boolean;
   demo: boolean;
   /** Retour de la page d'autorisation de Stripe (null : première visite de l'étape). */
   result: StripeResult | null;
   onDone: () => void;
 };
 
-export function StepStripe({ available, demo, result, onDone }: StepStripeProps) {
+export function StepStripe({ available, readOnly, demo, result, onDone }: StepStripeProps) {
   const real = available;
   // Retour de Stripe réussi : l'import réel a commencé côté serveur, on suit son avancement.
   const [phase, setPhase] = useState<Phase>(real && result === "ok" ? "importing" : "idle");
@@ -114,7 +116,7 @@ export function StepStripe({ available, demo, result, onDone }: StepStripeProps)
     }
     setPhase("connecting");
     if (real) {
-      // Page d'autorisation de Stripe (lecture seule), puis retour ici.
+      // Page d'autorisation de Stripe, puis retour ici.
       window.location.assign(new URL("/api/stripe/connect", window.location.origin).href);
       return;
     }
@@ -162,7 +164,9 @@ export function StepStripe({ available, demo, result, onDone }: StepStripeProps)
             </Button>
             <p className="flex items-center gap-2 text-sm text-slate">
               <Icon icon={Lock} anim="wiggle" className="size-4 text-emerald-ink" />
-              Accès en lecture seule. Nous ne pouvons rien modifier.
+              {readOnly
+                ? "Accès en lecture seule. Nous ne pouvons rien modifier."
+                : "SaasClair ne fait que lire vos données : nous ne modifions jamais rien."}
             </p>
             <AnimatePresence>
               {notice && (

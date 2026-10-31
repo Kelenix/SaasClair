@@ -135,7 +135,7 @@ export function PrivacyPanel({
           />
         </div>
         <p className="mt-4 text-sm text-slate">
-          L&apos;accès à Stripe est en lecture seule : nous ne pouvons rien modifier sur votre
+          SaasClair ne fait que lire votre compte Stripe : nous ne modifions jamais rien sur votre
           compte.
         </p>
       </Card>

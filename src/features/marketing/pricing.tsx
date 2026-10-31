@@ -36,7 +36,7 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
             Un prix simple. 14 jours pour essayer.
           </h2>
           <p className="text-[17px] text-slate">
-            Le même essai gratuit sur chaque offre. Stripe reste en lecture seule.
+            Le même essai gratuit sur chaque offre. SaasClair ne fait que lire votre Stripe.
           </p>
         </Reveal>
 

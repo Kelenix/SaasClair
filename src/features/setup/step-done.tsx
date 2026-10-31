@@ -66,7 +66,7 @@ export function StepDone({ siteUrl }: { siteUrl: string }) {
   const summary = [
     displaySiteUrl(siteUrl) + " analysé",
     "Script installé",
-    "Stripe connecté en lecture seule",
+    "Stripe connecté, en lecture uniquement",
     "91 % de vos clients reliés à leur provenance",
   ];
 

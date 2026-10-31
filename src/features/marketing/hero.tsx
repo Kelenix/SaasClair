@@ -28,7 +28,7 @@ export function Hero() {
           </p>
           <AnalyzeForm />
           <p className="mt-1 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-slate">
-            Gratuit 14 jours · Connexion Stripe en lecture seule
+            Gratuit 14 jours · Stripe : lecture uniquement
             <Link
               href="#fonctionnalites"
               className="inline-flex items-center gap-1 rounded-md font-semibold text-forest underline-offset-4 hover:underline"

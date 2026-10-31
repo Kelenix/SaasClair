@@ -69,7 +69,7 @@ export async function markScriptDetected(): Promise<Result<null>> {
   return error ? { ok: false, message: SAVE_ERROR } : { ok: true, data: null };
 }
 
-/** Étape 2 : Stripe connecté (lecture seule). Simulé tant que Stripe Connect n'est pas branché. */
+/** Étape 2, sans clés Stripe (poste de développement) : connexion simulée. */
 export async function connectStripe(): Promise<Result<null>> {
   const { supabase, user } = await authenticatedClient();
   const { error } = await supabase

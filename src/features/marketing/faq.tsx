@@ -14,7 +14,7 @@ import { getPublishedFaq } from "@/features/site-content/queries";
 // Les réponses aux inquiétudes les plus courantes, visibles sans ouvrir une question.
 const REASSURANCES = [
   { icon: Clock, title: "5 minutes", detail: "sans développeur" },
-  { icon: Lock, title: "Lecture seule", detail: "sur votre Stripe" },
+  { icon: Lock, title: "Lecture uniquement", detail: "de votre Stripe" },
   { icon: ShieldCheck, title: "Hébergé en UE", detail: "visiteurs anonymisés" },
   { icon: Trash2, title: "Vos données", detail: "supprimables à tout moment" },
 ] as const;

@@ -35,8 +35,8 @@ Le voyant « En attente des premières visites… » passe au vert dès que le s
 
 ## 4. Action 2 — Connecter Stripe
 
-Cliquez sur **Connecter Stripe**. L'accès est **en lecture seule** : nous ne pouvons rien
-modifier. Les clients, paiements et abonnements s'importent, puis SaasClair relie
+Cliquez sur **Connecter Stripe**. SaasClair **ne fait que lire** vos données : nous ne
+modifions jamais rien. Les clients, paiements et abonnements s'importent, puis SaasClair relie
 automatiquement vos visiteurs à vos clients.
 
 ## 5. C'est terminé

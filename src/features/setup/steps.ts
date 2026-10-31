@@ -63,6 +63,8 @@ export type SetupState = {
   demo: boolean;
   /** Stripe configuré sur le serveur (clés présentes) : vraie connexion. */
   stripeAvailable: boolean;
+  /** Autorisation demandée à Stripe en lecture seule (sinon lecture et écriture, ADR-025). */
+  stripeReadOnly: boolean;
   /** Retour de la page d'autorisation de Stripe (?stripe=), sinon null. */
   stripeResult: StripeResult | null;
 };

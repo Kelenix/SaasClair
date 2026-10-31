@@ -144,7 +144,7 @@ export function ProjectPanel({ project, demo }: { project: ProjectInfo; demo: bo
           </StatusRow>
           <StatusRow icon={CreditCard} title="Stripe">
             {project.stripeConnected ? (
-              <Badge tone="growth">Connecté · lecture seule</Badge>
+              <Badge tone="growth">Connecté · lecture uniquement</Badge>
             ) : (
               <Button asChild variant="secondary" size="sm">
                 <a href="/configuration?etape=stripe">Connecter Stripe</a>

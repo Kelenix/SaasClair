@@ -1,12 +1,16 @@
 import "server-only";
 
 // Dialogue avec Stripe (sans SDK : quelques appels REST). La plateforme SaasClair lit le compte
-// de son client grâce à l'en-tête Stripe-Account, après l'autorisation en lecture seule (OAuth
-// Stripe Connect) : aucune clé du client n'est jamais stockée. ADR-024.
+// de son client grâce à l'en-tête Stripe-Account, après son autorisation (OAuth Stripe Connect) :
+// aucune clé du client n'est jamais stockée, et SaasClair ne fait que lire. ADR-024, ADR-025.
+
+/** read_only n'est accordé par Stripe qu'aux extensions (ADR-025) : read_write par défaut. */
+export type StripeScope = "read_only" | "read_write";
 
 export type StripeConfig = {
   secretKey: string;
   clientId: string;
+  scope: StripeScope;
   apiBase: string;
   connectBase: string;
 };
@@ -21,6 +25,7 @@ export function stripeConfig(): StripeConfig | null {
   return {
     secretKey,
     clientId,
+    scope: process.env.STRIPE_OAUTH_SCOPE === "read_only" ? "read_only" : "read_write",
     // Réglables pour les tests (Stripe simulé, /api/stripe-mock) ; jamais en production.
     apiBase: withoutTrailingSlash(process.env.STRIPE_API_BASE ?? "https://api.stripe.com"),
     connectBase: withoutTrailingSlash(
@@ -29,13 +34,13 @@ export function stripeConfig(): StripeConfig | null {
   };
 }
 
-/** Page d'autorisation Stripe : lecture seule, retour vers redirectUri avec `state`. */
+/** Page d'autorisation Stripe, retour vers redirectUri avec `state`. */
 export function authorizeUrl(config: StripeConfig, state: string, redirectUri: string) {
   const url = new URL(`${config.connectBase}/oauth/authorize`);
   url.search = new URLSearchParams({
     response_type: "code",
     client_id: config.clientId,
-    scope: "read_only",
+    scope: config.scope,
     state,
     redirect_uri: redirectUri,
   }).toString();

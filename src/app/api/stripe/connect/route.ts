@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
 import { getUser } from "@/lib/supabase/server";
 
 /**
- * « Connecter Stripe » : départ vers la page d'autorisation de Stripe (lecture seule). Un jeton
+ * « Connecter Stripe » : départ vers la page d'autorisation de Stripe. Un jeton
  * aléatoire, gardé dans un cookie, protège le retour contre les connexions forgées.
  */
 export async function GET() {

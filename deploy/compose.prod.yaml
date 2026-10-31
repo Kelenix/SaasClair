@@ -28,6 +28,8 @@ x-web: &web
     # Connexion Stripe (OAuth Connect, lecture seule) : vide = « la connexion ouvre bientôt ».
     STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
     STRIPE_CONNECT_CLIENT_ID: ${STRIPE_CONNECT_CLIENT_ID:-}
+    # read_write par défaut (read_only : réservé par Stripe aux extensions, ADR-025).
+    STRIPE_OAUTH_SCOPE: ${STRIPE_OAUTH_SCOPE:-read_write}
     NODE_OPTIONS: --max-old-space-size=384
   healthcheck:
     test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]

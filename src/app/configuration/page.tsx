@@ -54,6 +54,7 @@ async function SetupLoader({ searchParams }: { searchParams: SearchParams }) {
     completed: completedSteps(project),
     demo: isDemoMode(),
     stripeAvailable: stripeConfig() !== null,
+    stripeReadOnly: stripeConfig()?.scope === "read_only",
     stripeResult: isStripeResult(params.stripe) ? params.stripe : null,
   };
   return (

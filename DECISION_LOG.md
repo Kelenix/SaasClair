@@ -5,6 +5,19 @@
 
 ---
 
+## ADR-025 — Stripe en lecture et écriture, promesse sur ce que fait SaasClair
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (option recommandée « read_write maintenant, application Stripe plus tard »)
+- **Contexte** : à la première vraie connexion, Stripe a refusé `scope=read_only` : la documentation précise qu'il est réservé aux extensions. Pour une plateforme Connect, seul `read_write` est possible.
+- **Décision** :
+  - Portée réglable par `STRIPE_OAUTH_SCOPE` sur le serveur, `read_write` par défaut. Le code de SaasClair ne fait que lire (aucun appel d'écriture).
+  - Les promesses publiques décrivent ce que fait SaasClair, plus une permission : « SaasClair ne fait que lire, nous ne modifions jamais rien ». Elles ont été corrigées sur le site vitrine, la connexion, les tarifs, les paramètres, la documentation et la FAQ en base (migration, sauf si la réponse a déjà été réécrite). L'étape Stripe reprend « Nous ne pouvons rien modifier » seulement en `read_only`.
+- **Alternatives écartées pour l'instant** : une application Stripe (Stripe Apps) avec des droits de lecture uniquement, la vraie solution durable (développement puis validation par Stripe) ; une clé restreinte collée par le client (contraire à « zéro configuration »).
+- **Conséquences** : la page de Stripe indique que SaasClair demande la lecture et l'écriture, et certains clients prudents peuvent hésiter. L'application Stripe en lecture seule est inscrite à la dette (P1).
+- **Impact** : métier — moyen.
+
 ## ADR-024 — Connexion Stripe réelle, en lecture seule
 
 - **Date** : 2026-10-31

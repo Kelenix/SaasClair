@@ -11,7 +11,7 @@ description: Réponses rapides et solutions aux problèmes courants.
 Non. Deux actions : coller une ligne de code et connecter Stripe. Le reste est automatique.
 
 **Pouvez-vous modifier mon compte Stripe ?**
-Non. L'accès est en lecture seule.
+Non. SaasClair ne fait que lire : nous ne créons, ne modifions et ne supprimons jamais rien.
 
 **Combien de temps avant les premiers résultats ?**
 Les chiffres de revenu et de churn apparaissent dès la connexion de Stripe ; les premières

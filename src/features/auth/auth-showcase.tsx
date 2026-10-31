@@ -104,7 +104,7 @@ export function AuthShowcase() {
           Captez plus de clients, <span className="text-emerald">gardez-les plus longtemps.</span>
         </p>
         <p className="mt-3 text-sm text-cream/80">
-          Accès Stripe en lecture seule · Données hébergées en Europe
+          Stripe : lecture uniquement · Données hébergées en Europe
         </p>
       </div>
     </aside>

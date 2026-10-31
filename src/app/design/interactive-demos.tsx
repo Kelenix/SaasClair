@@ -280,7 +280,7 @@ const FAQ = [
   ],
   [
     "Mes données sont-elles en sécurité ?",
-    "Oui. Hébergement en Europe, accès Stripe en lecture seule, adresses email chiffrées avant comparaison.",
+    "Oui. Hébergement en Europe, Stripe en lecture uniquement, adresses email chiffrées avant comparaison.",
   ],
   [
     "Combien de temps avant les premiers résultats ?",

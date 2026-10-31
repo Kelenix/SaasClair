@@ -30,7 +30,7 @@ L'utilisateur ne fait que **deux actions** :
 
 1. **Coller une ligne de code** dans son site (environ 2 minutes, sans développeur sur WordPress,
    Webflow ou Shopify).
-2. **Connecter Stripe**, en lecture seule (environ 1 minute).
+2. **Connecter Stripe**, en un clic (environ 1 minute).
 
 Tout le reste est automatique. Quand l'outil a un doute, il pose une question à laquelle on
 répond en un clic.
@@ -47,7 +47,7 @@ répond en un clic.
 
 ## Engagements
 
-- **Accès Stripe en lecture seule** : SaasClair ne peut rien modifier.
+- **Stripe en lecture uniquement** : SaasClair ne fait que lire, et ne modifie jamais rien.
 - **Données hébergées en Europe**, visiteurs anonymisés par défaut, suppression à tout moment.
 - **Accessible** : contrastes, navigation au clavier et lecteurs d'écran vérifiés (WCAG 2.1 AA).
 - **Responsive** : utilisable dès 360 pixels de large, sur téléphone, tablette et ordinateur.
