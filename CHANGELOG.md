@@ -4,10 +4,14 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Modifié
+- **Nouveaux prix** : Starter 9,99 €, Growth 19,99 €, Pro 29,90 € HT par mois (−20 % en annuel).
+  L'offre Pro se paie en ligne comme les autres : plus de « sur devis ». Essai gratuit de 7 jours.
+
 ### Ajouté
 - **Paiement des abonnements** (Stripe Checkout) : Starter et Growth, mensuel ou annuel (−20 %),
   TVA calculée automatiquement, carte, SEPA et PayPal ; portail client pour changer d'offre ou de
-  carte, télécharger ses factures ou résilier. Essai de 14 jours sans carte, puis écran de choix
+  carte, télécharger ses factures ou résilier. Essai sans carte, puis écran de choix
   d'offre (données conservées). Prix affichés hors taxes.
 - **Politique de confidentialité** (`/confidentialite`), liée depuis le pied de page et le plan du
   site : données traitées, cookies, hébergement à Francfort, prestataires, durées, droits.

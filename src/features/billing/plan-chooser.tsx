@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Check, Mail } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { PLANS } from "@/features/marketing/content";
 import { formatEuroExact } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { openPortal, startCheckout } from "./actions";
-import { annualTotal, MONTHLY_PRICE, isPaidPlan, type Interval } from "./plans";
+import { annualMonthly, annualTotal, MONTHLY_PRICE, type Interval } from "./plans";
 
 /** Ouvre la page Stripe renvoyée par l'action (paiement ou portail), sinon explique pourquoi. */
 export function useStripeRedirect() {
@@ -37,7 +37,7 @@ export function PortalButton({ variant = "secondary" }: { variant?: "secondary" 
 }
 
 /** Choix de l'offre : mensuel ou annuel (−20 %), puis la page de paiement Stripe. */
-export function PlanChooser({ contactEmail }: { contactEmail?: string | null }) {
+export function PlanChooser() {
   const [interval, setInterval] = useState<Interval>("monthly");
   const { isPending, go } = useStripeRedirect();
 
@@ -60,7 +60,6 @@ export function PlanChooser({ contactEmail }: { contactEmail?: string | null }) 
       </div>
       <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-3">
         {PLANS.map((plan) => {
-          const paid = isPaidPlan(plan.id) ? plan.id : null;
           const isRecommended = "isRecommended" in plan && plan.isRecommended;
           return (
             <Card
@@ -72,24 +71,18 @@ export function PlanChooser({ contactEmail }: { contactEmail?: string | null }) 
                 {isRecommended && <Badge tone="attention">Le plus choisi</Badge>}
               </div>
               <p className="mb-4 text-sm text-slate">{plan.pitch}</p>
-              {paid ? (
-                <p className="mb-1 text-ink">
-                  <span className="font-serif text-3xl font-semibold text-forest">
-                    {formatEuroExact(
-                      interval === "annual" ? annualTotal(paid) / 12 : MONTHLY_PRICE[paid],
-                    )}
-                  </span>{" "}
-                  <span className="text-sm text-slate">HT / mois</span>
-                </p>
-              ) : (
-                <p className="mb-1 font-serif text-3xl font-semibold text-forest">Sur devis</p>
-              )}
+              <p className="mb-1 text-ink">
+                <span className="font-serif text-3xl font-semibold text-forest">
+                  {formatEuroExact(
+                    interval === "annual" ? annualMonthly(plan.id) : MONTHLY_PRICE[plan.id],
+                  )}
+                </span>{" "}
+                <span className="text-sm text-slate">HT / mois</span>
+              </p>
               <p className="mb-4 min-h-5 text-xs text-slate">
-                {paid && interval === "annual"
-                  ? `${formatEuroExact(annualTotal(paid))} HT facturés une fois par an`
-                  : paid
-                    ? "Facturé chaque mois"
-                    : "Selon votre volume"}
+                {interval === "annual"
+                  ? `${formatEuroExact(annualTotal(plan.id))} HT facturés une fois par an`
+                  : "Facturé chaque mois"}
               </p>
               <ul className="mb-5 space-y-2 text-sm text-ink">
                 {plan.features.map((feature) => (
@@ -99,26 +92,14 @@ export function PlanChooser({ contactEmail }: { contactEmail?: string | null }) 
                   </li>
                 ))}
               </ul>
-              <div className="mt-auto">
-                {paid ? (
-                  <Button
-                    className="w-full"
-                    variant={isRecommended ? "positive" : "primary"}
-                    disabled={isPending}
-                    onClick={() => go(() => startCheckout(paid, interval))}
-                  >
-                    Choisir {plan.name} <Icon icon={ArrowRight} anim="nudge" />
-                  </Button>
-                ) : (
-                  <Button asChild className="w-full" variant="secondary">
-                    <a
-                      href={`mailto:${contactEmail || "contact@saasclair.com"}?subject=Offre%20Pro`}
-                    >
-                      <Icon icon={Mail} anim="bounce" /> Nous contacter
-                    </a>
-                  </Button>
-                )}
-              </div>
+              <Button
+                className="mt-auto w-full"
+                variant={isRecommended ? "positive" : "primary"}
+                disabled={isPending}
+                onClick={() => go(() => startCheckout(plan.id, interval))}
+              >
+                Choisir {plan.name} <Icon icon={ArrowRight} anim="nudge" />
+              </Button>
             </Card>
           );
         })}

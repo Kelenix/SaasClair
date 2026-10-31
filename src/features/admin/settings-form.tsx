@@ -175,7 +175,7 @@ export function SettingsForm({ initial }: { initial: Record<keyof SiteSettingsIn
           name: "contactEmail",
           label: "Email de contact",
           placeholder: "bonjour@saasclair.fr",
-          help: "Utilisé par le bouton « Nous contacter » de l'offre Pro et dans le pied de page.",
+          help: "Affiché dans le pied de page du site.",
         })}
       </Card>
 

@@ -64,13 +64,14 @@ describe("provenance des inscrits", () => {
 
 describe("revenu des abonnements", () => {
   it("ramène l'annuel au mois avec la remise et ignore les essais et résiliés", () => {
-    expect(monthlyRevenue(profile({ plan: "growth" }))).toBe(79);
-    expect(monthlyRevenue(profile({ plan: "growth", billing_interval: "annual" }))).toBe(63);
-    expect(monthlyRevenue(profile({ plan: "pro", custom_monthly_price: 400 }))).toBe(400);
+    expect(monthlyRevenue(profile({ plan: "growth" }))).toBe(19.99);
+    expect(monthlyRevenue(profile({ plan: "growth", billing_interval: "annual" }))).toBe(15.99);
+    expect(monthlyRevenue(profile({ plan: "pro" }))).toBe(29.9);
+    expect(monthlyRevenue(profile({ plan: "pro", billing_interval: "annual" }))).toBe(23.92);
     expect(monthlyRevenue(profile({ plan: "trial", subscription_status: "trialing" }))).toBe(0);
     expect(monthlyRevenue(profile({ subscription_status: "canceled" }))).toBe(0);
     // Un paiement en retard compte encore : l'abonnement n'est pas résilié.
-    expect(monthlyRevenue(profile({ subscription_status: "past_due" }))).toBe(79);
+    expect(monthlyRevenue(profile({ subscription_status: "past_due" }))).toBe(19.99);
   });
 
   it("résume les clients sans compter le super administrateur", () => {
@@ -84,13 +85,13 @@ describe("revenu des abonnements", () => {
           trial_ends_at: daysAgo(-2),
           created_at: daysAgo(12),
         }),
-        profile({ role: "super_admin", plan: "pro", custom_monthly_price: 0 }),
+        profile({ role: "super_admin", plan: "pro" }),
       ],
       NOW,
     );
     expect(summary.total).toBe(3);
     expect(summary.paying).toBe(2);
-    expect(summary.mrr).toBe(29 + 79);
+    expect(summary.mrr).toBeCloseTo(9.99 + 19.99, 2);
     expect(summary.online).toBe(1);
     expect(summary.trialing).toBe(1);
     expect(summary.trialsEndingSoon).toHaveLength(1);

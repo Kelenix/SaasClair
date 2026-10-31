@@ -1,25 +1,30 @@
 // Offres payantes de SaasClair (prix hors taxes : la TVA est calculée par Stripe Tax selon le
 // pays du client, ADR-027) et droits d'accès qui en découlent. Fonctions pures, testées.
 
-export const PAID_PLANS = ["starter", "growth"] as const;
+export const PAID_PLANS = ["starter", "growth", "pro"] as const;
 export type PaidPlan = (typeof PAID_PLANS)[number];
 export type Interval = "monthly" | "annual";
 
 /** Prix mensuels HT, en euros (annuel : −20 %, payé en une fois). */
-export const MONTHLY_PRICE: Record<PaidPlan, number> = { starter: 29, growth: 79 };
+export const MONTHLY_PRICE: Record<PaidPlan, number> = { starter: 9.99, growth: 19.99, pro: 29.9 };
 export const ANNUAL_DISCOUNT = 0.2;
 export const annualTotal = (plan: PaidPlan) =>
   Math.round(MONTHLY_PRICE[plan] * 12 * (1 - ANNUAL_DISCOUNT) * 100) / 100;
+/** Prix mensuel équivalent d'un abonnement annuel (remise comprise, au centime). */
+export const annualMonthly = (plan: PaidPlan) => Math.round((annualTotal(plan) / 12) * 100) / 100;
+
+/** Durée de l'essai gratuit, sans carte (défaut de profiles.trial_ends_at). */
+export const TRIAL_DAYS = 7;
 
 /** Visites suivies par mois, selon l'offre (l'essai donne l'offre Growth). */
-export const VISIT_LIMIT: Record<"trial" | PaidPlan | "pro", number | null> = {
+export const VISIT_LIMIT: Record<"trial" | PaidPlan, number | null> = {
   trial: 200_000,
   starter: 50_000,
   growth: 200_000,
   pro: null,
 };
 
-export const PLAN_LABEL: Record<"trial" | PaidPlan | "pro", string> = {
+export const PLAN_LABEL: Record<"trial" | PaidPlan, string> = {
   trial: "Essai gratuit",
   starter: "Starter",
   growth: "Growth",
@@ -30,7 +35,7 @@ export const PLAN_LABEL: Record<"trial" | PaidPlan | "pro", string> = {
 export const lookupKey = (plan: PaidPlan, interval: Interval) => `saasclair_${plan}_${interval}`;
 
 export function parseLookupKey(key: string | null | undefined) {
-  const match = key?.match(/^saasclair_(starter|growth)_(monthly|annual)$/);
+  const match = key?.match(/^saasclair_(starter|growth|pro)_(monthly|annual)$/);
   return match ? { plan: match[1] as PaidPlan, interval: match[2] as Interval } : null;
 }
 

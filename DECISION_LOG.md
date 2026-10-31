@@ -5,6 +5,25 @@
 
 ---
 
+## ADR-028 — Nouvelle grille : 9,99 € / 19,99 € / 29,90 €, essai de 7 jours
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté (remplace les prix d'ADR-008 et la durée d'essai d'ADR-027)
+- **Décideur** : utilisateur
+- **Décision** : Starter 9,99 €, Growth 19,99 €, Pro 29,90 € HT par mois ; −20 % en annuel
+  (95,90 €, 191,90 €, 287,04 € HT par an). Plus d'offre « sur devis » : Pro se paie en ligne
+  comme les autres (lookup_key `saasclair_pro_{monthly|annual}`). Essai gratuit de **7 jours**,
+  sans carte.
+- **Conséquences** :
+  - Une seule source des prix : `src/features/billing/plans.ts` (`MONTHLY_PRICE`, `TRIAL_DAYS`),
+    reprise par le site, le choix d'offre et l'administration ; `scripts/billing-setup.mjs` crée
+    les 6 prix correspondants dans Stripe.
+  - Le prix négocié de l'offre Pro disparaît de l'administration ; la colonne
+    `custom_monthly_price` reste vide (migration `20261031230000_new_prices.sql`).
+  - Les essais déjà commencés gardent leur date de fin ; seule la valeur par défaut passe à 7 jours.
+  - Un prix Stripe ne se modifie pas : pour changer à nouveau la grille, créer de nouveaux prix,
+    déplacer les `lookup_key` (`transfer_lookup_key`) et archiver les anciens.
+
 ## ADR-027 — Paiement de l'abonnement SaasClair avec Stripe Billing
 
 - **Date** : 2026-10-31
@@ -344,7 +363,7 @@
 ## ADR-008 — Tarifs affichés : 29 € / 79 € / sur devis
 
 - **Date** : 2026-10-29
-- **Statut** : Accepté
+- **Statut** : Remplacé par ADR-028
 - **Décideur** : utilisateur (réponse à Q2)
 - **Contexte** : le .docx §12 ne donne que des fourchettes (Starter 19–29 €, Growth 59–99 €, Pro sur devis).
 - **Décision** : Starter 29 €/mois, Growth 79 €/mois, Pro sur devis ; −20 % en annuel ; essai gratuit de 14 jours.

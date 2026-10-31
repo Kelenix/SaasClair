@@ -16,16 +16,11 @@ import { PeriodSelector } from "@/features/dashboard/period-selector";
 import { QuestionBar } from "@/features/dashboard/question-bar";
 import { Sidebar } from "@/features/dashboard/sidebar";
 import { NotificationsMenu, ProfileMenu } from "@/features/dashboard/topbar-menus";
-import { getPublicSettings } from "@/features/site-content/queries";
 
 export const metadata: Metadata = { title: "Tableau de bord", robots: { index: false } };
 
 async function DashboardShell({ children }: { children: React.ReactNode }) {
-  const [context, period, settings] = await Promise.all([
-    getDashboardContext(),
-    getPeriod(),
-    getPublicSettings(),
-  ]);
+  const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
 
   return (
     <PeriodProvider initial={period}>
@@ -72,7 +67,6 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
               <Paywall
                 trialEnded={context.billing.status === "trialing"}
                 hasStripeCustomer={context.billing.hasStripeCustomer}
-                contactEmail={settings.contactEmail}
               />
             ) : (
               <>

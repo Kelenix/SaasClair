@@ -121,7 +121,7 @@ export function SignInForm() {
       <p className="mt-6 text-center text-sm text-slate">
         Pas encore de compte ?{" "}
         <Link href="/inscription" className={LINK}>
-          Essai gratuit de 14 jours
+          Essai gratuit de 7 jours
         </Link>
       </p>
     </>

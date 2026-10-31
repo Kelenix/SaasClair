@@ -49,7 +49,7 @@ export async function Faq() {
           </ul>
           <Button asChild>
             <Link href="/inscription">
-              Essayer 14 jours gratuitement <Icon icon={ArrowRight} anim="nudge" />
+              Essayer 7 jours gratuitement <Icon icon={ArrowRight} anim="nudge" />
             </Link>
           </Button>
         </Reveal>

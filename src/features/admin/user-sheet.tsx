@@ -30,7 +30,6 @@ import {
   INTERVAL_LABELS,
   PAYMENT_LABELS,
   PLAN_LABELS,
-  PRO_DEFAULT_PRICE,
   STATUS_LABELS,
   type BillingInterval,
   type PaymentMethod,
@@ -76,7 +75,6 @@ function SubscriptionForm({ user }: { user: AdminUserRow }) {
   const [interval, setInterval] = useState<BillingInterval | "">(user.billing_interval ?? "");
   const [method, setMethod] = useState<PaymentMethod | "">(user.payment_method ?? "");
   const [status, setStatus] = useState<SubscriptionStatus>(user.subscription_status);
-  const [price, setPrice] = useState(String(user.custom_monthly_price ?? PRO_DEFAULT_PRICE));
   const [note, setNote] = useState(user.admin_note ?? "");
   const [isPending, startTransition] = useTransition();
   const isTrial = plan === "trial";
@@ -90,7 +88,6 @@ function SubscriptionForm({ user }: { user: AdminUserRow }) {
         billingInterval: isTrial ? null : interval || "monthly",
         paymentMethod: isTrial ? null : method || null,
         status,
-        customMonthlyPrice: plan === "pro" ? Number(price) || 0 : null,
         adminNote: note,
       });
       if (result.ok) toast.success("Abonnement mis à jour.");
@@ -153,19 +150,6 @@ function SubscriptionForm({ user }: { user: AdminUserRow }) {
           ))}
         </NativeSelect>
       </label>
-      {plan === "pro" && (
-        <label className="col-span-2 flex flex-col gap-1.5 text-xs font-semibold text-slate">
-          Prix négocié (€ par mois)
-          <Input
-            type="number"
-            min={0}
-            max={100000}
-            value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            className="h-11"
-          />
-        </label>
-      )}
       <label className="col-span-2 flex flex-col gap-1.5 text-xs font-semibold text-slate">
         Note interne
         <textarea

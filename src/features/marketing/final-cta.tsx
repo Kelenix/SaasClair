@@ -10,7 +10,7 @@ export function FinalCta() {
           className="pointer-events-none absolute -top-48 -right-36 size-[460px] rounded-full border-[60px] border-emerald/15"
         />
         <div className="relative mx-auto flex max-w-2xl flex-col items-center">
-          <p className="eyebrow text-gold!">Essai gratuit de 14 jours</p>
+          <p className="eyebrow text-gold!">Essai gratuit de 7 jours</p>
           <h2 className="mb-4 text-[32px] text-cream sm:text-5xl">
             Captez plus de clients, gardez-les plus longtemps.
           </h2>

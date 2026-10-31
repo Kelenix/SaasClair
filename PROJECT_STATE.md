@@ -45,7 +45,7 @@
 ## Décisions ouvertes / questions à l'utilisateur
 
 - [x] Q1 — Périmètre : produit complet sur données de démo + vraie auth + vrai audit d'URL
-- [x] Q2 — Tarifs : 29 € / 79 € / sur devis, −20 % en annuel
+- [x] Q2 — Tarifs : 9,99 € / 19,99 € / 29,90 € HT, −20 % en annuel, essai 7 jours (ADR-028)
 
 ## Blocages
 

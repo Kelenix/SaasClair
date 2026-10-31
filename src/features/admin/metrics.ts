@@ -1,6 +1,6 @@
 // Calculs de l'espace super administrateur, à partir des profils (fonctions pures, testées).
 
-import { annualMonthlyPrice } from "@/features/marketing/pricing-math";
+import { annualMonthly, MONTHLY_PRICE } from "@/features/billing/plans";
 import { CHANNELS, type Channel } from "@/features/attribution/attribution";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -20,12 +20,6 @@ export const PLAN_LABELS: Record<PlanId, string> = {
   growth: "Growth",
   pro: "Pro",
 };
-export const LIST_PRICES: Record<Exclude<PlanId, "trial" | "pro">, number> = {
-  starter: 29,
-  growth: 79,
-};
-/** Prix Pro par défaut quand aucun prix négocié n'est saisi. */
-export const PRO_DEFAULT_PRICE = 249;
 
 export const STATUS_LABELS: Record<SubscriptionStatus, string> = {
   trialing: "En essai",
@@ -47,16 +41,13 @@ export const INTERVAL_LABELS: Record<BillingInterval, string> = {
 
 /** Revenu mensuel d'un abonnement (annuel ramené au mois, remise de 20 % comprise). */
 export function monthlyRevenue(
-  profile: Pick<
-    AdminProfile,
-    "plan" | "billing_interval" | "custom_monthly_price" | "subscription_status"
-  >,
+  profile: Pick<AdminProfile, "plan" | "billing_interval" | "subscription_status">,
 ) {
   if (!["active", "past_due"].includes(profile.subscription_status)) return 0;
   if (profile.plan === "trial") return 0;
-  if (profile.plan === "pro") return profile.custom_monthly_price ?? PRO_DEFAULT_PRICE;
-  const price = LIST_PRICES[profile.plan];
-  return profile.billing_interval === "annual" ? annualMonthlyPrice(price) : price;
+  return profile.billing_interval === "annual"
+    ? annualMonthly(profile.plan)
+    : MONTHLY_PRICE[profile.plan];
 }
 
 export const isOnline = (profile: Pick<AdminProfile, "last_seen_at">, now: Date) =>

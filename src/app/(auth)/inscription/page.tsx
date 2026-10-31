@@ -5,7 +5,7 @@ import { SignUpForm } from "@/features/auth/forms";
 
 export const metadata: Metadata = {
   title: "Créer un compte",
-  description: "Essai gratuit de 14 jours. Deux actions, et vous savez qui va partir.",
+  description: "Essai gratuit de 7 jours. Deux actions, et vous savez qui va partir.",
   alternates: { canonical: "/inscription" },
 };
 
@@ -14,7 +14,7 @@ export default function SignUpPage() {
     <>
       <AuthHeading
         title="Créez votre compte."
-        subtitle="14 jours gratuits. Deux actions, et votre tableau de bord est prêt."
+        subtitle="7 jours gratuits. Deux actions, et votre tableau de bord est prêt."
       />
       <Suspense fallback={<AuthFormSkeleton />}>
         <SignUpForm />

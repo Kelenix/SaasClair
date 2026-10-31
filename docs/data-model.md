@@ -68,11 +68,11 @@ Créé par le déclencheur `on_auth_user_created` à chaque inscription.
 |---------|------|-------|
 | `id` | uuid | = `auth.users.id`, suppression en cascade |
 | `role` | `user` \| `super_admin` | Modifiable par un super administrateur uniquement |
-| `plan` | `trial` \| `starter` \| `growth` \| `pro` | Prix : 29 €, 79 €, Pro sur devis (`custom_monthly_price`) |
+| `plan` | `trial` \| `starter` \| `growth` \| `pro` | Prix HT : 9,99 €, 19,99 €, 29,90 € par mois (ADR-028) ; `custom_monthly_price` inutilisé |
 | `billing_interval` | `monthly` \| `annual` | Annuel : −20 % |
 | `payment_method` | `card` \| `sepa` \| `paypal` \| `bank_transfer` | Null pendant l'essai |
 | `subscription_status` | `trialing` \| `active` \| `past_due` \| `canceled` \| `suspended` | `suspended` ferme le tableau de bord |
-| `trial_ends_at` | timestamptz | Inscription + 14 jours |
+| `trial_ends_at` | timestamptz | Inscription + 7 jours (ADR-028) |
 | `signup_channel` | 8 canaux | `seo`, `ads`, `linkedin`, `instagram`, `partners`, `email`, `referral`, `direct` |
 | `signup_source` / `_medium` / `_campaign` / `_referrer` / `_landing` | text bornés | Premier contact (UTM, site d'origine, page d'arrivée) |
 | `last_sign_in_at` | timestamptz | Synchronisé depuis `auth.users` |

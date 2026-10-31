@@ -9,11 +9,9 @@ import { PlanChooser, PortalButton } from "./plan-chooser";
 export function Paywall({
   trialEnded,
   hasStripeCustomer,
-  contactEmail,
 }: {
   trialEnded: boolean;
   hasStripeCustomer: boolean;
-  contactEmail: string | null;
 }) {
   return (
     <section aria-labelledby="choix-offre" className="mx-auto max-w-5xl">
@@ -24,7 +22,7 @@ export function Paywall({
         Vos données sont conservées. Choisissez votre offre pour retrouver votre tableau de bord :
         tout revient dès le paiement confirmé.
       </p>
-      <PlanChooser contactEmail={contactEmail} />
+      <PlanChooser />
       {hasStripeCustomer && (
         <p className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate">
           Factures et moyens de paiement : <PortalButton />

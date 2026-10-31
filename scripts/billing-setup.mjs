@@ -1,6 +1,6 @@
 // Installe la facturation de SaasClair dans son compte Stripe (une fois ; relançable sans risque).
-// Crée ce qui manque : produits Starter et Growth, 4 prix HT (TVA à part, Stripe Tax), point de
-// réception des notifications, configuration du portail client. ADR-027.
+// Crée ce qui manque : produits Starter, Growth et Pro, 6 prix HT (TVA à part, Stripe Tax), point de
+// réception des notifications, configuration du portail client. ADR-027, ADR-028.
 //
 // Lancé sur le serveur par deploy/scripts/billing-setup.sh, qui reporte dans le .env les valeurs
 // imprimées « CLÉ=valeur ». Aucune dépendance : appels REST de Stripe.
@@ -45,8 +45,9 @@ async function stripe(method, path, params = {}) {
 }
 
 const PLANS = [
-  { id: "starter", name: "SaasClair Starter", monthly: 2900 },
-  { id: "growth", name: "SaasClair Growth", monthly: 7900 },
+  { id: "starter", name: "SaasClair Starter", monthly: 999 },
+  { id: "growth", name: "SaasClair Growth", monthly: 1999 },
+  { id: "pro", name: "SaasClair Pro", monthly: 2990 },
 ];
 const INTERVALS = [
   { id: "monthly", interval: "month", amount: (monthly) => monthly },

@@ -5,7 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardEyebrow } from "@/components/ui/card";
 import { PaymentReturn } from "@/features/billing/payment-return";
 import { PlanChooser, PortalButton } from "@/features/billing/plan-chooser";
-import { PLAN_LABEL, trialDaysLeft, VISIT_LIMIT, type Access } from "@/features/billing/plans";
+import {
+  PLAN_LABEL,
+  TRIAL_DAYS,
+  trialDaysLeft,
+  VISIT_LIMIT,
+  type Access,
+} from "@/features/billing/plans";
 import type { DashboardContext } from "@/features/dashboard/context";
 import { formatNumber } from "@/lib/format";
 
@@ -24,7 +30,6 @@ type BillingPanelProps = {
   access: Access;
   /** Pages vues reçues ce mois-ci par le script (vraies données). */
   pageviewsThisMonth: number;
-  contactEmail: string | null;
   paymentResult: string | null;
   now: Date;
 };
@@ -34,7 +39,6 @@ export function BillingPanel({
   billing,
   access,
   pageviewsThisMonth,
-  contactEmail,
   paymentResult,
   now,
 }: BillingPanelProps) {
@@ -70,7 +74,10 @@ export function BillingPanel({
                 Il vous reste {daysLeft} jour{daysLeft > 1 ? "s" : ""} d&apos;essai, sans carte
                 bancaire. Choisissez votre offre quand vous voulez.
               </p>
-              <GrowBar share={(Math.max(0, 14 - daysLeft) / 14) * 100} tone="gold" />
+              <GrowBar
+                share={(Math.max(0, TRIAL_DAYS - daysLeft) / TRIAL_DAYS) * 100}
+                tone="gold"
+              />
               <p className="mt-1.5 text-xs text-slate">
                 Fin de l&apos;essai le {longDate(billing.trialEndsAt)}
               </p>
@@ -133,7 +140,7 @@ export function BillingPanel({
 
       {!isPaid && (
         <div className="@container">
-          <PlanChooser contactEmail={contactEmail} />
+          <PlanChooser />
         </div>
       )}
     </div>

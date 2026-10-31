@@ -6,7 +6,6 @@ import { FinalCta } from "@/features/marketing/final-cta";
 import { Hero } from "@/features/marketing/hero";
 import { Pricing } from "@/features/marketing/pricing";
 import { Promises } from "@/features/marketing/promises";
-import { getPublicSettings } from "@/features/site-content/queries";
 import { Testimonials } from "@/features/marketing/testimonials";
 import { TwoClicks } from "@/features/marketing/two-clicks";
 
@@ -24,15 +23,15 @@ const structuredData = {
   inLanguage: "fr",
   description:
     "Deux clics, et vous savez enfin d'où viennent vos clients, pourquoi ils n'achètent pas et qui va partir, sans rien configurer.",
-  offers: PLANS.flatMap((plan) =>
-    plan.monthly
-      ? [{ "@type": "Offer", name: plan.name, price: plan.monthly, priceCurrency: "EUR" }]
-      : [],
-  ),
+  offers: PLANS.map((plan) => ({
+    "@type": "Offer",
+    name: plan.name,
+    price: plan.monthly,
+    priceCurrency: "EUR",
+  })),
 };
 
 export default async function HomePage() {
-  const { contactEmail } = await getPublicSettings();
   return (
     <>
       <script
@@ -45,7 +44,7 @@ export default async function HomePage() {
       <TwoClicks />
       <ChurnSection />
       <Testimonials />
-      <Pricing contactEmail={contactEmail} />
+      <Pricing />
       <Faq />
       <FinalCta />
     </>

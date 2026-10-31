@@ -9,7 +9,6 @@ import { ProjectPanel } from "@/features/dashboard/settings/project-panel";
 import { SettingsTabs } from "@/features/dashboard/settings/settings-tabs";
 import { SETTINGS_TABS, type SettingsTab } from "@/features/dashboard/settings/tabs";
 import { TeamPanel } from "@/features/dashboard/settings/team-panel";
-import { getPublicSettings } from "@/features/site-content/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Paramètres" };
@@ -17,11 +16,7 @@ export const metadata: Metadata = { title: "Paramètres" };
 type Props = { searchParams: Promise<{ onglet?: string; paiement?: string }> };
 
 async function Settings({ searchParams }: Props) {
-  const [context, { onglet, paiement }, settings] = await Promise.all([
-    getDashboardContext(),
-    searchParams,
-    getPublicSettings(),
-  ]);
+  const [context, { onglet, paiement }] = await Promise.all([getDashboardContext(), searchParams]);
   const now = new Date();
   // Usage réel : pages vues reçues ce mois-ci (la RLS ne compte que celles de son propre site).
   const supabase = await createClient();
@@ -64,7 +59,6 @@ async function Settings({ searchParams }: Props) {
               billing={context.billing}
               access={context.access}
               pageviewsThisMonth={pageviewsThisMonth ?? 0}
-              contactEmail={settings.contactEmail}
               paymentResult={paiement ?? null}
               now={now}
             />

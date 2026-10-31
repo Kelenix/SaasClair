@@ -1,5 +1,7 @@
 // Textes du site vitrine (ton : clair, direct, rassurant — aucun jargon).
 
+import { MONTHLY_PRICE } from "@/features/billing/plans";
+
 export const NAV_LINKS = [
   { href: "/#fonctionnalites", label: "Fonctionnalités" },
   { href: "/#tarifs", label: "Tarifs" },
@@ -73,14 +75,12 @@ export const RETENTION_POINTS = [
   },
 ] as const;
 
-export const ANNUAL_DISCOUNT = 0.2;
-
 export const PLANS = [
   {
     id: "starter",
     name: "Starter",
     pitch: "Pour comprendre son SaaS, seul.",
-    monthly: 29,
+    monthly: MONTHLY_PRICE.starter,
     features: [
       "1 SaaS suivi",
       "Jusqu'à 50 000 visites par mois",
@@ -93,7 +93,7 @@ export const PLANS = [
     id: "growth",
     name: "Growth",
     pitch: "Pour une équipe qui veut agir vite.",
-    monthly: 79,
+    monthly: MONTHLY_PRICE.growth,
     isRecommended: true,
     features: [
       "3 SaaS suivis",
@@ -107,7 +107,7 @@ export const PLANS = [
     id: "pro",
     name: "Pro",
     pitch: "Pour les agences et les gros volumes.",
-    monthly: null,
+    monthly: MONTHLY_PRICE.pro,
     features: [
       "SaaS suivis illimités",
       "Rapports pour vos clients",

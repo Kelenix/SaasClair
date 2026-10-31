@@ -30,7 +30,7 @@ Session replay, cartes de chaleur et marque blanche restent exclus du produit (.
 - **Accessibilité** : niveau WCAG 2.2 AA.
 - **Budget services tiers** : 0 € pendant le développement (tout tourne en local sous Docker).
 - **Équipe et rôles** (Paramètres) : affichés avec des données de démo ; un seul projet par compte (.docx F6).
-- **Essai gratuit** : 14 jours (.docx F6).
+- **Essai gratuit** : 7 jours (ADR-028 ; 14 jours dans le .docx F6).
 - **VPS Hostinger, domaine, dépôt GitHub** : non fournis, nécessaires seulement à l'incrément 9.
 - **Pages légales** (mentions, confidentialité, CGU) : gabarits signalés « à faire valider par un juriste ».
 
@@ -93,5 +93,5 @@ Hostinger, domaine, compte GitHub · (plus tard) compte Stripe Connect.
 ## 7. Questions
 
 - ✅ **Q1 — Périmètre** : produit complet sur données de démo + vraie auth + vrai audit d'URL (ADR-002).
-- ✅ **Q2 — Tarifs** : Starter 29 €/mois, Growth 79 €/mois, Pro sur devis, −20 % en annuel (ADR-008).
+- ✅ **Q2 — Tarifs** : Starter 9,99 €, Growth 19,99 €, Pro 29,90 € HT par mois, −20 % en annuel (ADR-028, remplace ADR-008).
 - Ouvert, plus tard (phase 9, non bloquant) : hébergement de Supabase en production (Supabase Cloud UE gratuit ou auto-hébergé sur le VPS), VPS, domaine.

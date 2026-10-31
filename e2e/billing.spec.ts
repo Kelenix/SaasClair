@@ -20,7 +20,7 @@ test("l'offre Growth annuelle se paie et l'abonnement devient actif", async ({ p
   const main = page.locator("main").filter({ visible: true });
   await expect(main).toContainText("Essai gratuit de l'offre Growth");
   await main.getByRole("button", { name: /Annuel/ }).click();
-  await expect(main).toContainText(/758,40\s€ HT facturés une fois par an/);
+  await expect(main).toContainText(/191,90\s€ HT facturés une fois par an/);
   await main.getByRole("button", { name: "Choisir Growth" }).click();
 
   // Retour de Stripe : actif seulement une fois la notification signée reçue.

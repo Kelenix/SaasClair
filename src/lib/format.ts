@@ -36,10 +36,11 @@ export const formatPercent = (value: number, fractionDigits = 1) =>
     }).format(value / 100),
   );
 
-export type NumberFormat = "euro" | "number" | "percent";
+export type NumberFormat = "euro" | "euroExact" | "number" | "percent";
 
 export const formatters: Record<NumberFormat, (value: number) => string> = {
   euro: formatEuro,
+  euroExact: formatEuroExact,
   number: formatNumber,
   percent: (value) => formatPercent(value),
 };

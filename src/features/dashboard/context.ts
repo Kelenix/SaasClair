@@ -27,7 +27,7 @@ export type DashboardContext = {
   scriptDetected: boolean;
   stripeConnected: boolean;
   anonymizeVisitors: boolean;
-  /** Début de l'essai gratuit de 14 jours. */
+  /** Début de l'essai gratuit (7 jours, TRIAL_DAYS). */
   accountCreatedAt: string;
   feedback: Record<string, InsightStatus>;
   isSuperAdmin: boolean;

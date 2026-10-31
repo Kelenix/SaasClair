@@ -1,7 +1,14 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { profileUpdate, verifyStripeSignature } from "./apply";
-import { accessOf, annualTotal, lookupKey, parseLookupKey, trialDaysLeft } from "./plans";
+import {
+  accessOf,
+  annualMonthly,
+  annualTotal,
+  lookupKey,
+  parseLookupKey,
+  trialDaysLeft,
+} from "./plans";
 
 const now = new Date("2026-10-31T12:00:00Z");
 
@@ -16,8 +23,12 @@ describe("offres", () => {
   });
 
   it("annuel : −20 % sur 12 mois", () => {
-    expect(annualTotal("starter")).toBe(278.4);
-    expect(annualTotal("growth")).toBe(758.4);
+    expect(annualTotal("starter")).toBe(95.9);
+    expect(annualTotal("growth")).toBe(191.9);
+    expect(annualTotal("pro")).toBe(287.04);
+    expect(annualMonthly("starter")).toBe(7.99);
+    expect(annualMonthly("pro")).toBe(23.92);
+    expect(parseLookupKey("saasclair_pro_annual")).toEqual({ plan: "pro", interval: "annual" });
   });
 });
 

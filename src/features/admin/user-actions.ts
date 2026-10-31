@@ -17,7 +17,6 @@ const subscriptionSchema = z.object({
   billingInterval: z.enum(["monthly", "annual"]).nullable(),
   paymentMethod: z.enum(["card", "sepa", "paypal", "bank_transfer"]).nullable(),
   status: z.enum(["trialing", "active", "past_due", "canceled", "suspended"]),
-  customMonthlyPrice: z.number().int().min(0).max(100000).nullable(),
   adminNote: z.string().trim().max(1000),
 });
 
@@ -37,7 +36,7 @@ export async function updateSubscription(input: unknown): Promise<Result> {
       billing_interval: isTrial ? null : data.billingInterval,
       payment_method: isTrial ? null : data.paymentMethod,
       subscription_status: data.status,
-      custom_monthly_price: data.plan === "pro" ? data.customMonthlyPrice : null,
+      custom_monthly_price: null,
       admin_note: data.adminNote || null,
     })
     .eq("id", data.userId);

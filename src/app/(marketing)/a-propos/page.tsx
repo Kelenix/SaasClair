@@ -40,7 +40,7 @@ export default async function AboutPage() {
       <div className="mt-10">
         <Button asChild size="lg">
           <Link href="/inscription">
-            Essayer 14 jours gratuitement <Icon icon={ArrowRight} anim="nudge" />
+            Essayer 7 jours gratuitement <Icon icon={ArrowRight} anim="nudge" />
           </Link>
         </Button>
       </div>

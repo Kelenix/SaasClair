@@ -12,9 +12,8 @@ import { Button } from "@/components/ui/button";
 import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { PLANS } from "./content";
-import { annualTotal, isPaidPlan } from "@/features/billing/plans";
+import { annualMonthly, annualTotal, TRIAL_DAYS } from "@/features/billing/plans";
 import { formatEuroExact } from "@/lib/format";
-import { annualMonthlyPrice } from "./pricing-math";
 
 type Billing = "monthly" | "annual";
 
@@ -23,8 +22,7 @@ const BILLING_OPTIONS: { id: Billing; label: string }[] = [
   { id: "annual", label: "Annuel" },
 ];
 
-/** `contactEmail` : réglé dans l'espace administrateur ; sans lui, l'offre Pro renvoie à l'essai. */
-export function Pricing({ contactEmail }: { contactEmail: string | null }) {
+export function Pricing() {
   const [billing, setBilling] = useState<Billing>("monthly");
   const isAnnual = billing === "annual";
 
@@ -34,7 +32,7 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
         <Reveal className="mx-auto mb-8 max-w-2xl text-center">
           <p className="eyebrow">Tarifs</p>
           <h2 className="mb-4 text-[32px] sm:text-[40px]">
-            Un prix simple. 14 jours pour essayer.
+            Un prix simple. {TRIAL_DAYS} jours pour essayer.
           </h2>
           <p className="text-[17px] text-slate">
             Le même essai gratuit sur chaque offre, sans carte bancaire. Prix hors taxes : la TVA
@@ -79,8 +77,7 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
         <Cascade className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-3">
           {PLANS.map((plan) => {
             const isRecommended = "isRecommended" in plan && plan.isRecommended;
-            const price =
-              plan.monthly && (isAnnual ? annualMonthlyPrice(plan.monthly) : plan.monthly);
+            const price = isAnnual ? annualMonthly(plan.id) : plan.monthly;
             return (
               <CascadeItem key={plan.id} className="h-full">
                 <div
@@ -110,30 +107,17 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
                   </p>
 
                   <div className="mb-1 flex items-baseline gap-1.5">
-                    {price ? (
-                      <>
-                        <AnimatedNumber
-                          value={price}
-                          format="euro"
-                          className={cn(
-                            "font-serif text-5xl font-semibold",
-                            isRecommended ? "text-cream" : "text-forest",
-                          )}
-                        />
-                        <span className={isRecommended ? "text-cream/70" : "text-slate"}>
-                          HT / mois
-                        </span>
-                      </>
-                    ) : (
-                      <span
-                        className={cn(
-                          "font-serif text-5xl font-semibold",
-                          isRecommended ? "text-cream" : "text-forest",
-                        )}
-                      >
-                        Sur devis
-                      </span>
-                    )}
+                    <AnimatedNumber
+                      value={price}
+                      format="euroExact"
+                      className={cn(
+                        "font-serif text-5xl font-semibold",
+                        isRecommended ? "text-cream" : "text-forest",
+                      )}
+                    />
+                    <span className={isRecommended ? "text-cream/70" : "text-slate"}>
+                      HT / mois
+                    </span>
                   </div>
                   <p
                     className={cn(
@@ -141,11 +125,9 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
                       isRecommended ? "text-cream/70" : "text-slate",
                     )}
                   >
-                    {price && isAnnual && isPaidPlan(plan.id)
+                    {isAnnual
                       ? `Soit ${formatEuroExact(annualTotal(plan.id))} HT facturés une fois par an`
-                      : price
-                        ? "Facturé chaque mois"
-                        : "Selon votre volume"}
+                      : "Facturé chaque mois"}
                   </p>
 
                   <ul className="mb-8 space-y-3">
@@ -169,16 +151,8 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
                     variant={isRecommended ? "positive" : "secondary"}
                     className="mt-auto w-full"
                   >
-                    <Link
-                      href={
-                        plan.monthly
-                          ? `/inscription?offre=${plan.id}`
-                          : contactEmail
-                            ? `mailto:${contactEmail}?subject=${encodeURIComponent("Offre Pro SaasClair")}`
-                            : "/inscription?offre=pro"
-                      }
-                    >
-                      {plan.monthly ? "Commencer l'essai gratuit" : "Nous contacter"}
+                    <Link href={`/inscription?offre=${plan.id}`}>
+                      Commencer l&apos;essai gratuit
                     </Link>
                   </Button>
                 </div>

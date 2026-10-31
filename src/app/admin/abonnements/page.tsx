@@ -9,11 +9,9 @@ import { AdminHeader } from "@/features/admin/admin-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
 import {
   INTERVAL_LABELS,
-  LIST_PRICES,
   monthlyRevenue,
   PAYMENT_LABELS,
   PLAN_LABELS,
-  PRO_DEFAULT_PRICE,
   summarize,
   type AdminProfile,
   type PaymentMethod,
@@ -23,8 +21,8 @@ import { getAdminProfiles } from "@/features/admin/queries";
 import { StatusBadge } from "@/features/admin/user-format";
 import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { SectionTitle } from "@/features/dashboard/page-header";
-import { annualMonthlyPrice } from "@/features/marketing/pricing-math";
-import { formatEuro } from "@/lib/format";
+import { annualMonthly, MONTHLY_PRICE } from "@/features/billing/plans";
+import { formatEuro, formatEuroExact } from "@/lib/format";
 import { STAGGER } from "@/lib/motion";
 
 export const metadata: Metadata = { title: "Abonnements" };
@@ -85,10 +83,7 @@ async function AdminSubscriptions() {
     const group = billed.filter((profile) => profile.plan === plan);
     return {
       plan,
-      price:
-        plan === "pro"
-          ? `sur devis (${formatEuro(PRO_DEFAULT_PRICE)} par défaut)`
-          : `${formatEuro(LIST_PRICES[plan])} · ${formatEuro(annualMonthlyPrice(LIST_PRICES[plan]))} en annuel`,
+      price: `${formatEuroExact(MONTHLY_PRICE[plan])} · ${formatEuroExact(annualMonthly(plan))} en annuel`,
       monthly: group.filter((profile) => profile.billing_interval !== "annual").length,
       annual: group.filter((profile) => profile.billing_interval === "annual").length,
       mrr: group.reduce((sum, profile) => sum + monthlyRevenue(profile), 0),
