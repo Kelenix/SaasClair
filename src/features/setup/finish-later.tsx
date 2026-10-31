@@ -18,6 +18,7 @@ export function FinishLater() {
       variant="ghost"
       size="sm"
       disabled={isPending}
+      aria-label="Terminer plus tard"
       data-icon-trigger
       onClick={() =>
         startTransition(async () => {
@@ -27,7 +28,9 @@ export function FinishLater() {
         })
       }
     >
-      <Icon icon={Clock} anim="tilt" /> Terminer plus tard
+      <Icon icon={Clock} anim="tilt" />
+      <span className="sm:hidden">Plus tard</span>
+      <span className="hidden sm:inline">Terminer plus tard</span>
     </Button>
   );
 }

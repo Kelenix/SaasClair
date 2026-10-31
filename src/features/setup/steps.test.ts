@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { platformFor, PLATFORMS } from "./platforms";
 import { nextStep, remainingSteps, scriptSnippet, stepOf } from "./steps";
 
 const project = (script: string | null, stripe: string | null) => ({
@@ -48,5 +49,20 @@ describe("scriptSnippet", () => {
     expect(scriptSnippet("14d5d609", "https://saasclair.com")).toBe(
       '<script async src="https://saasclair.com/s.js" data-site="14d5d609"></script>',
     );
+  });
+});
+
+describe("platformFor", () => {
+  it("ouvre l'onglet de la technologie détectée, sinon « Code HTML »", () => {
+    expect(platformFor(["Stripe", "WordPress"]).id).toBe("wordpress");
+    expect(platformFor(["Next.js"]).id).toBe("nextjs");
+    expect(platformFor(["Framer"]).id).toBe("other");
+    expect(platformFor([]).id).toBe("html");
+  });
+
+  it("chaque plateforme dit de coller la ligne une seule fois, jamais page par page", () => {
+    for (const platform of PLATFORMS) {
+      expect(platform.steps.map((step) => step.text).join(" ")).not.toMatch(/toutes vos pages,/);
+    }
   });
 });

@@ -22,7 +22,7 @@ import { DURATION, EASE_OUT, SPRING } from "@/lib/motion";
 import { displaySiteUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
 import { markScriptDetected } from "./actions";
-import { developerEmail, PLATFORMS } from "./platforms";
+import { developerEmail, PLATFORMS, platformFor } from "./platforms";
 import { scriptSnippet } from "./steps";
 
 // Démonstration : sans collecte réelle, la « première visite » est simulée peu après la copie.
@@ -53,7 +53,7 @@ export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied: ()
         {snippet}
       </code>
       <div className="flex items-center justify-between gap-3 px-3 pb-3">
-        <span className="pl-2 text-xs text-cream/75">Moins de 5 Ko · chargé en différé</span>
+        <span className="pl-2 text-xs text-cream/75">Moins de 3 Ko · chargé en différé</span>
         <Button
           variant={isCopied ? "positive" : "inverse"}
           size="sm"
@@ -79,6 +79,7 @@ export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied: ()
   );
 }
 
+/** Pour ceux qui ne touchent pas au code : un email prêt pour leur développeur ou leur agence. */
 function SendToDeveloper({ siteUrl, snippet }: { siteUrl: string; snippet: string }) {
   const inputId = useId();
   const [email, setEmail] = useState("");
@@ -88,8 +89,8 @@ function SendToDeveloper({ siteUrl, snippet }: { siteUrl: string; snippet: strin
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="link" className="h-auto min-h-11 shrink text-left whitespace-normal">
-          <Icon icon={Mail} anim="bounce" /> Envoyer les instructions à mon développeur
+        <Button variant="secondary" size="sm" className="shrink-0">
+          <Icon icon={Mail} anim="bounce" /> Envoyer à mon développeur
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -168,13 +169,24 @@ function LiveCheck({ isDetected }: { isDetected: boolean }) {
 type StepScriptProps = {
   siteKey: string;
   siteUrl: string;
+  /** Technologies détectées par l'analyse du site : ouvre d'office le bon onglet. */
+  technologies: string[];
   demo: boolean;
   onBack: () => void;
   onDone: () => void;
 };
 
-export function StepScript({ siteKey, siteUrl, demo, onBack, onDone }: StepScriptProps) {
+export function StepScript({
+  siteKey,
+  siteUrl,
+  technologies,
+  demo,
+  onBack,
+  onDone,
+}: StepScriptProps) {
   const snippet = scriptSnippet(siteKey);
+  const detected = platformFor(technologies);
+  const isDetectedPlatform = detected.detects.length > 0;
   const [hasCopied, setHasCopied] = useState(false);
   const [isDetected, setIsDetected] = useState(false);
   const advance = useEffectEvent(onDone);
@@ -217,12 +229,39 @@ export function StepScript({ siteKey, siteUrl, demo, onBack, onDone }: StepScrip
       </button>
       <p className="eyebrow">Action 1 · environ 2 minutes</p>
       <h1 className="mb-2 text-[30px] sm:text-[38px]">Installez le script.</h1>
-      <p className="mb-6 text-[15px] text-slate">
-        Une seule ligne. Elle voit d&apos;où viennent vos visiteurs, sans rien régler.
+      <p className="mb-5 text-[15px] text-slate">
+        Une seule ligne, collée <strong className="font-semibold text-ink">une seule fois</strong>{" "}
+        dans l&apos;en-tête commun de votre site : elle suit toutes vos pages, même s&apos;il en a
+        des milliers.
       </p>
 
-      <Tabs defaultValue="html">
-        <TabsList aria-label="Votre plateforme" className="max-w-full">
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-line p-4 sm:flex-row sm:items-center">
+        <p className="flex-1 text-sm text-ink">
+          <strong className="font-semibold">Vous ne touchez pas au code ?</strong> Envoyez ces
+          instructions à votre développeur ou à votre agence : c&apos;est fait en 2 minutes.
+        </p>
+        <SendToDeveloper siteUrl={siteUrl} snippet={snippet} />
+      </div>
+
+      {isDetectedPlatform && (
+        <p className="mb-3 text-sm text-slate">
+          Votre site est fait avec{" "}
+          <strong className="font-semibold text-forest">{detected.label}</strong> : voici où coller
+          la ligne.
+        </p>
+      )}
+      <Tabs defaultValue={detected.id}>
+        <TabsList
+          // Mobile : l'onglet ouvert d'office est centré dans la barre, sans faire défiler la page.
+          ref={(list) => {
+            const active = list?.querySelector<HTMLElement>('[data-state="active"]');
+            if (list && active) {
+              list.scrollLeft = active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+            }
+          }}
+          aria-label="Votre plateforme"
+          className="max-w-full"
+        >
           {PLATFORMS.map((platform) => (
             <TabsTrigger key={platform.id} value={platform.id}>
               {platform.label}
@@ -251,25 +290,19 @@ export function StepScript({ siteKey, siteUrl, demo, onBack, onDone }: StepScrip
                 </m.li>
               ))}
             </ol>
-            {platform.showsSnippet ? (
-              <CopyBlock snippet={snippet} onCopied={() => setHasCopied(true)} />
-            ) : (
-              <CopyBlock snippet={siteKey} onCopied={() => setHasCopied(true)} />
-            )}
+            <CopyBlock snippet={snippet} onCopied={() => setHasCopied(true)} />
           </TabsContent>
         ))}
       </Tabs>
 
-      <div className="mt-2 mb-5">
-        <SendToDeveloper siteUrl={siteUrl} snippet={snippet} />
+      <div className="mt-5">
+        <LiveCheck isDetected={isDetected} />
+        <p className="mt-3 text-xs text-slate">
+          {demo
+            ? "Démonstration : la première visite est simulée quelques secondes après la copie."
+            : "Une fois la ligne en place, ouvrez votre site dans un autre onglet : la première visite s'affiche ici en quelques secondes."}
+        </p>
       </div>
-
-      <LiveCheck isDetected={isDetected} />
-      <p className="mt-3 text-xs text-slate">
-        {demo
-          ? "Démonstration : la première visite est simulée quelques secondes après la copie."
-          : "Une fois la ligne en place, ouvrez votre site dans un autre onglet : la première visite s'affiche ici en quelques secondes."}
-      </p>
     </Card>
   );
 }

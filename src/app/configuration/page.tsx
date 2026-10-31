@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { LogOut } from "lucide-react";
+import { Icon } from "@/components/brand/icon";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,8 +89,9 @@ export default function SetupPage({ searchParams }: { searchParams: SearchParams
         <div className="flex items-center gap-1 sm:gap-3">
           <FinishLater />
           <form action={signOut}>
-            <Button type="submit" variant="ghost" size="sm">
-              Se déconnecter
+            <Button type="submit" variant="ghost" size="sm" aria-label="Se déconnecter">
+              <Icon icon={LogOut} anim="nudge" className="sm:hidden" />
+              <span className="hidden sm:inline">Se déconnecter</span>
             </Button>
           </form>
         </div>

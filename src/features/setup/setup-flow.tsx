@@ -31,6 +31,9 @@ export function SetupFlow({ initial }: { initial: SetupState }) {
   const goTo = (step: SetupStep) => {
     setDirection(SETUP_STEPS.indexOf(step) >= SETUP_STEPS.indexOf(state.step) ? 1 : -1);
     setState((current) => ({ ...current, step }));
+    // Chaque étape s'ouvre par son titre, pas là où l'on avait cliqué sur l'étape précédente.
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   };
 
   // Après l'étape `from` (faite ou passée) : l'étape suivante à faire, l'écran final, ou le
@@ -108,6 +111,7 @@ export function SetupFlow({ initial }: { initial: SetupState }) {
               <StepScript
                 siteKey={state.siteKey ?? ""}
                 siteUrl={state.siteUrl}
+                technologies={state.audit?.technologies ?? []}
                 demo={state.demo}
                 onBack={() => goTo("site")}
                 onDone={() => complete("script")}
