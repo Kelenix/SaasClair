@@ -40,7 +40,7 @@ export async function deleteProject(confirmation: string): Promise<Result> {
     .select("site_url")
     .eq("owner_id", user.id)
     .maybeSingle();
-  if (!project) return { ok: false, message: "Aucun projet à supprimer." };
+  if (!project?.site_url) return { ok: false, message: "Aucun projet à supprimer." };
   if (confirmation.trim().toLowerCase() !== displaySiteUrl(project.site_url).toLowerCase()) {
     return { ok: false, message: "L'adresse saisie ne correspond pas à votre site." };
   }

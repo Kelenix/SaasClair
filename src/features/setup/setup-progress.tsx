@@ -4,9 +4,9 @@ import { m } from "motion/react";
 import { Check } from "lucide-react";
 import { DURATION, EASE_OUT, SPRING } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import type { SetupStep } from "./steps";
+import type { ActionStep, SetupStep } from "./steps";
 
-const MILESTONES: { step: SetupStep; label: string }[] = [
+const MILESTONES: { step: ActionStep; label: string }[] = [
   { step: "site", label: "Votre SaaS" },
   { step: "script", label: "Installer le script" },
   { step: "stripe", label: "Connecter Stripe" },
@@ -21,11 +21,14 @@ const CAPTION: Record<SetupStep, string> = {
   done: "Terminé",
 };
 
-const ORDER: SetupStep[] = ["site", "script", "stripe", "done"];
-
-/** Barre de progression animée : « Étape 1 sur 2 », « Étape 2 sur 2 ». */
-export function SetupProgress({ step }: { step: SetupStep }) {
-  const current = ORDER.indexOf(step);
+/** Barre de progression animée : « Étape 1 sur 2 », « Étape 2 sur 2 ». Une étape passée n'est pas cochée. */
+export function SetupProgress({
+  step,
+  completed,
+}: {
+  step: SetupStep;
+  completed: Record<ActionStep, boolean>;
+}) {
   return (
     <div className="w-full max-w-2xl">
       <div className="mb-2.5 flex items-center justify-between text-[13px]">
@@ -39,7 +42,7 @@ export function SetupProgress({ step }: { step: SetupStep }) {
         </m.span>
         <ol className="hidden items-center gap-5 sm:flex" aria-label="Étapes de la configuration">
           {MILESTONES.map(({ step: milestone, label }, index) => {
-            const isDone = current > index;
+            const isDone = step === "done" || completed[milestone];
             return (
               <li
                 key={milestone}

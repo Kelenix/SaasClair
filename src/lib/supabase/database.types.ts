@@ -109,14 +109,14 @@ export type Database = {
                   ]
                 },"projects": {
                   Row: {
-                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"site_url": string,"stripe_connected_at": string | null,"updated_at": string
+                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"setup_skipped_at": string | null,"site_url": string | null,"stripe_connected_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"site_url": string,"stripe_connected_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"site_url"?: string,"stripe_connected_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     

@@ -45,7 +45,7 @@ export async function confirmCheckoutPage(input: string): Promise<Result> {
   } catch {
     return { ok: false, message: "Cette adresse ne semble pas valide. Exemple : /paiement" };
   }
-  if (!project || url.origin !== new URL(project.site_url).origin) {
+  if (!project?.site_url || url.origin !== new URL(project.site_url).origin) {
     return { ok: false, message: "Indiquez une page de votre site, par exemple /paiement." };
   }
 

@@ -1,15 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { useId, useState, useTransition } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
-import { ArrowRight, CircleHelp, Wrench } from "lucide-react";
+import {
+  ArrowRight,
+  CircleHelp,
+  Code,
+  CreditCard,
+  Globe,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 import { displaySiteUrl } from "@/lib/site-url";
+import type { ActionStep } from "@/features/setup/steps";
 import { confirmCheckoutPage } from "../actions";
 
 const BANNER_MOTION = {
@@ -99,23 +107,59 @@ export function CheckoutBanner({ siteUrl }: { siteUrl: string }) {
   );
 }
 
-/** Rappel discret quand on explore avec les données de démonstration avant la fin de la configuration. */
-export function SetupBanner() {
+const SETUP_LINKS: Record<ActionStep, { label: string; duration: string; icon: LucideIcon }> = {
+  site: { label: "Adresse de votre SaaS", duration: "30 secondes", icon: Globe },
+  script: { label: "Installer le script", duration: "2 minutes", icon: Code },
+  stripe: { label: "Connecter Stripe", duration: "1 minute", icon: CreditCard },
+};
+
+/**
+ * Configuration passée ou pas terminée : ce qui reste, chaque étape à un clic. Tant qu'elle
+ * n'est pas finie, les chiffres affichés sont un exemple (le SaaS de Nadia).
+ * Liens <a> (vrai chargement) : Next.js garde sinon le parcours de la visite précédente, figé
+ * à l'étape où on l'avait quitté, au lieu d'ouvrir l'étape demandée.
+ */
+export function SetupBanner({ remaining }: { remaining: ActionStep[] }) {
+  const count = remaining.length;
   return (
-    <m.div
+    <m.section
       {...BANNER_MOTION}
-      className="mb-6 flex flex-col gap-3 rounded-card bg-forest p-4 text-cream sm:flex-row sm:items-center sm:p-5"
+      aria-label="Configuration à terminer"
+      className="mb-6 rounded-card bg-forest p-4 text-cream sm:p-5"
     >
-      <Icon icon={Wrench} anim="tilt" className="size-5 text-gold" />
-      <p className="flex-1 text-[15px]">
-        Vous explorez des données de démonstration. Terminez la configuration pour voir les vôtres :
-        2 actions, moins de 5 minutes.
-      </p>
-      <Button asChild variant="positive" size="sm">
-        <Link href="/configuration">
-          Terminer <Icon icon={ArrowRight} anim="nudge" />
-        </Link>
-      </Button>
-    </m.div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Icon icon={Wrench} anim="tilt" className="size-5 shrink-0 text-gold" />
+        <p className="flex-1 text-[15px]">
+          <strong className="font-semibold">
+            Plus {count > 1 ? `que ${count} étapes` : "qu'une étape"} pour voir vos propres
+            chiffres.
+          </strong>{" "}
+          En attendant, le tableau de bord affiche un exemple.
+        </p>
+        <Button asChild variant="positive" size="sm" className="self-start sm:self-auto">
+          <a href={`/configuration?etape=${remaining[0]}`}>
+            Continuer <Icon icon={ArrowRight} anim="nudge" />
+          </a>
+        </Button>
+      </div>
+      <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {remaining.map((step) => {
+          const { label, duration, icon } = SETUP_LINKS[step];
+          return (
+            <li key={step}>
+              <a
+                href={`/configuration?etape=${step}`}
+                data-icon-trigger
+                className="flex min-h-11 items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 text-sm transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              >
+                <Icon icon={icon} anim="pop" className="size-4 shrink-0 text-emerald" />
+                <span className="flex-1 font-semibold">{label}</span>
+                <span className="text-[13px]">{duration}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </m.section>
   );
 }

@@ -2,7 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { SiteAudit } from "@/features/setup/site-analysis";
-import { stepOf } from "@/features/setup/steps";
+import { remainingSteps, type ActionStep } from "@/features/setup/steps";
 import { createClient, getUser } from "@/lib/supabase/server";
 
 export type InsightStatus = "done" | "ignored";
@@ -12,6 +12,8 @@ export type DashboardContext = {
   email: string;
   siteUrl: string | null;
   isSetupComplete: boolean;
+  /** Étapes de la configuration passées ou pas encore faites, rappelées par le bandeau. */
+  setupRemaining: ActionStep[];
   /** Page de paiement : détectée par l'analyse ou confirmée en un clic. Null = à confirmer. */
   checkoutUrl: string | null;
   /** Identifiant du site dans la ligne de script. */
@@ -41,12 +43,14 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
     supabase.rpc("touch_last_seen"),
   ]);
   const audit = project?.audit as SiteAudit | null | undefined;
+  const setupRemaining = remainingSteps(project);
 
   return {
     firstName: (user.user_metadata.first_name as string | undefined) ?? "",
     email: user.email ?? "",
     siteUrl: project?.site_url ?? null,
-    isSetupComplete: stepOf(project) === "done",
+    isSetupComplete: setupRemaining.length === 0,
+    setupRemaining,
     checkoutUrl: project?.checkout_url ?? audit?.pages.checkout ?? null,
     siteKey: project?.id.slice(0, 8) ?? null,
     scriptDetected: Boolean(project?.script_detected_at),

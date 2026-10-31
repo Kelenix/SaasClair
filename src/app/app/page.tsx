@@ -16,7 +16,7 @@ async function Home() {
 
   return (
     <>
-      {!context.isSetupComplete && <SetupBanner />}
+      {!context.isSetupComplete && <SetupBanner remaining={context.setupRemaining} />}
       {context.isSetupComplete && context.siteUrl && !context.checkoutUrl && (
         <CheckoutBanner siteUrl={context.siteUrl} />
       )}

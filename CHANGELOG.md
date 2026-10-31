@@ -2,6 +2,21 @@
 
 Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mineure.correctif`.
 
+## [Non publié]
+
+### Ajouté
+- **Configuration « plus tard »** : chaque étape (adresse du SaaS, script, Stripe) a un bouton
+  « Passer cette étape », et l'en-tête propose « Terminer plus tard ». À la connexion suivante,
+  l'utilisateur arrive sur son tableau de bord, qui affiche un bandeau des étapes restantes, chacune
+  à un clic.
+- **Mise en production** sur le VPS (Supabase auto-hébergé, Nginx, HTTPS, déploiement
+  automatique sans coupure, sauvegardes de nuit) : `docs/deployment.md`.
+
+### Modifié
+- Le lien « Explorer avec des données de démonstration » est retiré de la configuration.
+- Les étapes se font dans n'importe quel ordre (la base n'impose plus le script avant Stripe).
+- La création du compte super administrateur fonctionne aussi en production, sans dépendance.
+
 ## [1.0.0-rc.1] — 2026-10-31 — Candidate à la mise en ligne
 
 ### Ajouté

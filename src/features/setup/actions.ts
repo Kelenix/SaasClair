@@ -35,16 +35,37 @@ export async function analyzeSite(
 }
 
 /**
+ * « Passer cette étape » ou « Terminer plus tard » : rien n'est marqué comme fait, mais le projet
+ * existe (sa clé sert à la ligne de script) et la connexion suivante mène au tableau de bord, qui
+ * rappelle les étapes restantes.
+ */
+export async function skipSetup(): Promise<Result<{ siteKey: string }>> {
+  const { supabase, user } = await authenticatedClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .upsert(
+      { owner_id: user.id, setup_skipped_at: new Date().toISOString() },
+      { onConflict: "owner_id" },
+    )
+    .select("id")
+    .single();
+  if (error) return { ok: false, message: SAVE_ERROR };
+  return { ok: true, data: { siteKey: data.id.slice(0, 8) } };
+}
+
+/**
  * Étape 1 : script détecté. En démonstration la détection est simulée côté interface ;
  * avec la collecte réelle, c'est la première visite reçue qui appellera cette mise à jour.
  */
 export async function markScriptDetected(): Promise<Result<null>> {
   const { supabase, user } = await authenticatedClient();
+  // upsert : l'étape peut être reprise depuis le tableau de bord avant que le projet existe.
   const { error } = await supabase
     .from("projects")
-    .update({ script_detected_at: new Date().toISOString() })
-    .eq("owner_id", user.id)
-    .is("script_detected_at", null);
+    .upsert(
+      { owner_id: user.id, script_detected_at: new Date().toISOString() },
+      { onConflict: "owner_id" },
+    );
   return error ? { ok: false, message: SAVE_ERROR } : { ok: true, data: null };
 }
 
@@ -53,8 +74,9 @@ export async function connectStripe(): Promise<Result<null>> {
   const { supabase, user } = await authenticatedClient();
   const { error } = await supabase
     .from("projects")
-    .update({ stripe_connected_at: new Date().toISOString() })
-    .eq("owner_id", user.id)
-    .is("stripe_connected_at", null);
+    .upsert(
+      { owner_id: user.id, stripe_connected_at: new Date().toISOString() },
+      { onConflict: "owner_id" },
+    );
   return error ? { ok: false, message: SAVE_ERROR } : { ok: true, data: null };
 }

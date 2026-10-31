@@ -2,24 +2,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { Sparkles } from "lucide-react";
-import { Icon } from "@/components/brand/icon";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { signOut } from "@/features/auth/actions";
 import { TrackingLoader } from "@/features/site-content/tracking-loader";
+import { FinishLater } from "@/features/setup/finish-later";
 import { SetupFlow } from "@/features/setup/setup-flow";
 import type { SiteAudit } from "@/features/setup/site-analysis";
-import { stepOf, type SetupState } from "@/features/setup/steps";
+import { completedSteps, isActionStep, stepOf, type SetupState } from "@/features/setup/steps";
 import { normalizeSiteUrl } from "@/lib/site-url";
 import { createClient, getUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Configuration", robots: { index: false } };
 
-type SearchParams = Promise<{ site?: string; bienvenue?: string }>;
+type SearchParams = Promise<{ site?: string; bienvenue?: string; etape?: string }>;
 
-/** Reprend la configuration là où elle s'était arrêtée (le projet est enregistré à chaque étape). */
+/**
+ * Reprend la configuration là où elle s'était arrêtée (le projet est enregistré à chaque étape),
+ * ou à l'étape demandée par le bandeau du tableau de bord (`?etape=script`).
+ */
 async function SetupLoader({ searchParams }: { searchParams: SearchParams }) {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/configuration");
@@ -33,16 +35,18 @@ async function SetupLoader({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const siteFromLanding = normalizeSiteUrl(params.site ?? "");
   const step = stepOf(project);
-  // Configuration déjà terminée (connexion suivante) : direction le tableau de bord. L'écran
-  // final, lui, s'affiche dans le parcours sans recharger la page.
-  if (step === "done") redirect("/app");
+  const requested = isActionStep(params.etape) ? params.etape : null;
+  // Configuration terminée, ou remise à plus tard (connexion suivante) : direction le tableau de
+  // bord, qui rappelle ce qui reste. L'écran final, lui, s'affiche dans le parcours.
+  if (step === "done" || (!requested && project?.setup_skipped_at)) redirect("/app");
 
   const initial: SetupState = {
     firstName: (user.user_metadata.first_name as string | undefined) ?? "",
     siteUrl: project?.site_url ?? siteFromLanding ?? "",
     audit: (project?.audit as SiteAudit | null) ?? null,
     siteKey: project?.id.slice(0, 8) ?? null,
-    step,
+    step: requested ?? step,
+    completed: completedSteps(project),
   };
   return (
     <>
@@ -79,11 +83,7 @@ export default function SetupPage({ searchParams }: { searchParams: SearchParams
           <Logo className="h-6 sm:h-7" />
         </Link>
         <div className="flex items-center gap-1 sm:gap-3">
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-            <Link href="/app?demo=1">
-              <Icon icon={Sparkles} anim="pop" /> Explorer avec des données de démonstration
-            </Link>
-          </Button>
+          <FinishLater />
           <form action={signOut}>
             <Button type="submit" variant="ghost" size="sm">
               Se déconnecter
@@ -96,14 +96,6 @@ export default function SetupPage({ searchParams }: { searchParams: SearchParams
           <SetupLoader searchParams={searchParams} />
         </Suspense>
       </main>
-      <footer className="px-4 pb-6 text-center sm:hidden">
-        <Link
-          href="/app?demo=1"
-          className="text-sm font-semibold text-forest underline-offset-4 hover:underline"
-        >
-          Explorer avec des données de démonstration
-        </Link>
-      </footer>
     </div>
   );
 }

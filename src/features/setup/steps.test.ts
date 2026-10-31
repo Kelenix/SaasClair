@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scriptSnippet, stepOf } from "./steps";
+import { nextStep, remainingSteps, scriptSnippet, stepOf } from "./steps";
 
 const project = (script: string | null, stripe: string | null) => ({
   site_url: "https://monsaas.fr",
@@ -13,6 +13,33 @@ describe("stepOf", () => {
     expect(stepOf(project(null, null))).toBe("script");
     expect(stepOf(project("2026-10-30", null))).toBe("stripe");
     expect(stepOf(project("2026-10-30", "2026-10-30"))).toBe("done");
+  });
+});
+
+describe("étapes passées", () => {
+  const none = { site: false, script: false, stripe: false };
+
+  it("un projet sans adresse (étape passée) reprend à l'adresse du site", () => {
+    const skipped = { site_url: null, script_detected_at: null, stripe_connected_at: null };
+    expect(stepOf(skipped)).toBe("site");
+    expect(remainingSteps(skipped)).toEqual(["site", "script", "stripe"]);
+  });
+
+  it("liste seulement ce qui reste, dans l'ordre", () => {
+    expect(remainingSteps(project("2026-10-30", null))).toEqual(["stripe"]);
+    expect(remainingSteps(project("2026-10-30", "2026-10-30"))).toEqual([]);
+  });
+
+  it("enchaîne sur l'étape suivante encore à faire", () => {
+    expect(nextStep("site", none)).toBe("script");
+    expect(nextStep("script", { ...none, script: true })).toBe("stripe");
+    expect(nextStep("site", { site: true, script: true, stripe: false })).toBe("stripe");
+  });
+
+  it("finit sur l'écran final si tout est fait, sinon sur le tableau de bord", () => {
+    expect(nextStep("stripe", { site: true, script: true, stripe: true })).toBe("done");
+    expect(nextStep("stripe", { site: true, script: false, stripe: true })).toBe("later");
+    expect(nextStep("stripe", none)).toBe("later");
   });
 });
 
