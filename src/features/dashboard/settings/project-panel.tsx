@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ArrowRight, Check, CreditCard, ExternalLink, Globe, Link2, Rocket } from "lucide-react";
@@ -92,7 +91,7 @@ function CheckoutForm({ siteUrl, current }: { siteUrl: string; current: string |
   );
 }
 
-export function ProjectPanel({ project }: { project: ProjectInfo }) {
+export function ProjectPanel({ project, demo }: { project: ProjectInfo; demo: boolean }) {
   if (!project.siteUrl) {
     return (
       <Card>
@@ -103,23 +102,23 @@ export function ProjectPanel({ project }: { project: ProjectInfo }) {
           description="Deux actions suffisent : installer une ligne de script, puis connecter Stripe."
           action={
             <Button asChild>
-              <Link href="/configuration">
+              <a href="/configuration?etape=site">
                 Terminer la configuration <Icon icon={ArrowRight} anim="nudge" />
-              </Link>
+              </a>
             </Button>
           }
         />
       </Card>
     );
   }
-  const linked = Math.round((NADIA_CUSTOMERS * COVERAGE) / 100);
-
   return (
     <div className="grid grid-cols-1 items-start gap-4 @4xl:grid-cols-[1.4fr_1fr]">
       <Card>
         <CardEyebrow>Votre SaaS</CardEyebrow>
         <p className="mb-5 font-serif text-xl font-semibold text-forest">
-          Tout est relié, rien à régler.
+          {project.scriptDetected && project.stripeConnected
+            ? "Tout est relié, rien à régler."
+            : "Votre SaaS est en place."}
         </p>
         <ul className="mb-5">
           <StatusRow icon={Globe} title="Site suivi">
@@ -148,7 +147,7 @@ export function ProjectPanel({ project }: { project: ProjectInfo }) {
               <Badge tone="growth">Connecté · lecture seule</Badge>
             ) : (
               <Button asChild variant="secondary" size="sm">
-                <Link href="/configuration">Connecter Stripe</Link>
+                <a href="/configuration?etape=stripe">Connecter Stripe</a>
               </Button>
             )}
           </StatusRow>
@@ -162,22 +161,42 @@ export function ProjectPanel({ project }: { project: ProjectInfo }) {
         <CheckoutForm siteUrl={project.siteUrl} current={project.checkoutUrl} />
       </Card>
 
-      <Card>
-        <CardEyebrow>Couverture</CardEyebrow>
-        <AnimatedNumber
-          value={COVERAGE}
-          format="percent"
-          className="font-serif text-[40px] leading-tight font-semibold text-forest"
-        />
-        <p className="mb-4 text-[15px] text-ink">
-          de vos clients sont reliés à leur provenance ({linked} sur {NADIA_CUSTOMERS}).
-        </p>
-        <GrowBar share={COVERAGE} />
-        <p className="mt-4 text-sm text-slate">
-          Les autres sont arrivés avant l&apos;installation du script ou utilisent un bloqueur de
-          publicité. Ce taux monte tout seul à mesure que de nouveaux clients arrivent.
-        </p>
-      </Card>
+      {demo ? <CoverageCard /> : <NoCoverageYet />}
     </div>
+  );
+}
+
+/** Sans données d'exemple : le taux réel n'existe qu'une fois des clients reliés. */
+function NoCoverageYet() {
+  return (
+    <Card>
+      <CardEyebrow>Couverture</CardEyebrow>
+      <p className="text-[15px] text-ink">
+        La part de vos clients reliés à leur provenance s&apos;affichera ici dès vos premiers
+        clients.
+      </p>
+    </Card>
+  );
+}
+
+function CoverageCard() {
+  const linked = Math.round((NADIA_CUSTOMERS * COVERAGE) / 100);
+  return (
+    <Card>
+      <CardEyebrow>Couverture</CardEyebrow>
+      <AnimatedNumber
+        value={COVERAGE}
+        format="percent"
+        className="font-serif text-[40px] leading-tight font-semibold text-forest"
+      />
+      <p className="mb-4 text-[15px] text-ink">
+        de vos clients sont reliés à leur provenance ({linked} sur {NADIA_CUSTOMERS}).
+      </p>
+      <GrowBar share={COVERAGE} />
+      <p className="mt-4 text-sm text-slate">
+        Les autres sont arrivés avant l&apos;installation du script ou utilisent un bloqueur de
+        publicité. Ce taux monte tout seul à mesure que de nouveaux clients arrivent.
+      </p>
+    </Card>
   );
 }

@@ -34,11 +34,13 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
             >
               <Logo variant="mark" className="size-9" />
             </Link>
-            <QuestionBar />
+            <QuestionBar demo={context.demo} />
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-              <Badge className="hidden 2xl:inline-flex">Données de démonstration</Badge>
+              {context.demo && (
+                <Badge className="hidden 2xl:inline-flex">Données de démonstration</Badge>
+              )}
               <PeriodSelector />
-              <NotificationsMenu />
+              <NotificationsMenu demo={context.demo} />
               <ProfileMenu
                 firstName={context.firstName}
                 email={context.email}

@@ -78,9 +78,11 @@ const markRead = (ids: string[]) => {
   readListeners.forEach((listener) => listener());
 };
 
-export function NotificationsMenu() {
+/** Alertes du compte. Hors données d'exemple, il n'y en a pas encore (pas de moteur d'alertes). */
+export function NotificationsMenu({ demo }: { demo: boolean }) {
+  const notifications = demo ? NOTIFICATIONS : [];
   const read = useSyncExternalStore(subscribeToRead, readIds, () => NONE_READ);
-  const unread = NOTIFICATIONS.filter((item) => !read.includes(item.id)).length;
+  const unread = notifications.filter((item) => !read.includes(item.id)).length;
 
   return (
     <DropdownMenu>
@@ -119,14 +121,14 @@ export function NotificationsMenu() {
           {unread > 0 && (
             <button
               type="button"
-              onClick={() => markRead(NOTIFICATIONS.map((item) => item.id))}
+              onClick={() => markRead(notifications.map((item) => item.id))}
               className="min-h-9 cursor-pointer rounded-full px-3 text-xs font-semibold text-forest transition-colors hover:bg-forest/6"
             >
               Tout marquer comme lu
             </button>
           )}
         </div>
-        {NOTIFICATIONS.map((item) => {
+        {notifications.map((item) => {
           const isUnread = !read.includes(item.id);
           return (
             <DropdownMenuItem key={item.id} asChild>
@@ -158,7 +160,9 @@ export function NotificationsMenu() {
         })}
         {unread === 0 && (
           <p className="px-3 pt-1 pb-2 text-xs text-slate">
-            Tout est lu. Nous vous prévenons dès qu&apos;un chiffre bouge.
+            {notifications.length
+              ? "Tout est lu. Nous vous prévenons dès qu'un chiffre bouge."
+              : "Aucune alerte pour l'instant. Nous vous prévenons dès qu'un chiffre bouge."}
           </p>
         )}
       </DropdownMenuContent>

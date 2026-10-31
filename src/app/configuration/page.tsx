@@ -11,6 +11,7 @@ import { FinishLater } from "@/features/setup/finish-later";
 import { SetupFlow } from "@/features/setup/setup-flow";
 import type { SiteAudit } from "@/features/setup/site-analysis";
 import { completedSteps, isActionStep, stepOf, type SetupState } from "@/features/setup/steps";
+import { isDemoMode } from "@/lib/demo-mode";
 import { normalizeSiteUrl } from "@/lib/site-url";
 import { createClient, getUser } from "@/lib/supabase/server";
 
@@ -47,6 +48,7 @@ async function SetupLoader({ searchParams }: { searchParams: SearchParams }) {
     siteKey: project?.id.slice(0, 8) ?? null,
     step: requested ?? step,
     completed: completedSteps(project),
+    demo: isDemoMode(),
   };
   return (
     <>

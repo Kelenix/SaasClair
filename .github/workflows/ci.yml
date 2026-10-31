@@ -66,6 +66,8 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
             echo "NEXT_PUBLIC_SITE_URL=http://localhost:3001"
+            # Données d’exemple : seulement pour les tests (jamais en production).
+            echo "DEMO_DATA=true"
           } > .env
       - run: npm run build
       - name: Application (build autonome, port 3001)

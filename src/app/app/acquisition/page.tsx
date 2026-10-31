@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Route } from "lucide-react";
 import {
   ChannelEvolution,
   ChannelShare,
@@ -7,15 +8,29 @@ import {
   SourceTabs,
 } from "@/features/dashboard/acquisition/channel-views";
 import { COVERAGE, getAcquisitionData } from "@/features/dashboard/acquisition/data";
+import { getDashboardContext } from "@/features/dashboard/context";
 import { getPeriod } from "@/features/dashboard/get-period";
 import { KpiCards } from "@/features/dashboard/home/kpi-cards";
+import { NoData } from "@/features/dashboard/no-data";
 import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
 
 export const metadata: Metadata = { title: "Acquisition" };
 
 async function Acquisition() {
-  const period = await getPeriod();
+  const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
+  if (!context.demo) {
+    return (
+      <NoData
+        title="Acquisition"
+        icon={Route}
+        needs="script"
+        remaining={context.setupRemaining}
+        description="Vos canaux d'acquisition, classés par revenu, apparaîtront ici dès que le script sera installé sur votre site."
+        waiting="Le script est installé. Vos canaux d'acquisition apparaîtront ici dès les premières visites."
+      />
+    );
+  }
   const data = getAcquisitionData(period);
 
   return (

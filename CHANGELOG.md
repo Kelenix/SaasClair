@@ -13,6 +13,10 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
   automatique sans coupure, sauvegardes de nuit) : `docs/deployment.md`.
 
 ### Modifié
+- **Plus aucune donnée inventée en production** : tableau de bord vide (avec l'étape à faire) tant
+  que l'utilisateur n'a pas de données ; plus de notifications, de réponses ni de chiffres
+  d'exemple ; plus de détection de script ni d'import Stripe simulés. Les données d'exemple
+  restent disponibles en local (`DEMO_DATA=true`).
 - Le lien « Explorer avec des données de démonstration » est retiré de la configuration.
 - Les étapes se font dans n'importe quel ordre (la base n'impose plus le script avant Stripe).
 - La création du compte super administrateur fonctionne aussi en production, sans dépendance.

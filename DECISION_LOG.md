@@ -5,6 +5,21 @@
 
 ---
 
+## ADR-022 — Aucune donnée d'exemple en production
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (« en production, tout est vide tant que l'utilisateur n'a rien fourni ; on n'invente rien »)
+- **Contexte** : le générateur d'exemple (ADR-002, le SaaS de Nadia) était affiché à tous les comptes, y compris en production. Il simulait aussi la première visite du script et l'import Stripe. Un nouvel utilisateur voyait des chiffres qui n'étaient pas les siens.
+- **Décision** : les données d'exemple ne s'affichent que si `DEMO_DATA=true` : sur le poste de développement et dans les tests de la CI, jamais en production (variable absente de `deploy/compose.prod.yaml`). Sans elles :
+  - chaque écran du tableau de bord affiche un état vide qui dit ce qui manque, avec un lien vers l'étape à faire ;
+  - aucune notification, aucune réponse inventée dans la barre de question, aucun taux de couverture ;
+  - la configuration ne simule plus rien : le script attend une vraie première visite, et Stripe annonce que la connexion ouvre bientôt.
+
+  L'espace administrateur lisait déjà uniquement la base réelle. Le site vitrine garde son aperçu illustré.
+- **Conséquences** : en production, les écrans restent vides jusqu'à la collecte réelle (dette n° 1 et 2 : script de collecte et Stripe Connect), qui devient la priorité.
+- **Impact** : métier — élevé (honnêteté des chiffres).
+
 ## ADR-021 — Production sur un VPS partagé, Supabase auto-hébergé
 
 - **Date** : 2026-10-31

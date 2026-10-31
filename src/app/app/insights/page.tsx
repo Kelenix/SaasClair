@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Lightbulb } from "lucide-react";
 import { AlertSettingsPanel } from "@/features/dashboard/alerts/alert-settings";
 import { getAlertSettings } from "@/features/dashboard/alerts/get-alert-settings";
 import { getDashboardContext } from "@/features/dashboard/context";
@@ -7,6 +8,7 @@ import { getPeriod } from "@/features/dashboard/get-period";
 import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { getInsightHistory, summarize } from "@/features/dashboard/insights/history";
 import { InsightList } from "@/features/dashboard/insights/insight-list";
+import { NoData } from "@/features/dashboard/no-data";
 import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
 import { formatEuro } from "@/lib/format";
@@ -19,6 +21,30 @@ async function Insights() {
     getPeriod(),
     getAlertSettings(),
   ]);
+  const alertsSection = (
+    <>
+      <SectionTitle
+        title="Alertes"
+        detail={<p className="text-sm text-slate">Toutes actives par défaut. Rien à configurer.</p>}
+      />
+      <AlertSettingsPanel initial={alerts} email={context.email} />
+    </>
+  );
+  if (!context.demo) {
+    return (
+      <>
+        <NoData
+          title="Insights et alertes"
+          icon={Lightbulb}
+          needs="script"
+          remaining={context.setupRemaining}
+          description="Chaque lundi, vos insights (constat, cause probable, action et impact en euros) apparaîtront ici. Il faut d'abord vos premières données."
+          waiting="Vos premiers insights arriveront le lundi qui suit vos premières données."
+        />
+        {alertsSection}
+      </>
+    );
+  }
   const entries = getInsightHistory(context.feedback);
   const stats = summarize(entries);
   const applied = Math.round((stats.done / Math.max(1, stats.done + stats.ignored)) * 100);
@@ -78,11 +104,7 @@ async function Insights() {
       />
       <InsightList entries={entries} />
 
-      <SectionTitle
-        title="Alertes"
-        detail={<p className="text-sm text-slate">Toutes actives par défaut. Rien à configurer.</p>}
-      />
-      <AlertSettingsPanel initial={alerts} email={context.email} />
+      {alertsSection}
     </>
   );
 }

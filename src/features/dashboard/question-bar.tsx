@@ -18,8 +18,17 @@ import { answerQuestion, SUGGESTED_QUESTIONS, type Answer } from "./answers";
 
 const THINKING_MS = 900;
 
+// Sans données d'exemple : pas de réponse inventée tant qu'aucune donnée n'est arrivée.
+const NO_DATA_ANSWER: Answer = {
+  title: "Je n'ai pas encore de données à analyser.",
+  paragraphs: [
+    "Je réponds à partir de vos visites et de vos paiements. Dès que le script et Stripe m'auront envoyé leurs premières données, posez-moi de nouveau votre question.",
+  ],
+  basis: "Aucune donnée reçue pour l'instant",
+};
+
 /** Barre « Posez une question à vos données… » : la réponse arrive comme un insight rédigé. */
-export function QuestionBar() {
+export function QuestionBar({ demo }: { demo: boolean }) {
   const inputId = useId();
   const [question, setQuestion] = useState("");
   const [asked, setAsked] = useState("");
@@ -33,7 +42,7 @@ export function QuestionBar() {
     setAnswer(null);
     setIsOpen(true);
     setQuestion("");
-    setTimeout(() => setAnswer(answerQuestion(trimmed)), THINKING_MS);
+    setTimeout(() => setAnswer(demo ? answerQuestion(trimmed) : NO_DATA_ANSWER), THINKING_MS);
   }
 
   return (

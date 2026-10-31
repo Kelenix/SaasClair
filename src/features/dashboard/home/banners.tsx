@@ -119,7 +119,7 @@ const SETUP_LINKS: Record<ActionStep, { label: string; duration: string; icon: L
  * Liens <a> (vrai chargement) : Next.js garde sinon le parcours de la visite précédente, figé
  * à l'étape où on l'avait quitté, au lieu d'ouvrir l'étape demandée.
  */
-export function SetupBanner({ remaining }: { remaining: ActionStep[] }) {
+export function SetupBanner({ remaining, demo }: { remaining: ActionStep[]; demo: boolean }) {
   const count = remaining.length;
   return (
     <m.section
@@ -134,7 +134,7 @@ export function SetupBanner({ remaining }: { remaining: ActionStep[] }) {
             Plus {count > 1 ? `que ${count} étapes` : "qu'une étape"} pour voir vos propres
             chiffres.
           </strong>{" "}
-          En attendant, le tableau de bord affiche un exemple.
+          {demo && "En attendant, le tableau de bord affiche un exemple."}
         </p>
         <Button asChild variant="positive" size="sm" className="self-start sm:self-auto">
           <a href={`/configuration?etape=${remaining[0]}`}>

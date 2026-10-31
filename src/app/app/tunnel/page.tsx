@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Filter } from "lucide-react";
+import { getDashboardContext } from "@/features/dashboard/context";
 import { getPeriod } from "@/features/dashboard/get-period";
 import { KpiCards } from "@/features/dashboard/home/kpi-cards";
+import { NoData } from "@/features/dashboard/no-data";
 import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
 import { getTunnelData, stepRates } from "@/features/dashboard/tunnel/data";
@@ -14,7 +17,19 @@ import {
 export const metadata: Metadata = { title: "Tunnel de conversion" };
 
 async function Tunnel() {
-  const period = await getPeriod();
+  const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
+  if (!context.demo) {
+    return (
+      <NoData
+        title="Tunnel de conversion"
+        icon={Filter}
+        needs="script"
+        remaining={context.setupRemaining}
+        description="Votre tunnel (visite, inscription, activation, essai, paiement) se dessinera ici dès que le script sera installé sur votre site."
+        waiting="Le script est installé. Votre tunnel se dessinera ici dès les premières visites."
+      />
+    );
+  }
   const data = getTunnelData(period);
 
   return (

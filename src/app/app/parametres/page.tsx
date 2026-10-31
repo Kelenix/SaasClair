@@ -47,6 +47,7 @@ async function Settings({ searchParams }: Props) {
                 scriptDetected: context.scriptDetected,
                 stripeConnected: context.stripeConnected,
               }}
+              demo={context.demo}
             />
           ),
           equipe: <TeamPanel firstName={context.firstName} email={context.email} />,

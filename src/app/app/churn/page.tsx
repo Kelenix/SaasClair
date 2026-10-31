@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { HeartPulse } from "lucide-react";
 import { CohortHeatmap } from "@/features/dashboard/churn/cohort-heatmap";
 import { getChurnData } from "@/features/dashboard/churn/data";
 import { DepartureReasons } from "@/features/dashboard/churn/departure-reasons";
@@ -7,6 +8,7 @@ import { Watchlist } from "@/features/dashboard/churn/watchlist";
 import { getDashboardContext } from "@/features/dashboard/context";
 import { getPeriod } from "@/features/dashboard/get-period";
 import { KpiCards } from "@/features/dashboard/home/kpi-cards";
+import { NoData } from "@/features/dashboard/no-data";
 import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
 
@@ -20,6 +22,18 @@ async function Churn({ searchParams }: Props) {
     getPeriod(),
     searchParams,
   ]);
+  if (!context.demo) {
+    return (
+      <NoData
+        title="Churn et rétention"
+        icon={HeartPulse}
+        needs="stripe"
+        remaining={context.setupRemaining}
+        description="Vos clients à risque, votre churn et vos cohortes apparaîtront ici dès que Stripe sera connecté."
+        waiting="Stripe est connecté. Vos clients à risque apparaîtront ici dès vos premiers abonnements."
+      />
+    );
+  }
   const data = getChurnData(period);
 
   return (

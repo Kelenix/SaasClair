@@ -13,6 +13,7 @@ Modèle : `.env.example`.
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique, limitée par la RLS | Même page, « anon public » | Non (publique par conception) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Suppression de comptes et création d'administrateurs, **côté serveur seulement** | Même page, « service_role » | **Oui** : ne jamais la partager ni l'exposer au navigateur |
 | `NEXT_PUBLIC_SITE_URL` | Adresse publique du site (liens, plan du site, emails) | Votre domaine, ex. `https://saasclair.fr` | Non |
+| `DEMO_DATA` | Données d’exemple du tableau de bord (le SaaS de Nadia), pour le développement et les tests | `true` en local et en CI ; **absente en production** (tout reste vide tant que l’utilisateur n’a pas de données) | Non |
 
 **Vérifier** : `curl https://votre-domaine/api/health?complet=1` doit renvoyer `"status":"ok"`.
 **Changer** : la clé de service chaque trimestre ou au moindre doute (runbook n° 7).

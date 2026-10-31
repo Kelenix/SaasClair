@@ -5,8 +5,8 @@
 
 | # | Sujet | Situation actuelle | À faire | Priorité |
 |---|-------|--------------------|---------|----------|
-| 1 | Collecte réelle des visites | Script, détection et analyses du tableau de bord sur données de démonstration (ADR-002) | Ingestion des visites (file tampon), calcul des canaux, du tunnel et des scores de risque | P1 |
-| 2 | Stripe (clients) | Connexion et import simulés | Stripe Connect en lecture seule, synchronisation des abonnements | P1 |
+| 1 | Collecte réelle des visites | En production : écrans vides (ADR-022), aucune donnée collectée ; le script `cdn.saasclair.fr/s.js` n’existe pas encore. En local : données d’exemple (`DEMO_DATA=true`) | Ingestion des visites (file tampon), calcul des canaux, du tunnel et des scores de risque | P1 |
+| 2 | Stripe (clients) | En production : « la connexion ouvre bientôt » ; en local : connexion et import simulés | Stripe Connect en lecture seule, synchronisation des abonnements | P1 |
 | 3 | Facturation de SaasClair | Abonnements gérés à la main dans l'administration | Stripe Billing (paiement, factures, relances automatiques), webhooks → `profiles` | P1 |
 | 4 | Envoi d'emails | Emails d'authentification seulement ; alertes et invitations non envoyées | Service d'envoi (SMTP / Brevo), moteur d'alertes, invitations d'équipe persistées | P1 |
 | 5 | Barre de question | Réponses rédigées de démonstration | Moteur d'insights relié aux vraies données | P2 |

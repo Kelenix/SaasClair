@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { SiteAudit } from "@/features/setup/site-analysis";
 import { remainingSteps, type ActionStep } from "@/features/setup/steps";
+import { isDemoMode } from "@/lib/demo-mode";
 import { createClient, getUser } from "@/lib/supabase/server";
 
 export type InsightStatus = "done" | "ignored";
 
 export type DashboardContext = {
+  /** Données d'exemple affichées (poste de développement et tests uniquement). */
+  demo: boolean;
   firstName: string;
   email: string;
   siteUrl: string | null;
@@ -46,6 +49,7 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
   const setupRemaining = remainingSteps(project);
 
   return {
+    demo: isDemoMode(),
     firstName: (user.user_metadata.first_name as string | undefined) ?? "",
     email: user.email ?? "",
     siteUrl: project?.site_url ?? null,

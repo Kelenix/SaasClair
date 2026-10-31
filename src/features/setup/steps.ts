@@ -57,6 +57,8 @@ export type SetupState = {
   siteKey: string | null;
   step: SetupStep;
   completed: Record<ActionStep, boolean>;
+  /** Détection du script et import Stripe simulés (poste de développement et tests uniquement). */
+  demo: boolean;
 };
 
 /** Ligne de code à installer : la clé identifie le projet, jamais l'utilisateur. */

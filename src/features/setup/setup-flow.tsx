@@ -108,11 +108,14 @@ export function SetupFlow({ initial }: { initial: SetupState }) {
               <StepScript
                 siteKey={state.siteKey ?? ""}
                 siteUrl={state.siteUrl}
+                demo={state.demo}
                 onBack={() => goTo("site")}
                 onDone={() => complete("script")}
               />
             )}
-            {state.step === "stripe" && <StepStripe onDone={() => complete("stripe")} />}
+            {state.step === "stripe" && (
+              <StepStripe demo={state.demo} onDone={() => complete("stripe")} />
+            )}
             {state.step === "done" && <StepDone siteUrl={state.siteUrl} />}
 
             {currentAction && (

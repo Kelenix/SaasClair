@@ -163,23 +163,30 @@ function LiveCheck({ isDetected }: { isDetected: boolean }) {
   );
 }
 
-type StepScriptProps = { siteKey: string; siteUrl: string; onBack: () => void; onDone: () => void };
+type StepScriptProps = {
+  siteKey: string;
+  siteUrl: string;
+  demo: boolean;
+  onBack: () => void;
+  onDone: () => void;
+};
 
-export function StepScript({ siteKey, siteUrl, onBack, onDone }: StepScriptProps) {
+export function StepScript({ siteKey, siteUrl, demo, onBack, onDone }: StepScriptProps) {
   const snippet = scriptSnippet(siteKey);
   const [hasCopied, setHasCopied] = useState(false);
   const [isDetected, setIsDetected] = useState(false);
   const advance = useEffectEvent(onDone);
 
+  // Hors données d'exemple, rien n'est simulé : l'étape attend une vraie première visite.
   useEffect(() => {
-    if (!hasCopied || isDetected) return;
+    if (!demo || !hasCopied || isDetected) return;
     const timer = setTimeout(async () => {
       const result = await markScriptDetected();
       if (result.ok) setIsDetected(true);
       else toast.error(result.message);
     }, SIMULATED_DETECTION_MS);
     return () => clearTimeout(timer);
-  }, [hasCopied, isDetected]);
+  }, [demo, hasCopied, isDetected]);
 
   useEffect(() => {
     if (!isDetected) return;
@@ -246,9 +253,11 @@ export function StepScript({ siteKey, siteUrl, onBack, onDone }: StepScriptProps
       </div>
 
       <LiveCheck isDetected={isDetected} />
-      <p className="mt-3 text-xs text-slate">
-        Démonstration : la première visite est simulée quelques secondes après la copie.
-      </p>
+      {demo && (
+        <p className="mt-3 text-xs text-slate">
+          Démonstration : la première visite est simulée quelques secondes après la copie.
+        </p>
+      )}
     </Card>
   );
 }

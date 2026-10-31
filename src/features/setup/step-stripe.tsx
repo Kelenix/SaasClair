@@ -36,8 +36,10 @@ const PHASE_DURATION_MS: Partial<Record<Phase, number>> = {
 };
 const NEXT_PHASE: Partial<Record<Phase, Phase>> = { importing: "linking", linking: "linked" };
 
-export function StepStripe({ onDone }: { onDone: () => void }) {
+export function StepStripe({ demo, onDone }: { demo: boolean; onDone: () => void }) {
   const [phase, setPhase] = useState<Phase>("idle");
+  // Hors données d'exemple : pas d'import inventé, la connexion réelle n'est pas encore ouverte.
+  const [isUnavailable, setIsUnavailable] = useState(false);
   const [isOtherProviderOpen, setIsOtherProviderOpen] = useState(false);
   const finish = useEffectEvent(onDone);
 
@@ -53,6 +55,10 @@ export function StepStripe({ onDone }: { onDone: () => void }) {
   }, [phase]);
 
   async function connect() {
+    if (!demo) {
+      setIsUnavailable(true);
+      return;
+    }
     setPhase("connecting");
     const result = await connectStripe();
     if (!result.ok) {
@@ -99,6 +105,20 @@ export function StepStripe({ onDone }: { onDone: () => void }) {
               <Icon icon={Lock} anim="wiggle" className="size-4 text-emerald-ink" />
               Accès en lecture seule. Nous ne pouvons rien modifier.
             </p>
+            <AnimatePresence>
+              {isUnavailable && (
+                <m.p
+                  role="status"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="max-w-sm rounded-xl bg-gold-tint px-4 py-3 text-[13px] text-ink"
+                >
+                  La connexion à Stripe ouvre très bientôt. Passez cette étape : nous vous écrivons
+                  dès qu&apos;elle est prête, et votre compte vous attend.
+                </m.p>
+              )}
+            </AnimatePresence>
             <button
               type="button"
               onClick={() => setIsOtherProviderOpen((open) => !open)}
