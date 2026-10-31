@@ -25,7 +25,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   if (searchParams.get("error")) return back("refuse");
   const code = searchParams.get("code");
-  if (!code || !sameState(expected, searchParams.get("state"))) return back("erreur");
+  if (!code || !sameState(expected, searchParams.get("state"))) {
+    console.error(
+      `Retour Stripe refusé : ${code ? "jeton anti-falsification absent ou différent" : "code absent"}`,
+    );
+    return back("erreur");
+  }
 
   const config = stripeConfig();
   const service = createServiceClient();

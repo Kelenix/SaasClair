@@ -60,8 +60,16 @@ export async function exchangeCode(config: StripeConfig, code: string) {
   const data = (await response.json().catch(() => null)) as {
     stripe_user_id?: string;
     livemode?: boolean;
+    error?: string;
+    error_description?: string;
   } | null;
-  if (!response.ok || !data?.stripe_user_id) return null;
+  if (!response.ok || !data?.stripe_user_id) {
+    // Raison donnée par Stripe (jamais de clé ni de code) : mode test / réel différent, etc.
+    console.error(
+      `Connexion Stripe refusée (HTTP ${response.status}) : ${data?.error ?? "?"} — ${data?.error_description ?? ""}`,
+    );
+    return null;
+  }
   return { accountId: data.stripe_user_id, livemode: Boolean(data.livemode) };
 }
 
