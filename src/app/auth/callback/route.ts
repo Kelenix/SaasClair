@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ATTRIBUTION_COOKIE, parseAttribution } from "@/features/attribution/attribution";
 import { safeRedirectPath, withWelcome } from "@/lib/safe-redirect";
+import { SITE_URL } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -8,7 +9,10 @@ import { createClient } from "@/lib/supabase/server";
  * échange le code contre une session, puis envoie vers la page demandée (chemin interne uniquement).
  */
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
+  // Adresse publique du site, pas celle de la requête : derrière Nginx, le serveur ne connaît que
+  // son adresse interne (http://0.0.0.0:3000), et les redirections y menaient.
+  const origin = SITE_URL;
   const code = searchParams.get("code");
   const next = safeRedirectPath(searchParams.get("next"));
 
