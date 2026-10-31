@@ -1,7 +1,7 @@
 name: Deploy
 
 # Envoi sur main → contrôles (ci.yml) → image → VPS, sans intervention ni coupure.
-# Désactivé tant que la variable DEPLOY_ENABLED de l'environnement « production » ne vaut pas
+# Désactivé tant que la variable DEPLOY_ENABLED de l’environnement « production » ne vaut pas
 # « true » (docs/deployment.md) : avant cela, seuls les contrôles tournent.
 on:
   push:
@@ -20,9 +20,21 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  image:
+  # Les variables d'un environnement ne sont lisibles qu'à l'intérieur d'une tâche qui le
+  # déclare, pas dans le `if` d'une tâche : on lit donc DEPLOY_ENABLED ici.
+  gate:
     needs: ci
-    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        run: echo "enabled=${{ vars.DEPLOY_ENABLED == 'true' }}" >> "$GITHUB_OUTPUT"
+
+  image:
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     environment: production
     outputs:
