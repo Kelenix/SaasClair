@@ -1,5 +1,6 @@
 import { SITE_URL } from "@/lib/site";
 import type { Database } from "@/lib/supabase/database.types";
+import type { StripeResult } from "@/features/stripe/oauth-state";
 import type { SiteAudit } from "./site-analysis";
 
 export type Project = Database["public"]["Tables"]["projects"]["Row"];
@@ -60,6 +61,10 @@ export type SetupState = {
   completed: Record<ActionStep, boolean>;
   /** Détection du script et import Stripe simulés (poste de développement et tests uniquement). */
   demo: boolean;
+  /** Stripe configuré sur le serveur (clés présentes) : vraie connexion. */
+  stripeAvailable: boolean;
+  /** Retour de la page d'autorisation de Stripe (?stripe=), sinon null. */
+  stripeResult: StripeResult | null;
 };
 
 /**

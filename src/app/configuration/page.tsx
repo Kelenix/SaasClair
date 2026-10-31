@@ -13,13 +13,15 @@ import { FinishLater } from "@/features/setup/finish-later";
 import { SetupFlow } from "@/features/setup/setup-flow";
 import type { SiteAudit } from "@/features/setup/site-analysis";
 import { completedSteps, isActionStep, stepOf, type SetupState } from "@/features/setup/steps";
+import { stripeConfig } from "@/features/stripe/client";
+import { isStripeResult } from "@/features/stripe/oauth-state";
 import { isDemoMode } from "@/lib/demo-mode";
 import { normalizeSiteUrl } from "@/lib/site-url";
 import { createClient, getUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Configuration", robots: { index: false } };
 
-type SearchParams = Promise<{ site?: string; bienvenue?: string; etape?: string }>;
+type SearchParams = Promise<{ site?: string; bienvenue?: string; etape?: string; stripe?: string }>;
 
 /**
  * Reprend la configuration là où elle s'était arrêtée (le projet est enregistré à chaque étape),
@@ -51,6 +53,8 @@ async function SetupLoader({ searchParams }: { searchParams: SearchParams }) {
     step: requested ?? step,
     completed: completedSteps(project),
     demo: isDemoMode(),
+    stripeAvailable: stripeConfig() !== null,
+    stripeResult: isStripeResult(params.stripe) ? params.stripe : null,
   };
   return (
     <>

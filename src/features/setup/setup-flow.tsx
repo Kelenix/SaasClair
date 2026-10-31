@@ -118,7 +118,12 @@ export function SetupFlow({ initial }: { initial: SetupState }) {
               />
             )}
             {state.step === "stripe" && (
-              <StepStripe demo={state.demo} onDone={() => complete("stripe")} />
+              <StepStripe
+                available={state.stripeAvailable}
+                demo={state.demo}
+                result={state.stripeResult}
+                onDone={() => complete("stripe")}
+              />
             )}
             {state.step === "done" && <StepDone siteUrl={state.siteUrl} />}
 

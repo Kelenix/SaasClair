@@ -70,6 +70,12 @@ jobs:
             echo "NEXT_PUBLIC_SITE_URL=http://localhost:3001"
             # Données d’exemple : seulement pour les tests (jamais en production).
             echo "DEMO_DATA=true"
+            # Stripe simulé (/api/stripe-mock) : valeurs factices, tests uniquement.
+            echo "STRIPE_MOCK=true"
+            echo "STRIPE_SECRET_KEY=sk_test_mock"
+            echo "STRIPE_CONNECT_CLIENT_ID=ca_mock"
+            echo "STRIPE_API_BASE=http://localhost:3001/api/stripe-mock"
+            echo "STRIPE_CONNECT_BASE=http://localhost:3001/api/stripe-mock"
           } > .env
       - run: npm run build
       - name: Application (build autonome, port 3001)

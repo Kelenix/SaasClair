@@ -5,6 +5,29 @@
 
 ---
 
+## ADR-024 — Connexion Stripe réelle, en lecture seule
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (« la connexion Stripe doit être prête ») ; conception Claude
+- **Contexte** : l'étape « Connecter Stripe » était simulée, puis affichait « bientôt » en production (ADR-022).
+- **Décision** :
+  - **OAuth Stripe Connect, `scope=read_only`** (comme ChartMogul ou Baremetrics). SaasClair est déclaré « plateforme » dans le compte Stripe de l'utilisateur. Le client clique, accepte sur la page de Stripe, revient. Aucune clé du client n'est stockée : la plateforme lit son compte avec l'en-tête `Stripe-Account`.
+  - **Routes** :
+    - `/api/stripe/connect` : départ vers Stripe, avec un jeton aléatoire en cookie `httpOnly` de 10 minutes ;
+    - `/api/stripe/callback` : vérification du jeton (comparaison à durée constante), échange du code, compte relié au projet. Un compte Stripe ne se relie qu'à un seul projet ;
+    - `/api/stripe/status` : avancement de l'import.
+  - **Import en arrière-plan** (`after()`) : clients (avec l'empreinte de l'email, pour les relier aux visites), abonnements (revenu mensuel calculé, l'annuel divisé par 12), factures des 12 derniers mois. Les deux structures de l'API Stripe sont prises en charge. Stripe n'est marqué « connecté » qu'à la fin de l'import.
+  - **Tables** `stripe_customers`, `stripe_subscriptions` et `stripe_invoices` : lecture par le propriétaire (RLS), écriture par la clé de service. Un déclencheur empêche un utilisateur d'écrire lui-même le compte Stripe relié.
+  - **Vraie connexion dès que les clés sont présentes**, même sur le poste de développement. La simulation ne sert que sans clés, en local.
+  - **Stripe simulé** `/api/stripe-mock`, activé seulement par `STRIPE_MOCK=true` (poste local et CI). Il rejoue autorisation, échange et listes, et permet un test de bout en bout du circuit complet. En production, il répond 404.
+- **Alternatives écartées** : demander au client de coller une clé restreinte (contraire à « zéro configuration ») ; le SDK Stripe (cinq appels REST suffisent).
+- **Conséquences** :
+  - L'utilisateur doit activer Connect et l'OAuth dans son compte Stripe (`docs/manual-tasks.md`, tâche 7).
+  - Pas encore de webhooks ni de resynchronisation programmée : l'import a lieu à la connexion (dette).
+  - Les écrans Revenus et Churn calculés sur ces données arrivent à l'étape suivante.
+- **Impact** : métier — élevé ; technique — moyen.
+
 ## ADR-023 — Collecte réelle des visites
 
 - **Date** : 2026-10-31

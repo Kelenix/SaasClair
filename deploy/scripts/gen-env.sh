@@ -66,6 +66,10 @@ SMTP_USER=
 SMTP_PASS=
 SMTP_SENDER=no-reply@$DOMAIN
 
+# Connexion Stripe de vos clients (OAuth Connect, lecture seule) — docs/deployment.md
+STRIPE_SECRET_KEY=
+STRIPE_CONNECT_CLIENT_ID=
+
 # Connexion Google / GitHub (facultatif) — docs/configuration.md
 GOOGLE_ENABLED=false
 GOOGLE_CLIENT_ID=

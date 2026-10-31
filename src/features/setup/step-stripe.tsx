@@ -18,16 +18,30 @@ import { AnimatedNumber } from "@/components/data/animated-number";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DURATION, EASE_OUT, SPRING } from "@/lib/motion";
+import type { StripeResult } from "@/features/stripe/oauth-state";
 import { connectStripe } from "./actions";
 
 type Phase = "idle" | "connecting" | "importing" | "linking" | "linked";
 
-// Démonstration : import du compte Stripe de Nadia (≈ 340 clients, 12 mois d'historique).
-const IMPORTED: { icon: LucideIcon; label: string; value: number }[] = [
-  { icon: Users, label: "Clients", value: 340 },
-  { icon: Receipt, label: "Paiements", value: 3912 },
-  { icon: CreditCard, label: "Abonnements", value: 352 },
+type Counts = { customers: number; invoices: number; subscriptions: number };
+
+const IMPORTED: { icon: LucideIcon; label: string; key: keyof Counts }[] = [
+  { icon: Users, label: "Clients", key: "customers" },
+  { icon: Receipt, label: "Factures", key: "invoices" },
+  { icon: CreditCard, label: "Abonnements", key: "subscriptions" },
 ];
+// Démonstration : import du compte Stripe de Nadia (≈ 340 clients, 12 mois d'historique).
+const DEMO_COUNTS: Counts = { customers: 340, invoices: 3912, subscriptions: 352 };
+const STATUS_POLL_MS = 2000;
+
+/** Message au retour de Stripe (paramètre ?stripe=), ou quand la connexion n'est pas ouverte. */
+const NOTICES: Record<Exclude<StripeResult, "ok">, string> = {
+  refuse: "Connexion annulée : rien n'a été partagé. Vous pouvez réessayer quand vous voulez.",
+  erreur: "La connexion n'a pas abouti. Réessayez dans un instant.",
+  indisponible:
+    "La connexion à Stripe ouvre très bientôt. Passez cette étape : nous vous écrivons dès qu'elle est prête, et votre compte vous attend.",
+  "deja-relie": "Ce compte Stripe est déjà relié à un autre compte SaasClair.",
+};
 const COVERAGE = 91;
 const PHASE_DURATION_MS: Partial<Record<Phase, number>> = {
   importing: 2400,
@@ -36,14 +50,53 @@ const PHASE_DURATION_MS: Partial<Record<Phase, number>> = {
 };
 const NEXT_PHASE: Partial<Record<Phase, Phase>> = { importing: "linking", linking: "linked" };
 
-export function StepStripe({ demo, onDone }: { demo: boolean; onDone: () => void }) {
-  const [phase, setPhase] = useState<Phase>("idle");
-  // Hors données d'exemple : pas d'import inventé, la connexion réelle n'est pas encore ouverte.
-  const [isUnavailable, setIsUnavailable] = useState(false);
+type StepStripeProps = {
+  /** Stripe configuré sur le serveur : vraie connexion (sinon simulation, en local seulement). */
+  available: boolean;
+  demo: boolean;
+  /** Retour de la page d'autorisation de Stripe (null : première visite de l'étape). */
+  result: StripeResult | null;
+  onDone: () => void;
+};
+
+export function StepStripe({ available, demo, result, onDone }: StepStripeProps) {
+  const real = available;
+  // Retour de Stripe réussi : l'import réel a commencé côté serveur, on suit son avancement.
+  const [phase, setPhase] = useState<Phase>(real && result === "ok" ? "importing" : "idle");
+  const [counts, setCounts] = useState<Counts>(
+    real ? { customers: 0, invoices: 0, subscriptions: 0 } : DEMO_COUNTS,
+  );
+  const [notice, setNotice] = useState<string | null>(
+    result && result !== "ok" ? NOTICES[result] : null,
+  );
   const [isOtherProviderOpen, setIsOtherProviderOpen] = useState(false);
   const finish = useEffectEvent(onDone);
 
+  // Import réel : les nombres arrivent au fil de l'import, jusqu'à « terminé » (ou l'échec).
   useEffect(() => {
+    if (!real || phase !== "importing") return;
+    const timer = setInterval(async () => {
+      const response = await fetch("/api/stripe/status", { cache: "no-store" }).catch(() => null);
+      const status = (await response?.json().catch(() => null)) as
+        (Counts & { status: string | null }) | null;
+      if (!status) return;
+      setCounts({
+        customers: status.customers,
+        invoices: status.invoices,
+        subscriptions: status.subscriptions,
+      });
+      if (status.status === "done") setPhase("linked");
+      if (status.status === "error") {
+        setNotice("L'import de vos données Stripe a échoué. Réessayez : rien n'a été modifié.");
+        setPhase("idle");
+      }
+    }, STATUS_POLL_MS);
+    return () => clearInterval(timer);
+  }, [real, phase]);
+
+  useEffect(() => {
+    // Import réel : il dure le temps qu'il faut, pas de minuterie.
+    if (real && phase === "importing") return;
     const duration = PHASE_DURATION_MS[phase];
     if (!duration) return;
     const timer = setTimeout(() => {
@@ -52,14 +105,20 @@ export function StepStripe({ demo, onDone }: { demo: boolean; onDone: () => void
       else finish();
     }, duration);
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [real, phase]);
 
   async function connect() {
-    if (!demo) {
-      setIsUnavailable(true);
+    if (!real && !demo) {
+      setNotice(NOTICES.indisponible);
       return;
     }
     setPhase("connecting");
+    if (real) {
+      // Page d'autorisation de Stripe (lecture seule), puis retour ici.
+      window.location.assign(new URL("/api/stripe/connect", window.location.origin).href);
+      return;
+    }
+    // Poste de développement sans Stripe configuré : connexion et import simulés.
     const result = await connectStripe();
     if (!result.ok) {
       toast.error(result.message);
@@ -106,7 +165,7 @@ export function StepStripe({ demo, onDone }: { demo: boolean; onDone: () => void
               Accès en lecture seule. Nous ne pouvons rien modifier.
             </p>
             <AnimatePresence>
-              {isUnavailable && (
+              {notice && (
                 <m.p
                   role="status"
                   initial={{ opacity: 0, y: -6 }}
@@ -114,8 +173,7 @@ export function StepStripe({ demo, onDone }: { demo: boolean; onDone: () => void
                   exit={{ opacity: 0 }}
                   className="max-w-sm rounded-xl bg-gold-tint px-4 py-3 text-[13px] text-ink"
                 >
-                  La connexion à Stripe ouvre très bientôt. Passez cette étape : nous vous écrivons
-                  dès qu&apos;elle est prête, et votre compte vous attend.
+                  {notice}
                 </m.p>
               )}
             </AnimatePresence>
@@ -166,15 +224,24 @@ export function StepStripe({ demo, onDone }: { demo: boolean; onDone: () => void
                     <Icon icon={item.icon} className="size-4" /> {item.label}
                   </p>
                   <AnimatedNumber
-                    value={item.value}
+                    value={counts[item.key]}
                     className="font-serif text-3xl font-semibold text-forest"
                   />
                 </m.div>
               ))}
             </div>
 
+            {real && phase === "linked" && (
+              <p
+                role="status"
+                className="flex items-center gap-2 text-sm font-semibold text-forest"
+              >
+                <Check className="size-4 text-emerald-ink" strokeWidth={3} aria-hidden /> Import
+                terminé : vos revenus et vos clients arrivent sur votre tableau de bord.
+              </p>
+            )}
             <AnimatePresence>
-              {(phase === "linking" || phase === "linked") && (
+              {!real && (phase === "linking" || phase === "linked") && (
                 <m.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

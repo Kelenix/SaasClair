@@ -11,7 +11,7 @@
 | 4 | Créer une **application OAuth GitHub** (procédure ci-dessous) | Quand vous voulez | Non | ⬜ |
 | 5 | Fournir le **VPS Hostinger** (plan, IP, accès SSH par clé) et le **nom de domaine** (et où sont gérés ses DNS) | Incrément 9 | Oui, pour la mise en ligne | ⬜ |
 | 6 | Créer le **dépôt GitHub** et y enregistrer les secrets de déploiement | Incrément 9 | Oui, pour la mise en ligne | ⬜ |
-| 7 | (Plus tard) Compte **Stripe Connect** pour la vraie connexion Stripe en lecture seule | Phase « collecte réelle » | Non | ⬜ |
+| 7 | **Stripe Connect** (pour que vos clients connectent leur Stripe en un clic, en lecture seule) : procédure ci-dessous. Commencer en **mode test**, puis refaire en mode réel | Avant d’ouvrir les inscriptions | Oui, pour l’étape Stripe | ⬜ |
 | 8 | Remplacer les **3 témoignages d'exemple** (base locale uniquement) par de vrais témoignages, depuis **Administration › Témoignages**, avec l'accord des personnes. Publier de faux avis est interdit (directive européenne « Omnibus ») | Avant la mise en ligne | Oui, pour la mise en ligne | ⬜ |
 | 9 | Fournir les **informations légales** (raison sociale, SIREN, adresse, hébergeur, contact données personnelles) pour rédiger les mentions légales et la politique de confidentialité, puis les faire valider par un juriste | Avant la mise en ligne | Oui, pour la mise en ligne | ⬜ |
 | 10 | Saisir l'**email de contact** dans **Administration › Paramètres** (bouton « Nous contacter » de l'offre Pro, lien du pied de page) | Avant la mise en ligne | Non | ⬜ |
@@ -32,6 +32,21 @@ Vérification : `ssh -i $env:USERPROFILE.sshsaasclair_admin root@69.62.116.243 h
 `srv1681209` sans demander de mot de passe. Variante sans terminal : hPanel › VPS › Paramètres ›
 Clés SSH › Ajouter, en collant le contenu du fichier `.pub`. Rien d’autre ne change sur le serveur :
 la connexion par mot de passe reste possible tant que vous ne la désactivez pas vous-même.
+
+## Procédure — Stripe Connect (n° 7)
+
+1. Dans votre compte Stripe, **Réglages › Connect** : activez Connect (vous êtes une « plateforme »).
+2. **Connect › Réglages › Onboarding options › OAuth** : activez « OAuth for Standard accounts »,
+   puis ajoutez l’URI de redirection `https://saasclair.com/api/stripe/callback`.
+3. Notez l’**identifiant client** (`ca_…`, affiché sur cette même page) et votre **clé secrète**
+   (Développeurs › Clés API, `sk_…`). En mode test, les deux existent aussi en version test.
+4. Sur le serveur, dans `/srv/saasclair/.env`, ajoutez (ou complétez) vous-même :
+   `STRIPE_SECRET_KEY=sk_…` et `STRIPE_CONNECT_CLIENT_ID=ca_…`, puis
+   `sudo -u deploy bash /srv/saasclair/deploy/scripts/deploy.sh --restart`.
+5. Testez avec un compte Stripe de test : « Connecter Stripe » doit ouvrir la page de Stripe, puis
+   revenir sur SaasClair avec l’import qui défile.
+
+Ne communiquez jamais la clé secrète par message : elle ne va que dans ce fichier.
 
 ## Procédure — connexion avec Google (n° 3)
 

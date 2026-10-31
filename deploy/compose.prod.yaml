@@ -25,6 +25,9 @@ x-web: &web
     NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
     NEXT_PUBLIC_SITE_URL: ${SITE_URL}
     SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+    # Connexion Stripe (OAuth Connect, lecture seule) : vide = « la connexion ouvre bientôt ».
+    STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+    STRIPE_CONNECT_CLIENT_ID: ${STRIPE_CONNECT_CLIENT_ID:-}
     NODE_OPTIONS: --max-old-space-size=384
   healthcheck:
     test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]

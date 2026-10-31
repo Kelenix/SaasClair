@@ -129,14 +129,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"setup_skipped_at": string | null,"site_key": string | null,"site_url": string | null,"stripe_connected_at": string | null,"updated_at": string
+                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"setup_skipped_at": string | null,"site_key": string | null,"site_url": string | null,"stripe_account_id": string | null,"stripe_connected_at": string | null,"stripe_livemode": boolean | null,"stripe_sync_status": string | null,"stripe_synced_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_connected_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -168,6 +168,66 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"stripe_customers": {
+                  Row: {
+                    "created_at": string,"email": string | null,"email_hash": string | null,"id": string,"name": string | null,"project_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at": string,"email"?: string | null,"email_hash"?: string | null,"id": string,"name"?: string | null,"project_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"email"?: string | null,"email_hash"?: string | null,"id"?: string,"name"?: string | null,"project_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stripe_customers_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stripe_invoices": {
+                  Row: {
+                    "amount_due_cents": number,"amount_paid_cents": number,"attempt_count": number,"created_at": string,"currency": string,"customer_id": string | null,"id": string,"next_payment_attempt": string | null,"project_id": string,"status": string,"subscription_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_due_cents"?: number,"amount_paid_cents"?: number,"attempt_count"?: number,"created_at": string,"currency"?: string,"customer_id"?: string | null,"id": string,"next_payment_attempt"?: string | null,"project_id": string,"status": string,"subscription_id"?: string | null
+                  }
+                  Update: {
+                    "amount_due_cents"?: number,"amount_paid_cents"?: number,"attempt_count"?: number,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"id"?: string,"next_payment_attempt"?: string | null,"project_id"?: string,"status"?: string,"subscription_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stripe_invoices_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stripe_subscriptions": {
+                  Row: {
+                    "cancel_at_period_end": boolean,"canceled_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"project_id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id": string,"status": string
+                  }
+                  Update: {
+                    "cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stripe_subscriptions_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "projects"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"testimonials": {
                   Row: {

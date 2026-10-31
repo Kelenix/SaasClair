@@ -6,7 +6,7 @@
 | # | Sujet | Situation actuelle | À faire | Priorité |
 |---|-------|--------------------|---------|----------|
 | 1 | Collecte réelle des visites | Script et réception en place, écran Acquisition réel (ADR-023) ; tunnel, inscrits par canal et insights encore à calculer ; agrégation en JavaScript jusqu’à 50 000 pages vues par période | Agrégation SQL, durée de conservation des visites, tunnel et insights sur les vraies données | P1 |
-| 2 | Stripe (clients) | En production : « la connexion ouvre bientôt » ; en local : connexion et import simulés | Stripe Connect en lecture seule, synchronisation des abonnements | P1 |
+| 2 | Stripe (clients) | Connexion OAuth lecture seule et import à la connexion (ADR-024) ; écrans Revenus et Churn pas encore calculés sur ces données | Écrans Revenus et Churn réels, webhooks Connect ou resynchronisation quotidienne, déconnexion depuis les Paramètres | P1 |
 | 3 | Facturation de SaasClair | Abonnements gérés à la main dans l'administration | Stripe Billing (paiement, factures, relances automatiques), webhooks → `profiles` | P1 |
 | 4 | Envoi d'emails | Emails d'authentification seulement ; alertes et invitations non envoyées | Service d'envoi (SMTP / Brevo), moteur d'alertes, invitations d'équipe persistées | P1 |
 | 5 | Barre de question | Réponses rédigées de démonstration | Moteur d'insights relié aux vraies données | P2 |

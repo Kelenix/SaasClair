@@ -5,6 +5,9 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Connexion Stripe réelle, en lecture seule** : le client accepte sur la page de Stripe, puis ses
+  clients, abonnements et factures (12 mois) sont importés ; l'étape affiche les vrais nombres
+  pendant l'import. Activée dès que les clés Stripe de la plateforme sont renseignées.
 - **Collecte réelle des visites** : la ligne à installer charge `https://saasclair.com/s.js` ;
   chaque page vue est reçue, classée par canal et affichée sur l'écran Acquisition (visiteurs,
   canaux, sites d'origine, pages d'entrée, campagnes). La configuration détecte d'elle-même la
