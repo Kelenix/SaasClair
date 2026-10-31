@@ -16,6 +16,7 @@ export const ADMIN_ACCOUNT = {
 export const PUBLIC_PAGES = [
   "/",
   "/a-propos",
+  "/confidentialite",
   "/connexion",
   "/inscription",
   "/mot-de-passe-oublie",

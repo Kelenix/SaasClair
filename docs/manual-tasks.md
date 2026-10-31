@@ -13,7 +13,7 @@
 | 6 | Créer le **dépôt GitHub** et y enregistrer les secrets de déploiement | Incrément 9 | Oui, pour la mise en ligne | ⬜ |
 | 7 | **Stripe Connect** (pour que vos clients connectent leur Stripe en un clic, en lecture seule) : procédure ci-dessous. Commencer en **mode test**, puis refaire en mode réel | Avant d’ouvrir les inscriptions | Oui, pour l’étape Stripe | ⬜ |
 | 8 | Remplacer les **3 témoignages d'exemple** (base locale uniquement) par de vrais témoignages, depuis **Administration › Témoignages**, avec l'accord des personnes. Publier de faux avis est interdit (directive européenne « Omnibus ») | Avant la mise en ligne | Oui, pour la mise en ligne | ⬜ |
-| 9 | Fournir les **informations légales** (raison sociale, SIREN, adresse, hébergeur, contact données personnelles) pour rédiger les mentions légales et la politique de confidentialité, puis les faire valider par un juriste | Avant la mise en ligne | Oui, pour la mise en ligne | ⬜ |
+| 9 | **Politique de confidentialité** : page publiée sur https://saasclair.com/confidentialite (éditeur Kelenix Tech, responsable Lionel, contact lionelkelenix@gmail.com). À faire relire par un juriste ; ajouter l’adresse et le numéro d’immatriculation, puis une page de mentions légales | Avant l’ouverture au public | Non (page en ligne) | 🔄 |
 | 10 | Saisir l'**email de contact** dans **Administration › Paramètres** (bouton « Nous contacter » de l'offre Pro, lien du pied de page) | Avant la mise en ligne | Non | ⬜ |
 | 11 | **Emails d’authentification avec Resend** : valider `saasclair.com` dans Resend (région Ireland, enregistrements DNS ajoutés chez Hostinger), créer une clé « Sending access » limitée au domaine, puis dans `/srv/saasclair/.env` : `SMTP_HOST=smtp.resend.com`, `SMTP_PORT=587`, `SMTP_USER=resend`, `SMTP_PASS=<clé re_…>`, `SMTP_SENDER=no-reply@saasclair.com`, et `deploy.sh --restart`. Tester avec « mot de passe oublié ». Ensuite seulement, activer la confirmation d’email (`GOTRUE_MAILER_AUTOCONFIRM: "false"` dans `deploy/compose.prod.yaml`) | Avant d’ouvrir les inscriptions au public | Oui, pour « mot de passe oublié » | 🔄 |
 | 12 | En production, créer votre compte **super administrateur** depuis votre poste, avec les variables Supabase de production dans `.env` : `ADMIN_EMAIL=… ADMIN_PASSWORD=… ADMIN_FIRST_NAME=… npm run admin:create` (crée le compte, ou met à jour son mot de passe, puis vérifie la connexion). Le compte `admin@demo.saasclair.fr` n'existe qu'en local | Incrément 9 | Oui, pour administrer | ⬜ |
@@ -50,13 +50,27 @@ Ne communiquez jamais la clé secrète par message : elle ne va que dans ce fich
 
 ## Procédure — connexion avec Google (n° 3)
 
-1. [Google Cloud Console](https://console.cloud.google.com/) → créez un projet « SaasClair ».
-2. **API et services → Écran de consentement OAuth** : type « Externe », nom « SaasClair », votre email.
-3. **Identifiants → Créer des identifiants → ID client OAuth** → « Application Web ».
-4. **URI de redirection autorisés** : `http://127.0.0.1:55321/auth/v1/callback` (local). En production,
-   ajoutez `https://api.saasclair.com/auth/v1/callback`, puis reportez l’identifiant et le secret dans `/srv/saasclair/.env` (`GOOGLE_ENABLED=true`, `GOOGLE_CLIENT_ID`, `GOOGLE_SECRET`) et lancez `deploy.sh --restart`.
-5. Copiez l'ID client et le secret dans `supabase/.env` (`SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` et `…_SECRET`).
-6. Dans `supabase/config.toml`, section `[auth.external.google]`, passez `enabled = true`, puis `npm run down` et `npm run up`.
+**En production** (seules ces étapes comptent) :
+
+1. [Google Cloud Console](https://console.cloud.google.com/) : créez un projet « SaasClair ».
+2. **Google Auth Platform › Branding** : nom « SaasClair », email d’assistance, page d’accueil
+   `https://saasclair.com`, lien vers la **politique de confidentialité** (`https://saasclair.com/confidentialite`),
+   et dans **Domaines autorisés** : `saasclair.com`.
+3. **Audience** : type « Externe », puis **Publier l’application** (« En production »). En mode
+   « Test », seuls les comptes listés peuvent se connecter. Avec les seules informations de base
+   (email, nom, photo), Google ne demande pas de vérification approfondie.
+4. **Clients › Créer un client** : type « Application Web ». **URI de redirection autorisé** :
+   `https://api.saasclair.com/auth/v1/callback`. Copiez l’identifiant client et le secret.
+5. Sur le serveur, dans `/srv/saasclair/.env` (c’est vous qui collez les valeurs) :
+   `GOOGLE_ENABLED=true`, `GOOGLE_CLIENT_ID=…`, `GOOGLE_SECRET=…`, puis
+   `sudo -u deploy bash /srv/saasclair/deploy/scripts/deploy.sh --restart`.
+6. Testez « Continuer avec Google » sur https://saasclair.com/connexion.
+
+**En local seulement** (poste de développement) : ajoutez aussi l’URI
+`http://127.0.0.1:55321/auth/v1/callback` au client Google, copiez l’identifiant et le secret dans
+`supabase/.env` (`SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`, `…_SECRET`), passez
+`enabled = true` dans `supabase/config.toml` (`[auth.external.google]`), puis `npm run down` et
+`npm run up`.
 
 ## Procédure — connexion avec GitHub (n° 4)
 

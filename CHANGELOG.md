@@ -5,6 +5,8 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Politique de confidentialité** (`/confidentialite`), liée depuis le pied de page et le plan du
+  site : données traitées, cookies, hébergement à Francfort, prestataires, durées, droits.
 - **Accueil complet sur les vraies données** : vos revenus (Stripe), vos visiteurs (script) et
   votre site (analyse : pages clés, référencement, vitesse, technologies). Les sections qui ont
   des données passent devant ; les autres indiquent l'action à faire. Plus jamais de page vide.

@@ -14,6 +14,7 @@ export async function SiteFooter() {
     ...(about ? [{ href: "/a-propos", label: "À propos" }] : []),
     { href: "/connexion", label: "Connexion" },
     { href: "/inscription", label: "Essai gratuit" },
+    { href: "/confidentialite", label: "Confidentialité" },
   ];
 
   return (
@@ -42,7 +43,7 @@ export async function SiteFooter() {
       </div>
       <div className="border-t border-cream/10">
         <p className="mx-auto max-w-6xl px-4 py-5 text-[13px] text-cream/75 sm:px-10">
-          © SaasClair · Données hébergées en Europe
+          © SaasClair · Kelenix Tech · Données hébergées en Europe (Allemagne)
         </p>
       </div>
     </footer>
