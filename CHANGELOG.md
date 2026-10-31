@@ -5,6 +5,10 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Ajouté
+- **Paiement des abonnements** (Stripe Checkout) : Starter et Growth, mensuel ou annuel (−20 %),
+  TVA calculée automatiquement, carte, SEPA et PayPal ; portail client pour changer d'offre ou de
+  carte, télécharger ses factures ou résilier. Essai de 14 jours sans carte, puis écran de choix
+  d'offre (données conservées). Prix affichés hors taxes.
 - **Politique de confidentialité** (`/confidentialite`), liée depuis le pied de page et le plan du
   site : données traitées, cookies, hébergement à Francfort, prestataires, durées, droits.
 - **Accueil complet sur les vraies données** : vos revenus (Stripe), vos visiteurs (script) et

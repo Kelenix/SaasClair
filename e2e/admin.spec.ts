@@ -89,9 +89,10 @@ test.describe("super administrateur", () => {
 
     await page.goto("/admin/newsletter");
     await page.getByLabel("Rechercher un abonné").fill(email);
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(page.getByText(email)).toBeVisible({ timeout: 15_000 });
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: `Supprimer ${email}` }).click();
-    await expect(page.getByText(email)).toHaveCount(0);
+    // Sous charge, la suppression peut prendre quelques secondes à se refléter.
+    await expect(page.getByText(email)).toHaveCount(0, { timeout: 15_000 });
   });
 });

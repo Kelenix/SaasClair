@@ -9,10 +9,11 @@ import { AnimatedNumber } from "@/components/data/animated-number";
 import { Cascade, CascadeItem, Reveal } from "@/components/motion/reveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatEuro } from "@/lib/format";
 import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { PLANS } from "./content";
+import { annualTotal, isPaidPlan } from "@/features/billing/plans";
+import { formatEuroExact } from "@/lib/format";
 import { annualMonthlyPrice } from "./pricing-math";
 
 type Billing = "monthly" | "annual";
@@ -36,7 +37,8 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
             Un prix simple. 14 jours pour essayer.
           </h2>
           <p className="text-[17px] text-slate">
-            Le même essai gratuit sur chaque offre. SaasClair ne fait que lire votre Stripe.
+            Le même essai gratuit sur chaque offre, sans carte bancaire. Prix hors taxes : la TVA
+            est calculée selon votre pays au paiement.
           </p>
         </Reveal>
 
@@ -119,7 +121,7 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
                           )}
                         />
                         <span className={isRecommended ? "text-cream/70" : "text-slate"}>
-                          / mois
+                          HT / mois
                         </span>
                       </>
                     ) : (
@@ -139,8 +141,8 @@ export function Pricing({ contactEmail }: { contactEmail: string | null }) {
                       isRecommended ? "text-cream/70" : "text-slate",
                     )}
                   >
-                    {price && isAnnual
-                      ? `Soit ${formatEuro(price * 12)} facturés une fois par an`
+                    {price && isAnnual && isPaidPlan(plan.id)
+                      ? `Soit ${formatEuroExact(annualTotal(plan.id))} HT facturés une fois par an`
                       : price
                         ? "Facturé chaque mois"
                         : "Selon votre volume"}

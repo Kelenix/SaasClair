@@ -22,8 +22,8 @@ ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0
 COPY --from=build --chown=node:node /app/public ./public
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
-# Création du compte super administrateur en production (deploy/scripts/create-admin.sh)
-COPY --from=build --chown=node:node /app/scripts/create-super-admin.mjs ./scripts/
+# Scripts d'exploitation : compte super administrateur (create-admin.sh), facturation Stripe (billing-setup.sh)
+COPY --from=build --chown=node:node /app/scripts/create-super-admin.mjs /app/scripts/billing-setup.mjs ./scripts/
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

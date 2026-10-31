@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { SiteAudit } from "@/features/setup/site-analysis";
 import { remainingSteps, type ActionStep } from "@/features/setup/steps";
+import { accessOf, type Access } from "@/features/billing/plans";
 import { isDemoMode } from "@/lib/demo-mode";
 import { createClient, getUser } from "@/lib/supabase/server";
 
@@ -32,6 +33,18 @@ export type DashboardContext = {
   isSuperAdmin: boolean;
   /** Compte suspendu par le super administrateur : accès au tableau de bord fermé. */
   isSuspended: boolean;
+  /** Droit d'accès : essai, abonné, paiement en échec, essai terminé (choix d'offre), suspendu. */
+  access: Access;
+  billing: {
+    plan: string;
+    interval: string | null;
+    paymentMethod: string | null;
+    status: string;
+    trialEndsAt: string;
+    periodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
+    hasStripeCustomer: boolean;
+  };
 };
 
 /** Utilisateur, projet et retours sur les insights — lus une seule fois par requête. */
@@ -43,7 +56,13 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
   const [{ data: project }, { data: feedback }, { data: profile }] = await Promise.all([
     supabase.from("projects").select("*").eq("owner_id", user.id).maybeSingle(),
     supabase.from("insight_feedback").select("insight_id, status").eq("owner_id", user.id),
-    supabase.from("profiles").select("role, subscription_status").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select(
+        "role, subscription_status, plan, billing_interval, payment_method, trial_ends_at, current_period_end, cancel_at_period_end, stripe_customer_id",
+      )
+      .eq("id", user.id)
+      .maybeSingle(),
     // « Vu à l'instant » pour l'espace administrateur (au plus une écriture par minute).
     supabase.rpc("touch_last_seen"),
   ]);
@@ -66,6 +85,17 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
     accountCreatedAt: user.created_at,
     isSuperAdmin: profile?.role === "super_admin",
     isSuspended: profile?.subscription_status === "suspended",
+    access: accessOf(profile, new Date()),
+    billing: {
+      plan: profile?.plan ?? "trial",
+      interval: profile?.billing_interval ?? null,
+      paymentMethod: profile?.payment_method ?? null,
+      status: profile?.subscription_status ?? "trialing",
+      trialEndsAt: profile?.trial_ends_at ?? new Date().toISOString(),
+      periodEnd: profile?.current_period_end ?? null,
+      cancelAtPeriodEnd: profile?.cancel_at_period_end ?? false,
+      hasStripeCustomer: Boolean(profile?.stripe_customer_id),
+    },
     feedback: Object.fromEntries((feedback ?? []).map((row) => [row.insight_id, row.status])),
   };
 });

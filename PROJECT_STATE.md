@@ -57,6 +57,7 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-10-31 — Paiement des abonnements (ADR-027) : Stripe Checkout (TVA automatique, SEPA, PayPal), notifications signées et appliquées une fois, portail client, écran de fin d’essai, onglet Abonnement réel (usage réel du mois), prix HT exacts sur le site, script d’installation Stripe. Test de bout en bout du paiement avec le Stripe simulé. Attend la tâche n° 15 (Stripe Tax, SEPA, PayPal) puis l’installation.
 - 2026-10-31 — Accueil réunissant les trois sources réelles (retour utilisateur « une dashboard ne peut pas être vide ») : revenus Stripe, visiteurs du script, analyse du site (pages clés, référencement, vitesse, technologies), sections avec données d’abord, sinon action précise. Test de la FAQ rendu robuste (repère unique, délais adaptés à la charge).
 - 2026-10-31 — Resynchronisation horaire des comptes Stripe (ADR-026) : route `/api/stripe/sync` protégée par `CRON_SECRET`, script et tâche programmée sur le VPS, écrans stables pendant l’import.
 - 2026-10-31 — Écrans Revenus, Churn et Accueil calculés sur les vraies données Stripe (`src/features/stripe/metrics.ts`, testé) ; vraies données d’abord, exemple seulement en local. Connexion Stripe réelle validée en production par l’utilisateur (compte encore vide). Corrigés : portée `read_write` (ADR-025), dépliage Stripe limité à 4 niveaux (produits lus à part).

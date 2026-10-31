@@ -1,4 +1,6 @@
+import { createHmac } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
+import { SITE_URL } from "@/lib/site";
 
 // Stripe SIMULÉ, pour les tests de bout en bout uniquement (STRIPE_MOCK=true, sur le poste de
 // développement et dans la CI). Absent de la production : sans la variable, tout renvoie 404.
@@ -125,6 +127,50 @@ const authorized = (request: NextRequest) =>
 
 type Context = { params: Promise<{ path: string[] }> };
 
+// --- Facturation de SaasClair (compte de la plateforme, sans en-tête Stripe-Account) ---------
+// Sans état : le client, le prix et le compte voyagent dans les identifiants simulés.
+type Purchase = { customer: string; price: string; user: string };
+const pack = (data: Purchase) => Buffer.from(JSON.stringify(data)).toString("base64url");
+const unpack = (value: string) =>
+  JSON.parse(Buffer.from(value, "base64url").toString()) as Purchase;
+const lookupOf = (price: string) => price.replace(/^price_mock_/, "");
+
+function subscriptionOf(id: string) {
+  const purchase = unpack(id.replace(/^sub_mock_/, ""));
+  return {
+    id,
+    object: "subscription",
+    customer: purchase.customer,
+    status: "active",
+    cancel_at_period_end: false,
+    metadata: { user_id: purchase.user },
+    default_payment_method: { type: "card" },
+    items: {
+      data: [
+        { current_period_end: now() + 30 * DAY, price: { lookup_key: lookupOf(purchase.price) } },
+      ],
+    },
+  };
+}
+
+/** Notification signée, comme Stripe (même secret que le point de réception). */
+async function sendWebhook(type: string, object: Record<string, unknown>) {
+  const payload = JSON.stringify({
+    id: `evt_mock${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`,
+    type,
+    data: { object },
+  });
+  const t = now();
+  const signature = createHmac("sha256", process.env.STRIPE_WEBHOOK_SECRET ?? "")
+    .update(`${t}.${payload}`)
+    .digest("hex");
+  await fetch(`${SITE_URL}/api/billing/webhook`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Stripe-Signature": `t=${t},v1=${signature}` },
+    body: payload,
+  });
+}
+
 export async function GET(request: NextRequest, { params }: Context) {
   if (!enabled()) return notFound();
   const path = (await params).path.join("/");
@@ -139,6 +185,30 @@ export async function GET(request: NextRequest, { params }: Context) {
     );
     back.searchParams.set("state", query.get("state") ?? "");
     return NextResponse.redirect(back);
+  }
+
+  // Page de paiement : le client « paie » aussitôt ; Stripe prévient SaasClair, puis le renvoie.
+  if (path === "checkout") {
+    const token = request.nextUrl.searchParams.get("d") ?? "";
+    const purchase = unpack(token);
+    const success = request.nextUrl.searchParams.get("success") ?? SITE_URL;
+    await sendWebhook("checkout.session.completed", {
+      object: "checkout.session",
+      subscription: `sub_mock_${pack(purchase)}`,
+      customer: purchase.customer,
+      client_reference_id: purchase.user,
+    });
+    return NextResponse.redirect(success);
+  }
+  if (path === "v1/prices" || path.startsWith("v1/subscriptions/")) {
+    if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    if (path === "v1/prices") {
+      const keys = [...request.nextUrl.searchParams.entries()]
+        .filter(([key]) => key.startsWith("lookup_keys"))
+        .map(([, value]) => value);
+      return NextResponse.json({ data: keys.map((key) => ({ id: `price_mock_${key}` })) });
+    }
+    return NextResponse.json(subscriptionOf(path.slice("v1/subscriptions/".length)));
   }
 
   const data = lists(path);
@@ -161,7 +231,31 @@ export async function GET(request: NextRequest, { params }: Context) {
 
 export async function POST(request: NextRequest, { params }: Context) {
   if (!enabled()) return notFound();
-  if ((await params).path.join("/") !== "oauth/token" || !authorized(request)) return notFound();
+  const path = (await params).path.join("/");
+  if (!authorized(request)) return notFound();
+  if (path !== "oauth/token") {
+    const form = new URLSearchParams(await request.text());
+    if (path === "v1/customers") {
+      return NextResponse.json({ id: `cus_mock${Date.now().toString(36)}` });
+    }
+    if (path === "v1/checkout/sessions") {
+      const token = pack({
+        customer: form.get("customer") ?? "",
+        price: form.get("line_items[0][price]") ?? "",
+        user: form.get("client_reference_id") ?? "",
+      });
+      const url = new URL(`${SITE_URL}/api/stripe-mock/checkout`);
+      url.searchParams.set("d", token);
+      url.searchParams.set("success", form.get("success_url") ?? SITE_URL);
+      return NextResponse.json({ id: `cs_mock_${token}`, url: url.toString() });
+    }
+    if (path === "v1/billing_portal/sessions") {
+      return NextResponse.json({
+        url: `${SITE_URL}/app/parametres?onglet=abonnement&portail=simule`,
+      });
+    }
+    return notFound();
+  }
   const body = new URLSearchParams(await request.text());
   const code = body.get("code") ?? "";
   if (!/^ac_mock[0-9a-z]+$/.test(code)) {

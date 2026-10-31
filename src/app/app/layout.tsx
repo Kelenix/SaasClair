@@ -7,6 +7,7 @@ import { StateMessage } from "@/components/states/state-message";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Paywall, PastDueBanner } from "@/features/billing/paywall";
 import { getDashboardContext } from "@/features/dashboard/context";
 import { getPeriod } from "@/features/dashboard/get-period";
 import { MobileNav } from "@/features/dashboard/mobile-nav";
@@ -15,11 +16,16 @@ import { PeriodSelector } from "@/features/dashboard/period-selector";
 import { QuestionBar } from "@/features/dashboard/question-bar";
 import { Sidebar } from "@/features/dashboard/sidebar";
 import { NotificationsMenu, ProfileMenu } from "@/features/dashboard/topbar-menus";
+import { getPublicSettings } from "@/features/site-content/queries";
 
 export const metadata: Metadata = { title: "Tableau de bord", robots: { index: false } };
 
 async function DashboardShell({ children }: { children: React.ReactNode }) {
-  const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
+  const [context, period, settings] = await Promise.all([
+    getDashboardContext(),
+    getPeriod(),
+    getPublicSettings(),
+  ]);
 
   return (
     <PeriodProvider initial={period}>
@@ -62,8 +68,17 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
                   description="Vos données sont conservées. Écrivez-nous pour réactiver votre compte : nous répondons sous 24 heures."
                 />
               </Card>
+            ) : context.access === "expired" ? (
+              <Paywall
+                trialEnded={context.billing.status === "trialing"}
+                hasStripeCustomer={context.billing.hasStripeCustomer}
+                contactEmail={settings.contactEmail}
+              />
             ) : (
-              <PeriodContent>{children}</PeriodContent>
+              <>
+                {context.access === "past_due" && <PastDueBanner />}
+                <PeriodContent>{children}</PeriodContent>
+              </>
             )}
           </main>
         </div>

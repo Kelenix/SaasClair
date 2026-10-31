@@ -19,6 +19,7 @@
 | 12 | En production, créer votre compte **super administrateur** depuis votre poste, avec les variables Supabase de production dans `.env` : `ADMIN_EMAIL=… ADMIN_PASSWORD=… ADMIN_FIRST_NAME=… npm run admin:create` (crée le compte, ou met à jour son mot de passe, puis vérifie la connexion). Le compte `admin@demo.saasclair.fr` n'existe qu'en local | Incrément 9 | Oui, pour administrer | ⬜ |
 | 13 | (Facultatif) Coller vos identifiants **Google Ads** (ID et libellé de conversion « inscription »), **GA4**, **Meta** et **LinkedIn** dans **Administration › Paramètres** | Quand vous lancez des campagnes | Non | ⬜ |
 | 14 | Compléter la **politique de confidentialité** avec les traceurs publicitaires utilisés (le bandeau de consentement est déjà en place) | Avant d'activer un pixel | Oui, pour la publicité | ⬜ |
+| 15 | **Paiement des abonnements SaasClair** (Stripe Billing) : activer Stripe Tax, SEPA et PayPal dans votre compte Stripe, puis lancer l’installation (procédure ci-dessous) | Avant d’encaisser | Oui, pour le paiement | ⬜ |
 
 ## Procédure — accès SSH par clé (n° 5)
 
@@ -47,6 +48,24 @@ la connexion par mot de passe reste possible tant que vous ne la désactivez pas
    revenir sur SaasClair avec l’import qui défile.
 
 Ne communiquez jamais la clé secrète par message : elle ne va que dans ce fichier.
+
+## Procédure — paiement des abonnements (n° 15)
+
+Dans votre compte Stripe (le même que pour Connect), en **mode réel** :
+
+1. **Taxes › Paramètres** : activez **Stripe Tax**, indiquez l’adresse de votre entreprise
+   (origine) et ajoutez votre **immatriculation en France** (numéro de TVA). Stripe calcule
+   ensuite la TVA selon le pays du client et applique l’autoliquidation entre entreprises de l’UE.
+2. **Paramètres › Moyens de paiement** : activez **Prélèvement SEPA** et **PayPal** (la carte,
+   Apple Pay et Google Pay sont déjà actifs).
+3. **Paramètres › Facturation › Factures et reçus** : vérifiez la raison sociale, l’adresse et
+   le numéro de TVA qui apparaîtront sur les factures (mentions légales, tâche n° 9).
+4. Sur le serveur, lancez l’installation (produits, prix, notifications, portail) :
+   `sudo -u deploy bash /srv/saasclair/deploy/scripts/billing-setup.sh`
+
+Tant que Stripe Tax n’est pas activé, le paiement affiche « Le paiement en ligne n’est pas encore
+ouvert ». Pour l’ouvrir sans TVA automatique en attendant, ajoutez
+`BILLING_AUTOMATIC_TAX=false` au `.env` du serveur puis `deploy.sh --restart`.
 
 ## Procédure — connexion avec Google (n° 3)
 

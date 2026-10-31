@@ -32,6 +32,10 @@ x-web: &web
     STRIPE_OAUTH_SCOPE: ${STRIPE_OAUTH_SCOPE:-read_write}
     # Secret de la resynchronisation horaire (deploy/scripts/stripe-sync.sh).
     CRON_SECRET: ${CRON_SECRET:-}
+    # Abonnement SaasClair (Stripe Billing, ADR-027) : écrits par deploy/scripts/billing-setup.sh.
+    STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    STRIPE_PORTAL_CONFIGURATION: ${STRIPE_PORTAL_CONFIGURATION:-}
+    BILLING_AUTOMATIC_TAX: ${BILLING_AUTOMATIC_TAX:-true}
     NODE_OPTIONS: --max-old-space-size=384
   healthcheck:
     test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]

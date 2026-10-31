@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getDashboardContext } from "@/features/dashboard/context";
-import { DAY_MS } from "@/features/dashboard/demo-utils";
 import { ScreenSkeleton } from "@/features/dashboard/screen-skeleton";
 import { BillingPanel } from "@/features/dashboard/settings/billing-panel";
 import { IntegrationsPanel } from "@/features/dashboard/settings/integrations-panel";
@@ -10,21 +9,30 @@ import { ProjectPanel } from "@/features/dashboard/settings/project-panel";
 import { SettingsTabs } from "@/features/dashboard/settings/settings-tabs";
 import { SETTINGS_TABS, type SettingsTab } from "@/features/dashboard/settings/tabs";
 import { TeamPanel } from "@/features/dashboard/settings/team-panel";
+import { getPublicSettings } from "@/features/site-content/queries";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
-const TRIAL_DAYS = 14;
-
-type Props = { searchParams: Promise<{ onglet?: string }> };
+type Props = { searchParams: Promise<{ onglet?: string; paiement?: string }> };
 
 async function Settings({ searchParams }: Props) {
-  const [context, { onglet }] = await Promise.all([getDashboardContext(), searchParams]);
+  const [context, { onglet, paiement }, settings] = await Promise.all([
+    getDashboardContext(),
+    searchParams,
+    getPublicSettings(),
+  ]);
+  const now = new Date();
+  // Usage réel : pages vues reçues ce mois-ci (la RLS ne compte que celles de son propre site).
+  const supabase = await createClient();
+  const { count: pageviewsThisMonth } = await supabase
+    .from("events")
+    .select("*", { count: "exact", head: true })
+    .eq("type", "pageview")
+    .gte("occurred_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString());
   const initial = SETTINGS_TABS.some((tab) => tab.id === onglet)
     ? (onglet as SettingsTab)
     : "projet";
-  const daysSinceSignup = Math.floor(
-    (Date.now() - new Date(context.accountCreatedAt).getTime()) / DAY_MS,
-  );
 
   return (
     <>
@@ -52,7 +60,14 @@ async function Settings({ searchParams }: Props) {
           ),
           equipe: <TeamPanel firstName={context.firstName} email={context.email} />,
           abonnement: (
-            <BillingPanel trialDaysLeft={Math.max(0, TRIAL_DAYS - daysSinceSignup)} members={1} />
+            <BillingPanel
+              billing={context.billing}
+              access={context.access}
+              pageviewsThisMonth={pageviewsThisMonth ?? 0}
+              contactEmail={settings.contactEmail}
+              paymentResult={paiement ?? null}
+              now={now}
+            />
           ),
           confidentialite: (
             <PrivacyPanel siteUrl={context.siteUrl} anonymizeVisitors={context.anonymizeVisitors} />

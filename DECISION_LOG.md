@@ -5,6 +5,21 @@
 
 ---
 
+## ADR-027 — Paiement de l'abonnement SaasClair avec Stripe Billing
+
+- **Date** : 2026-10-31
+- **Statut** : Accepté
+- **Décideur** : utilisateur (essai sans carte, écran de choix d'offre à la fin de l'essai, Stripe Tax, carte + SEPA + PayPal) ; conception Claude
+- **Décision** :
+  - **Stripe Checkout** (page hébergée par Stripe) en mode abonnement. TVA calculée par Stripe Tax (prix HT, `tax_behavior=exclusive`), numéro de TVA intracommunautaire et adresse de facturation demandés. Les moyens de paiement sont ceux activés dans le tableau de bord Stripe : carte, SEPA, PayPal.
+  - **4 prix** retrouvés par `lookup_key` (`saasclair_{starter|growth}_{monthly|annual}`) : 29 € et 79 € HT par mois, ou 278,40 € et 758,40 € HT par an (−20 %). Ils sont créés par `scripts/billing-setup.mjs` (`deploy/scripts/billing-setup.sh`), qui crée aussi le point de réception des notifications et la configuration du portail client. Les secrets sont écrits directement dans le `.env` du serveur.
+  - **Notifications signées** `/api/billing/webhook` : signature HMAC vérifiée (tolérance de 5 minutes). Chaque notification n'est appliquée qu'une fois (`billing_events`). Le profil est mis à jour depuis l'état actuel de l'abonnement chez Stripe, jamais depuis le seul message : offre, rythme, statut, moyen de paiement, renouvellement, résiliation programmée.
+  - **Accès** (`accessOf`) : essai de 14 jours sans carte. Ensuite, sans abonnement (ou abonnement arrêté), l'écran de choix d'offre remplace le tableau de bord, données conservées. Un paiement en échec garde l'accès, avec un bandeau. Le super administrateur n'est jamais bloqué.
+  - **Portail client Stripe** : changer d'offre ou de carte, factures, résiliation en fin de période. Un client déjà abonné qui choisit une autre offre y est envoyé (pas de second abonnement).
+  - **Stripe simulé** étendu : prix, client, page de paiement, notification signée, portail. Test de bout en bout du paiement complet.
+- **Conséquences** : Stripe Tax, SEPA et PayPal sont à activer dans le tableau de bord Stripe (`docs/manual-tasks.md`, tâche 15). Les prix affichés sont désormais HT. La gestion manuelle des abonnements dans l'administration reste possible, mais Stripe fait foi dès qu'il envoie une notification.
+- **Impact** : métier — élevé.
+
 ## ADR-026 — Resynchronisation horaire des comptes Stripe
 
 - **Date** : 2026-10-31
