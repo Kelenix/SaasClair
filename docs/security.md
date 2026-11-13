@@ -97,9 +97,23 @@
 - Stripe simulé : trois verrous (`STRIPE_MOCK`, `DEMO_DATA`, adresse différente de saasclair.com).
 - `main` exige les contrôles quality, secrets, image et e2e ; fusion automatique quand ils passent.
 
+## Double authentification et session (lot A7)
+
+- Super administrateur : application d'authentification (TOTP) obligatoire. `is_super_admin()`
+  exige `aal2` dans le jeton : toute politique RLS d'administration refuse une session simple
+  (**vérifié** : 1 profil visible en `aal1`, 154 en `aal2`). Page `/double-authentification` :
+  ajout par QR code, puis code à chaque session ; 5 essais par 5 minutes et par compte.
+- Changer d'appareil : uniquement par SSH (`deploy/scripts/reset-admin-2fa.sh <email>`), jamais
+  depuis une session simple.
+- Cookies de session Supabase en `httpOnly` (serveur et proxy) : un script injecté ne peut pas
+  lire la session. Le navigateur n'utilise Supabase que pour démarrer Google et GitHub.
+
 ## Points ouverts
-- CSP avec `'unsafe-inline'` pour les scripts (scripts en ligne de Next.js) : à durcir avec un nonce (lot A7, reporté).
+- CSP avec `'unsafe-inline'` pour les scripts : un nonce est incompatible avec le pré-rendu
+  partiel (`cacheComponents`), documenté par Next.js. Compensé par `script-src-attr 'none'`,
+  `object-src 'none'`, une politique sans domaine tiers dans l'espace connecté et la session
+  `httpOnly`. À revoir si Next.js permet un jour nonce et pré-rendu ensemble.
 - Clé SSH de déploiement : la restreindre à `deploy.sh` dans `authorized_keys` sur le serveur (action manuelle).
 - `/api/health?complet=1` reste public (test de mise en ligne du déploiement), limité en débit par Nginx.
-- Double authentification (.docx §8) : prévue côté Supabase, pas encore exposée dans l'interface (évolution).
+- Double authentification pour les clients (facultative) : possible avec la même mécanique, pas encore proposée.
 - Envoi réel des alertes (email, Slack) : pas encore de moteur d'alertes ; les réglages sont enregistrés et seront lus par lui.

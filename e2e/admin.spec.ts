@@ -9,7 +9,12 @@ import {
 test.describe("accès à l'espace administrateur", () => {
   test("un client est renvoyé vers son tableau de bord", async ({ page }) => {
     // Projet « ordinateur » : session du compte client de démonstration.
-    for (const path of ["/admin", "/admin/utilisateurs", "/admin/parametres"]) {
+    for (const path of [
+      "/admin",
+      "/admin/utilisateurs",
+      "/admin/parametres",
+      "/double-authentification",
+    ]) {
       await page.goto(path);
       await expect(page).toHaveURL(/\/app$/);
     }

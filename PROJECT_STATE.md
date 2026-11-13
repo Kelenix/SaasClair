@@ -57,6 +57,7 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-11-16 — Lot A7 : double authentification obligatoire du super administrateur (TOTP, exigée par la base via `aal2`, réinitialisation par SSH), cookies de session `httpOnly`, CSP durcie sans nonce (incompatible avec le pré-rendu partiel). Testé de bout en bout sur un build de production local (21 tests d'administration, 11 de sécurité, aucune violation de CSP).
 - 2026-11-15 — Lot B (chiffres exacts) : churn mensuel sur toutes les périodes, remises et prix à l'usage, une devise additionnée, API Stripe figée ; historique des factures (expansion, contraction, cohortes, valeur vie client, conversion des essais, graphique de l'accueil) ; suivi Stripe incrémental, nouvel essai sur 429, notifications Connect (`/api/stripe/webhook`) ; Acquisition et Tunnel regroupés par la base (`acquisition_summary`, `funnel_summary`, vérifiés identiques) ; collecte `replaceState`/`hashchange`, identifiants de clic, canaux IA et réseaux sociaux, www/app. 3 migrations. 252 tests unitaires. Action manuelle : relancer `billing-setup.sh` (point Connect).
 - 2026-11-14 — Lot A (sécurité) : lecture de site épinglée (anti-rebinding) et IPv6 durci, droits par colonne sur `projects` (vérifiés sur la base), révocation Stripe à la suppression, limites de connexion et d'emails, `/api/collect` borné, RGPD (25 mois, 13 mois, textes), newsletter côté serveur, actions GitHub épinglées. 220 tests unitaires.
 

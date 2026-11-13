@@ -4,6 +4,17 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Sécurité (lot A7)
+- **Double authentification du super administrateur** : application d'authentification reliée
+  par QR code à la première visite de l'administration, puis code à 6 chiffres à chaque
+  connexion (`/double-authentification`). Exigée par la base : `is_super_admin()` ne vaut que
+  dans une session confirmée (`aal2`, migration `admin_mfa`). 5 codes par 5 minutes.
+  Réinitialisation par SSH seulement : `deploy/scripts/reset-admin-2fa.sh`.
+- **Session illisible par le JavaScript** : cookies Supabase en `httpOnly`.
+- **CSP** : `script-src-attr 'none'` (aucun attribut d'événement), `object-src 'none'`, et une
+  politique sans aucun domaine publicitaire pour le tableau de bord et l'administration. Le
+  nonce reste écarté : incompatible avec le pré-rendu partiel (documentation Next.js).
+
 ### Chiffres exacts (lot B)
 - **Churn mensuel** sur toutes les périodes : sur 12 mois, le churn d'un mois moyen (plus le
   cumul de l'année) ; 7 jours ramenés au mois. Churn en revenu : départs et baisses d'offre.

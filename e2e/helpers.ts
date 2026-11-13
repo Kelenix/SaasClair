@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
+import { createHmac } from "node:crypto";
 
 /** Compte de démonstration local, créé par supabase/seed.sql (surchargeable par variables d'environnement). */
 export const DEMO_ACCOUNT = {
@@ -12,6 +13,27 @@ export const ADMIN_ACCOUNT = {
   email: process.env.E2E_ADMIN_EMAIL ?? "admin@demo.saasclair.fr",
   password: process.env.E2E_ADMIN_PASSWORD ?? "Admin-SaasClair-2026",
 };
+
+/**
+ * Code à 6 chiffres d'une application d'authentification (TOTP, RFC 6238 : HMAC-SHA1, 30 s),
+ * pour la double authentification du super administrateur.
+ */
+export function totp(secret: string, at = Date.now()) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const bits = secret
+    .replace(/[\s=]/g, "")
+    .toUpperCase()
+    .split("")
+    .map((char) => alphabet.indexOf(char).toString(2).padStart(5, "0"))
+    .join("");
+  const key = Buffer.from(bits.match(/.{8}/g)!.map((byte) => parseInt(byte, 2)));
+  const counter = Buffer.alloc(8);
+  counter.writeBigUInt64BE(BigInt(Math.floor(at / 30_000)));
+  const hmac = createHmac("sha1", key).update(counter).digest();
+  const offset = hmac[hmac.length - 1] & 0xf;
+  const value = (hmac.readUInt32BE(offset) & 0x7fffffff) % 1_000_000;
+  return value.toString().padStart(6, "0");
+}
 
 export const PUBLIC_PAGES = [
   "/",

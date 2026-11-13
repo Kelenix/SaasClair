@@ -29,3 +29,38 @@ test.describe("accès protégés", () => {
     expect(headers["x-powered-by"]).toBeUndefined();
   });
 });
+
+// Session du compte de démonstration (projet « ordinateur ») : l'espace connecté est servi.
+test.describe("politique de sécurité du contenu et session", () => {
+  test("la CSP interdit les attributs d'événement, et l'espace connecté les outils publicitaires", async ({
+    request,
+  }) => {
+    const csp = (await request.get("/")).headers()["content-security-policy"] ?? "";
+    expect(csp).toContain("script-src-attr 'none'");
+    expect(csp).toContain("object-src 'none'");
+    const privateCsp = (await request.get("/app")).headers()["content-security-policy"] ?? "";
+    expect(privateCsp).toContain("script-src-attr 'none'");
+    expect(privateCsp).not.toContain("googletagmanager");
+  });
+
+  for (const path of ["/", "/connexion", "/app", "/app/revenus"]) {
+    test(`${path} : aucune violation de la CSP`, async ({ page }) => {
+      const violations: string[] = [];
+      page.on("console", (message) => {
+        if (/Content Security Policy|Refused to/i.test(message.text())) {
+          violations.push(message.text());
+        }
+      });
+      await page.goto(path, { waitUntil: "networkidle" });
+      expect(violations).toEqual([]);
+    });
+  }
+
+  test("la session est illisible par le JavaScript de la page (cookie httpOnly)", async ({
+    context,
+  }) => {
+    const session = (await context.cookies()).filter((cookie) => cookie.name.startsWith("sb-"));
+    expect(session.length).toBeGreaterThan(0);
+    expect(session.every((cookie) => cookie.httpOnly)).toBe(true);
+  });
+});
