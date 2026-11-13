@@ -7,6 +7,9 @@ import { computeRevenue, type RealRevenue } from "./metrics";
 
 const MAX_SUBSCRIPTIONS = 20_000;
 const MAX_INVOICES = 5_000;
+/** Factures d'abonnement des 13 derniers mois (un client mensuel : 13 lignes). */
+const MAX_RECURRING = 100_000;
+const HISTORY_DAYS = 400;
 
 /**
  * Revenus et churn calculés sur les données Stripe importées du compte connecté (la RLS ne laisse
@@ -27,13 +30,14 @@ export const getRealRevenue = cache(
     if (!project?.stripe_account_id || !project.stripe_connected_at) return null;
 
     // Lecture par pages : le serveur coupe chaque réponse à 1 000 lignes (fetch-all.ts).
-    const [subscriptions, invoices, customers] = await Promise.all([
+    const historySince = new Date(now.getTime() - HISTORY_DAYS * 86_400_000).toISOString();
+    const [subscriptions, invoices, customers, recurring] = await Promise.all([
       fetchAll(
         (from, to) =>
           supabase
             .from("stripe_subscriptions")
             .select(
-              "id, customer_id, status, mrr_cents, plan_name, created_at, ended_at, cancel_at_period_end, current_period_end, trial_end, cancel_at, billing_interval, card_expires_at",
+              "id, customer_id, status, mrr_cents, currency, price_unknown, plan_name, created_at, ended_at, cancel_at_period_end, current_period_end, trial_end, cancel_at, billing_interval, card_expires_at",
             )
             .eq("project_id", project.id)
             .order("id")
@@ -45,7 +49,7 @@ export const getRealRevenue = cache(
           supabase
             .from("stripe_invoices")
             .select(
-              "id, customer_id, status, amount_due_cents, attempt_count, next_payment_attempt",
+              "id, customer_id, status, amount_due_cents, attempt_count, next_payment_attempt, currency",
             )
             .eq("project_id", project.id)
             .in("status", ["open", "uncollectible"])
@@ -63,7 +67,21 @@ export const getRealRevenue = cache(
             .range(from, to),
         MAX_SUBSCRIPTIONS,
       ),
+      // Historique des montants facturés : expansion, contraction, revenu passé exact.
+      fetchAll(
+        (from, to) =>
+          supabase
+            .from("stripe_invoices")
+            .select("id, subscription_id, status, recurring_cents, period_start, period_end")
+            .eq("project_id", project.id)
+            .in("status", ["paid", "open"])
+            .not("recurring_cents", "is", null)
+            .gte("period_end", historySince)
+            .order("id")
+            .range(from, to),
+        MAX_RECURRING,
+      ),
     ]);
-    return computeRevenue(subscriptions, invoices, customers, period, now);
+    return computeRevenue(subscriptions, invoices, customers, period, now, recurring);
   },
 );

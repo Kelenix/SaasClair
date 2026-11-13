@@ -15,7 +15,7 @@ output=$(dc exec -T -e STRIPE_PORTAL_CONFIGURATION="$(env_value STRIPE_PORTAL_CO
 # Lignes lisibles affichées ; les « CLÉ=valeur » vont dans le .env, sans être montrées.
 grep -v '^[A-Z_]*=' <<<"$output" || true
 changed=0
-for name in STRIPE_WEBHOOK_SECRET STRIPE_PORTAL_CONFIGURATION; do
+for name in STRIPE_WEBHOOK_SECRET STRIPE_CONNECT_WEBHOOK_SECRET STRIPE_PORTAL_CONFIGURATION; do
   value=$(grep "^$name=" <<<"$output" | tail -1 | cut -d= -f2- || true)
   [ -n "$value" ] || continue
   if grep -q "^$name=" "$ENV_FILE"; then

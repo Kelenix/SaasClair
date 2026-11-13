@@ -1,8 +1,31 @@
 import { PERIOD_DAYS, type Period } from "@/features/dashboard/period";
+import {
+  cohorts,
+  customerMoves,
+  customerMrr,
+  DAY_MS,
+  everPaid,
+  flowBuckets,
+  flowsBetween,
+  isCurrent,
+  lastBilled,
+  mainCurrency,
+  monthlyChurn,
+  NEVER_STARTED,
+  paidFrom,
+  segmentsBySubscription,
+  time,
+  trialConversion,
+  type Cohort,
+  type RecurringInvoiceRow,
+  type RevenueBucket,
+} from "./history";
 
 // Revenus et churn calculés sur les données Stripe importées (fonctions pures, testées).
-// Montants en euros (centimes ÷ 100). Sans historique des changements d'offre, l'expansion et
-// la contraction ne sont pas encore mesurées (registre de la dette technique).
+// Montants dans la devise principale du compte (centimes ÷ 100). Les mouvements (nouveaux,
+// expansion, contraction, départs) viennent de l'historique des factures (history.ts).
+
+export type { RecurringInvoiceRow } from "./history";
 
 export type SubscriptionRow = {
   id: string;
@@ -22,6 +45,9 @@ export type SubscriptionRow = {
   billing_interval?: string | null;
   /** Fin du mois d'expiration de la carte qui paie l'abonnement. */
   card_expires_at?: string | null;
+  currency?: string;
+  /** Prix par paliers ou à l'usage : revenu lu sur la dernière facture. */
+  price_unknown?: boolean;
 };
 export type InvoiceRow = {
   id: string;
@@ -30,6 +56,7 @@ export type InvoiceRow = {
   amount_due_cents: number;
   attempt_count: number;
   next_payment_attempt: string | null;
+  currency?: string;
 };
 export type CustomerRow = { id: string; name: string | null; email: string | null };
 
@@ -65,14 +92,39 @@ export type FailedInvoice = {
 export type RealRevenue = {
   mrr: number;
   startMrr: number;
+  /** Revenu des nouveaux clients de la période. */
   newMrr: number;
+  /** Hausses d'offre (ou de quantité) des clients déjà payants. */
+  expansionMrr: number;
+  /** Baisses d'offre des clients qui restent. */
+  contractionMrr: number;
+  /** Revenu des clients partis. */
   churnedMrr: number;
   activeSubscriptions: number;
   trialing: number;
-  /** Clients payants au début de la période qui n'ont plus d'abonnement à la fin ÷ clients payants au début (%). */
+  /**
+   * Churn clients PAR MOIS (%) : départs de chaque mois ÷ clients payants au début de ce mois,
+   * en moyenne sur la période (une période plus courte est ramenée au mois).
+   */
   customerChurn: number;
-  /** Revenu perdu des abonnements payants au début ÷ revenu au début de la période (%). */
+  /** Churn en revenu PAR MOIS (%) : départs et baisses d'offre ÷ revenu au début de chaque mois. */
   revenueChurn: number;
+  /** Mouvements du revenu tranche par tranche (graphique de l'accueil). */
+  buckets: RevenueBucket[];
+  /** Rétention par cohorte (mois du premier paiement), sur 12 mois. */
+  cohorts: Cohort[];
+  /** Revenu mensuel moyen par client payant. */
+  arpa: number;
+  /** Durée de vie moyenne d'un client (mois) et valeur vie client : null sans départ mesuré. */
+  lifetimeMonths: number | null;
+  ltv: number | null;
+  /** Essais terminés sur la période et devenus payants (null : aucun essai terminé). */
+  trialConversion: { ended: number; converted: number; rate: number } | null;
+  /** Devise des montants affichés, et abonnements dans une autre devise (non comptés). */
+  currency: string;
+  otherCurrencies: { count: number; currencies: string[] };
+  /** Abonnements à paliers ou à l'usage : estimés sur leur dernière facture, ou inconnus. */
+  usageBased: { estimated: number; missing: number };
   /** Revenu mensuel à chaque fin de mois, sur 12 mois. */
   history: { label: string; mrr: number }[];
   atRisk: AtRisk[];
@@ -108,34 +160,9 @@ export type RealRevenue = {
   customerMrr: Record<string, number>;
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-/** Statuts qui comptent dans le revenu récurrent (past_due : Stripe retente encore). */
-const PAYING = new Set(["active", "past_due"]);
-/** Jamais démarrés : ni revenu, ni churn. */
-const NEVER_STARTED = new Set(["incomplete", "incomplete_expired"]);
-
-const time = (iso: string | null) => (iso ? Date.parse(iso) : null);
 const euros = (cents: number) => Math.round(cents) / 100;
 const percent = (part: number, whole: number) =>
   whole ? Math.round((part / whole) * 1000) / 10 : 0;
-
-/** Début du revenu : fin de l'essai s'il y en a eu un, sinon création de l'abonnement. */
-const paidFrom = (sub: SubscriptionRow) =>
-  Math.max(Date.parse(sub.created_at), time(sub.trial_end ?? null) ?? 0);
-
-/** A rapporté de l'argent : ni jamais démarré, ni encore en essai, ni arrêté pendant l'essai. */
-function everPaid(sub: SubscriptionRow) {
-  if (NEVER_STARTED.has(sub.status) || sub.status === "trialing") return false;
-  const ended = time(sub.ended_at);
-  return ended === null || ended > paidFrom(sub);
-}
-
-/** Abonnement payant à l'instant t (période d'essai exclue). */
-function payingAt(sub: SubscriptionRow, t: number) {
-  if (!everPaid(sub)) return false;
-  const ended = time(sub.ended_at);
-  return paidFrom(sub) <= t && (ended === null || ended > t);
-}
 
 const endedWithin = (sub: SubscriptionRow, start: number, end: number) => {
   const t = time(sub.ended_at);
@@ -176,69 +203,60 @@ const RENEWAL_WINDOW_DAYS = 30;
 
 const sum = (subs: SubscriptionRow[]) => subs.reduce((total, sub) => total + sub.mrr_cents, 0);
 
-/** Mouvements d'une période [start, end] : payants au début, nouveaux, partis. */
-function movements(started: SubscriptionRow[], start: number, end: number) {
-  const atStart = started.filter((sub) => payingAt(sub, start));
-  // Nouveau revenu : abonnements devenus payants pendant la période (essais convertis compris).
-  const created = started.filter((sub) => {
-    const t = paidFrom(sub);
-    return everPaid(sub) && t > start && t <= end;
-  });
-  // Revenu perdu : abonnements payants arrêtés pendant la période (un essai annulé n'en est pas).
-  const ended = started.filter((sub) => everPaid(sub) && endedWithin(sub, start, end));
-  const endedFromStart = atStart.filter((sub) => endedWithin(sub, start, end));
-
-  // Churn clients : un client qui change d'offre (résiliation puis nouvel abonnement) reste.
-  const customersAtStart = new Set(atStart.map((sub) => sub.customer_id));
-  const stillThere = new Set(
-    started
-      .filter((sub) => sub.status !== "trialing" || time(sub.ended_at) === null)
-      .filter((sub) => {
-        const t = time(sub.ended_at);
-        return Date.parse(sub.created_at) <= end && (t === null || t > end);
-      })
-      .map((sub) => sub.customer_id),
-  );
-  const lostCustomerIds = [...customersAtStart].filter((id) => !stillThere.has(id));
-  return { atStart, created, ended, endedFromStart, customersAtStart, lostCustomerIds };
-}
-
-const summaryOf = (m: ReturnType<typeof movements>) => ({
-  customerChurn: percent(m.lostCustomerIds.length, m.customersAtStart.size),
-  revenueChurn: percent(sum(m.endedFromStart), sum(m.atStart)),
-  newMrr: euros(sum(m.created)),
-  churnedMrr: euros(sum(m.ended)),
-  customersAtStart: m.customersAtStart.size,
-  lostCustomers: m.lostCustomerIds.length,
-});
-
 export function computeRevenue(
   subscriptions: SubscriptionRow[],
   invoices: InvoiceRow[],
   customers: CustomerRow[],
   period: Period,
   now: Date,
+  /** Part récurrente des factures d'abonnement (historique des montants facturés). */
+  recurringInvoices: RecurringInvoiceRow[] = [],
 ): RealRevenue {
   const end = now.getTime();
-  const start = end - PERIOD_DAYS[period] * DAY_MS;
-  const started = subscriptions.filter((sub) => !NEVER_STARTED.has(sub.status));
+  const days = PERIOD_DAYS[period];
+  const start = end - days * DAY_MS;
+  const segments = segmentsBySubscription(recurringInvoices);
 
-  const current = started.filter((sub) => PAYING.has(sub.status) && !sub.ended_at);
-  const { atStart, created, ended, endedFromStart, customersAtStart, lostCustomerIds } = movements(
-    started,
-    start,
-    end,
-  );
+  // Une seule devise additionnée : la principale. Les autres sont signalées.
+  const all = subscriptions.filter((sub) => !NEVER_STARTED.has(sub.status));
+  const currency = mainCurrency(all);
+  const inCurrency = (value: { currency?: string }) => (value.currency ?? "eur") === currency;
+  const others = all.filter((sub) => isCurrent(sub) && !inCurrency(sub));
+
+  // Paliers ou usage : le prix ne dit pas le revenu, la dernière facture si.
+  let estimated = 0;
+  let missing = 0;
+  const started = all.filter(inCurrency).map((sub) => {
+    if (!sub.price_unknown) return sub;
+    const billed = lastBilled(segments, sub.id);
+    if (isCurrent(sub)) {
+      if (billed === null) missing += 1;
+      else estimated += 1;
+    }
+    // La facture couvre toutes les lignes (fixes et à l'usage) : elle remplace le prix connu.
+    return billed === null ? sub : { ...sub, mrr_cents: billed };
+  });
+
+  const current = started.filter(isCurrent);
+  const flows = flowsBetween(started, start, end, segments, true);
+  const { lost: lostCustomerIds } = customerMoves(started, start, end);
+  // Abonnements payants arrêtés pendant la période (un essai annulé n'en est pas) : par offre.
+  const ended = started.filter((sub) => everPaid(sub) && endedWithin(sub, start, end));
+  const churn = monthlyChurn(started, start, end, segments, true);
+
   // Même calcul sur la période précédente, de même durée : pour dire si le churn monte ou baisse.
-  const previous = movements(started, start - (end - start), start);
-  const lostCustomers = lostCustomerIds.length;
+  const previousStart = start - (end - start);
+  const previousFlows = flowsBetween(started, previousStart, start, segments);
+  const previousMoves = customerMoves(started, previousStart, start);
+  const previousChurn = monthlyChurn(started, previousStart, start, segments);
 
   const history = Array.from({ length: 12 }, (_, i) => {
     const month = new Date(now.getFullYear(), now.getMonth() - 11 + i + 1, 1);
     const t = Math.min(month.getTime() - 1, end);
+    const total = [...customerMrr(started, t, segments).values()].reduce((a, b) => a + b, 0);
     return {
       label: MONTHS.format(new Date(now.getFullYear(), now.getMonth() - 11 + i, 1)),
-      mrr: euros(sum(started.filter((sub) => payingAt(sub, t)))),
+      mrr: euros(total),
     };
   });
   // Dernier point = le revenu affiché (un abonnement impayé n'y compte plus).
@@ -248,8 +266,9 @@ export function computeRevenue(
   const names = new Map(customers.map((c) => [c.id, c]));
   const failed = invoices.filter(
     (invoice) =>
-      (invoice.status === "open" && invoice.attempt_count > 0) ||
-      invoice.status === "uncollectible",
+      inCurrency(invoice) &&
+      ((invoice.status === "open" && invoice.attempt_count > 0) ||
+        invoice.status === "uncollectible"),
   );
   const failedByCustomer = new Map<string, number>();
   for (const invoice of failed) {
@@ -427,8 +446,19 @@ export function computeRevenue(
       ? { name: nameOf(topId), mrr: euros(topCents!), share: percent(topCents!, totalCents) }
       : null;
 
+  // Valeur vie client : revenu moyen par client × durée de vie moyenne (1 ÷ churn mensuel).
+  const arpa = byCustomer.size ? totalCents / byCustomer.size : 0;
+  const lifetimeMonths = churn.customer > 0 ? 100 / churn.customer : null;
+
   return {
-    previous: summaryOf(previous),
+    previous: {
+      customerChurn: previousChurn.customer,
+      revenueChurn: previousChurn.revenue,
+      newMrr: euros(previousFlows.newMrr),
+      churnedMrr: euros(previousFlows.churned),
+      customersAtStart: previousMoves.atStart.size,
+      lostCustomers: previousMoves.lost.length,
+    },
     payingCustomers: byCustomer.size,
     customerMrr: Object.fromEntries([...byCustomer].map(([id, cents]) => [id, euros(cents)])),
     lostCustomerNames: lostCustomerIds.map(nameOf),
@@ -436,13 +466,27 @@ export function computeRevenue(
     lostByPlan,
     topCustomer,
     mrr: euros(sum(current)),
-    startMrr: euros(sum(atStart)),
-    newMrr: euros(sum(created)),
-    churnedMrr: euros(sum(ended)),
+    startMrr: euros(flows.start),
+    newMrr: euros(flows.newMrr),
+    expansionMrr: euros(flows.expansion),
+    contractionMrr: euros(flows.contraction),
+    churnedMrr: euros(flows.churned),
     activeSubscriptions: current.length,
     trialing: started.filter((sub) => sub.status === "trialing" && !sub.ended_at).length,
-    customerChurn: percent(lostCustomers, customersAtStart.size),
-    revenueChurn: percent(sum(endedFromStart), sum(atStart)),
+    customerChurn: churn.customer,
+    revenueChurn: churn.revenue,
+    buckets: flowBuckets(started, start, end, segments, days),
+    cohorts: cohorts(started, now),
+    arpa: euros(arpa),
+    lifetimeMonths: lifetimeMonths === null ? null : Math.round(lifetimeMonths * 10) / 10,
+    ltv: lifetimeMonths === null ? null : euros(arpa * lifetimeMonths),
+    trialConversion: trialConversion(started, start, end),
+    currency,
+    otherCurrencies: {
+      count: others.length,
+      currencies: [...new Set(others.map((sub) => (sub.currency ?? "eur").toUpperCase()))],
+    },
+    usageBased: { estimated, missing },
     history,
     atRisk,
     mrrAtRisk: Math.round(atRisk.reduce((total, risk) => total + risk.mrr, 0) * 100) / 100,

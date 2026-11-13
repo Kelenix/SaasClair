@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregateVisits, type VisitRow } from "./aggregate";
+import { acquisitionFromSummary, aggregateVisits, type VisitRow } from "./aggregate";
 
 const now = new Date("2026-10-31T12:00:00Z");
 const visit = (visitor: string, day: number, extra: Partial<VisitRow> = {}): VisitRow => ({
@@ -52,5 +52,39 @@ describe("aggregateVisits", () => {
   it("une période sans visite donne des zéros, pas des chiffres inventés", () => {
     const empty = aggregateVisits([], "30j", now);
     expect(empty).toMatchObject({ visitors: 0, pageviews: 0, mobileShare: 0, channels: [] });
+  });
+});
+
+describe("acquisitionFromSummary (réponse de la base)", () => {
+  it("tranches remises à leur place, classements et parts calculés", () => {
+    const result = acquisitionFromSummary(
+      {
+        visitors: 4,
+        pageviews: 9,
+        mobile: 1,
+        trend: [
+          [0, 2],
+          [6, 3],
+        ],
+        channels: [
+          ["ai", 3],
+          ["seo", 1],
+        ],
+        landing: [["/", 4]],
+        campaigns: [],
+        referrers: [["chatgpt.com", 3]],
+      },
+      "7j",
+    );
+    expect(result.trend).toEqual([2, 0, 0, 0, 0, 0, 3]);
+    expect(result.channels[0]).toEqual({ id: "ai", name: "Assistants IA", visitors: 3, share: 75 });
+    expect(result.mobileShare).toBe(25);
+  });
+
+  it("aucune réponse : des zéros, jamais d'erreur", () => {
+    expect(acquisitionFromSummary(null, "30j")).toMatchObject({
+      visitors: 0,
+      trend: Array(30).fill(0),
+    });
   });
 });

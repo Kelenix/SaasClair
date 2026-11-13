@@ -50,21 +50,35 @@ envoyée sous forme d'empreinte SHA-256, jamais en clair. */
     if (window.fetch) fetch(endpoint, { method: "POST", body: body, keepalive: true, mode: "no-cors" });
   }
 
+  // Une page vue par page : changer un filtre (?q=…) ou viser une section (#faq) n'en est pas
+  // une ; une route d'application par l'ancre (#/tarifs) si.
+  function pageKey() {
+    var route = /^#!?\//.test(location.hash) ? location.hash.split("?")[0] : "";
+    return location.origin + location.pathname + route;
+  }
   var last = null;
+  var lastUrl = null;
   function pageview() {
-    if (location.href === last) return;
-    var from = last || document.referrer;
-    last = location.href;
+    var key = pageKey();
+    if (key === last) return;
+    var from = lastUrl || document.referrer;
+    last = key;
+    lastUrl = location.href;
     send("pageview", { r: from });
   }
 
-  // Applications à page unique : chaque changement d'adresse est une page vue.
-  var push = history.pushState;
-  history.pushState = function () {
-    push.apply(this, arguments);
-    pageview();
-  };
+  // Applications à page unique : chaque changement d'adresse est une page vue, qu'il ajoute une
+  // page à l'historique (pushState) ou remplace la page courante (replaceState).
+  ["pushState", "replaceState"].forEach(function (name) {
+    var original = history[name];
+    history[name] = function () {
+      var result = original.apply(this, arguments);
+      pageview();
+      return result;
+    };
+  });
   window.addEventListener("popstate", pageview);
+  window.addEventListener("hashchange", pageview);
 
   window.saasclair = function (command, value) {
     if (command !== "identify" || !value || !window.crypto || !crypto.subtle) return;

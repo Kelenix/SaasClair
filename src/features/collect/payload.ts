@@ -63,11 +63,50 @@ const parseUrl = (value: string | undefined) => {
 
 const bareHost = (host: string) => host.toLowerCase().replace(/^www\./, "");
 
-/** Même site : même domaine, avec ou sans « www », ou l'un de ses sous-domaines. */
+/** Suffixes à deux niveaux courants : le domaine de « app.monsaas.co.uk » est monsaas.co.uk. */
+const TWO_LEVEL_SUFFIX =
+  /\.(co|com|org|net|gov|ac|edu)\.(uk|jp|au|nz|br|za|in|il|kr|tr|mx|ar|sg|hk|tw)$|\.(gouv|asso)\.fr$/;
+
+/** Hébergeurs partagés : chaque sous-domaine est le site d'un client différent. */
+const SHARED_HOSTS = [
+  "vercel.app",
+  "netlify.app",
+  "github.io",
+  "pages.dev",
+  "herokuapp.com",
+  "onrender.com",
+  "webflow.io",
+  "framer.website",
+  "framer.app",
+  "wixsite.com",
+  "myshopify.com",
+  "bubbleapps.io",
+  "web.app",
+  "firebaseapp.com",
+  "azurewebsites.net",
+  "fly.dev",
+  "railway.app",
+  "replit.app",
+  "carrd.co",
+];
+
+/** Domaine du site, sans ses sous-domaines (www, app, blog…). */
+export function rootDomain(host: string) {
+  const bare = bareHost(host);
+  // Adresse IP : prise telle quelle.
+  if (/^[\d.]+$/.test(bare) || bare.includes(":")) return bare;
+  const labels = bare.split(".");
+  const shared = SHARED_HOSTS.find((suffix) => bare.endsWith(`.${suffix}`));
+  const keep = shared ? shared.split(".").length + 1 : TWO_LEVEL_SUFFIX.test(bare) ? 3 : 2;
+  return labels.slice(-keep).join(".");
+}
+
+/**
+ * Même site : même domaine, quel que soit le sous-domaine. Le site vitrine (www.monsaas.fr) et
+ * l'application (app.monsaas.fr) sont un seul et même site, dans les deux sens.
+ */
 export function isSameSite(host: string, siteHost: string) {
-  const a = bareHost(host);
-  const b = bareHost(siteHost);
-  return a === b || a.endsWith(`.${b}`);
+  return rootDomain(host) === rootDomain(siteHost);
 }
 
 export function deviceOf(width: number | undefined): Device | null {
@@ -79,6 +118,17 @@ export function deviceOf(width: number | undefined): Device | null {
 
 const param = (url: URL, name: string, max: number) =>
   url.searchParams.get(name)?.trim().slice(0, max) || null;
+
+/**
+ * Chemin de la page. Les applications qui changent de page par l'ancre (« #/tarifs ») gardent
+ * leur route ; une simple ancre de section (« #faq ») est ignorée.
+ */
+export function pathOfPage(page: URL) {
+  const route = /^#!?(\/[^?#]*)/.exec(page.hash)?.[1];
+  const base = page.pathname || "/";
+  const path = route ? `${base.replace(/\/$/, "")}${route}` : base;
+  return path.slice(0, 512);
+}
 
 /**
  * Ligne à enregistrer, ou null si la visite est refusée : adresse invalide, page d'un autre site
@@ -95,9 +145,7 @@ export function toEvent(payload: Payload, siteUrl: string | null): EventRow | nu
   // Provenance externe seulement : un passage de www.monsaas.fr à app.monsaas.fr reste interne.
   const referrer = parseUrl(payload.r);
   const internal = (host: string) =>
-    isSameSite(host, page.hostname) ||
-    isSameSite(page.hostname, host) ||
-    (site !== null && isSameSite(host, site.hostname));
+    isSameSite(host, page.hostname) || (site !== null && isSameSite(host, site.hostname));
   const external = referrer && !internal(referrer.hostname) ? referrer : null;
   const utmSource = param(page, "utm_source", 100);
   const utmMedium = param(page, "utm_medium", 100);
@@ -105,12 +153,13 @@ export function toEvent(payload: Payload, siteUrl: string | null): EventRow | nu
   return {
     type: payload.t,
     visitor_id: payload.v,
-    path: (page.pathname || "/").slice(0, 512),
+    path: pathOfPage(page),
     referrer_host: external ? bareHost(external.hostname).slice(0, 255) : null,
     channel: classifyChannel({
       source: utmSource ?? undefined,
       medium: utmMedium ?? undefined,
       referrer: external?.href,
+      clickIds: [...page.searchParams.keys()],
     }),
     utm_source: utmSource,
     utm_medium: utmMedium,

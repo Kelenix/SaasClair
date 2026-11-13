@@ -3,18 +3,24 @@ import type { Period } from "@/features/dashboard/period";
 import { fetchAll } from "@/lib/supabase/fetch-all";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { CHANNEL_LABELS, type Channel } from "@/features/attribution/attribution";
-import { aggregateVisits, periodStart, type RealAcquisition } from "./aggregate";
+import {
+  acquisitionFromSummary,
+  BUCKETS,
+  periodStart,
+  type AcquisitionSummary,
+  type RealAcquisition,
+} from "./aggregate";
 import type { RealRevenue } from "@/features/stripe/metrics";
-import { computeFunnel, type KeyPaths, type RealFunnel } from "./funnel";
+import { funnelFromSummary, type FunnelSummary, type KeyPaths, type RealFunnel } from "./funnel";
 import { linkCustomers, type CustomerLinks } from "./linking";
 
-/** Au-delà, l'agrégation passera en SQL (registre de la dette technique). */
-const MAX_ROWS = 50_000;
+/** Clients Stripe lus pour les relier à leur canal. */
+const MAX_CUSTOMERS = 50_000;
 
 /**
- * Vraies pages vues de la période, pour le compte connecté (la RLS ne laisse lire que les visites
- * de son propre site), agrégées pour l'écran Acquisition. Lecture par pages : le serveur coupe
- * chaque réponse à 1 000 lignes.
+ * Pages vues de la période, pour le compte connecté (la RLS ne laisse lire que les visites de son
+ * propre site), regroupées par la base pour l'écran Acquisition : quelques totaux, quel que soit
+ * le nombre de visites.
  */
 export async function getRealAcquisition(period: Period, now: Date): Promise<RealAcquisition> {
   const user = await getUser();
@@ -22,23 +28,16 @@ export async function getRealAcquisition(period: Period, now: Date): Promise<Rea
   const { data: project } = user
     ? await supabase.from("projects").select("id").eq("owner_id", user.id).maybeSingle()
     : { data: null };
-  if (!project) return aggregateVisits([], period, now);
+  if (!project) return acquisitionFromSummary(null, period);
 
-  const since = periodStart(period, now).toISOString();
-  const rows = await fetchAll(
-    (from, to) =>
-      supabase
-        .from("events")
-        .select("visitor_id, occurred_at, path, channel, utm_campaign, referrer_host, device")
-        .eq("project_id", project.id)
-        .eq("type", "pageview")
-        .gte("occurred_at", since)
-        .order("occurred_at", { ascending: true })
-        .order("id", { ascending: true })
-        .range(from, to),
-    MAX_ROWS,
-  );
-  return aggregateVisits(rows, period, now);
+  const { data, error } = await supabase.rpc("acquisition_summary", {
+    p_project: project.id,
+    p_since: periodStart(period, now).toISOString(),
+    p_until: now.toISOString(),
+    p_buckets: BUCKETS[period],
+  });
+  if (error) console.error("Acquisition :", error.message);
+  return acquisitionFromSummary((data as AcquisitionSummary | null) ?? null, period);
 }
 
 /**
@@ -66,7 +65,7 @@ export async function getCustomerLinks(revenue: RealRevenue | null): Promise<Cus
           .not("email_hash", "is", null)
           .order("id")
           .range(from, to),
-      MAX_ROWS,
+      MAX_CUSTOMERS,
     ),
     supabase.rpc("customer_first_touch", { p_project: project.id }),
   ]);
@@ -97,19 +96,15 @@ export async function getRealFunnel(
     .maybeSingle();
   if (!project) return null;
 
-  const since = periodStart(period, now).toISOString();
-  const rows = await fetchAll(
-    (from, to) =>
-      supabase
-        .from("events")
-        .select("visitor_id, type, path, device, channel")
-        .eq("project_id", project.id)
-        .gte("occurred_at", since)
-        .order("occurred_at", { ascending: true })
-        .order("id", { ascending: true })
-        .range(from, to),
-    MAX_ROWS,
-  );
-  if (!rows.length) return null;
-  return computeFunnel(rows, paths, (id) => CHANNEL_LABELS[id as Channel] ?? id);
+  const { data, error } = await supabase.rpc("funnel_summary", {
+    p_project: project.id,
+    p_since: periodStart(period, now).toISOString(),
+    // Page clé inconnue : chaîne vide (aucune étape mesurée pour elle).
+    p_pricing: paths.pricing ?? "",
+    p_signup: paths.signup ?? "",
+  });
+  if (error) console.error("Tunnel :", error.message);
+  const summary = data as FunnelSummary | null;
+  if (!summary?.groups.length) return null;
+  return funnelFromSummary(summary, paths, (id) => CHANNEL_LABELS[id as Channel] ?? id);
 }

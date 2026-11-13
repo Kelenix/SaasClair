@@ -63,6 +63,12 @@ Dans votre compte Stripe (le même que pour Connect), en **mode réel** :
 4. Sur le serveur, lancez l’installation (produits, prix, notifications, portail) :
    `sudo -u deploy bash /srv/saasclair/deploy/scripts/billing-setup.sh`
 
+   Elle crée aussi le **point de réception des comptes Stripe de vos clients** (Connect,
+   `/api/stripe/webhook`) et enregistre son secret `STRIPE_CONNECT_WEBHOOK_SECRET` dans le `.env`.
+   Déjà lancée avant le lot B ? **Relancez-la une fois** : elle ne recrée rien d’existant et
+   n’ajoute que ce point. Pour vérifier : Stripe › Développeurs › Webhooks › un point
+   « SaasClair — comptes Stripe des clients », avec l’option « Comptes connectés ».
+
 Tant que Stripe Tax n’est pas activé, le paiement affiche « Le paiement en ligne n’est pas encore
 ouvert ». Pour l’ouvrir sans TVA automatique en attendant, ajoutez
 `BILLING_AUTOMATIC_TAX=false` au `.env` du serveur puis `deploy.sh --restart`.

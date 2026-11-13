@@ -80,6 +80,17 @@
 - Réception des visites (`/api/collect`) : 120 par minute et par IP, 50 000 par heure et par site, corps limité à 4 Ko même sans `Content-Length`. Un projet sans adresse apprend celle de sa première visite, puis refuse les autres sites.
 - Limiteurs en mémoire (une seule instance de l'application) : remis à zéro au redémarrage.
 
+## Comptes Stripe des clients (lot B4)
+
+- Lecture seule en pratique : uniquement des requêtes `GET` sur le compte connecté (en-tête
+  `Stripe-Account`), version de l'API figée (`2025-03-31.basil`), nouvel essai limité (4) après
+  « trop de requêtes » ou erreur passagère.
+- Notifications en temps réel (`/api/stripe/webhook`, point Connect) : signature HMAC vérifiée
+  avec `STRIPE_CONNECT_WEBHOOK_SECRET` (5 minutes de tolérance) ; compte inconnu ignoré ; le
+  message n'est jamais cru : l'objet est relu chez Stripe. Identifiants filtrés
+  (`[A-Za-z0-9_]`) avant d'être placés dans une adresse.
+- « Application déconnectée » depuis Stripe : lien coupé et données Stripe du projet effacées.
+
 ## Chaîne de déploiement (audit, A8)
 
 - Actions GitHub épinglées par empreinte de commit (étiquette notée en commentaire).

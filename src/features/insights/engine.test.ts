@@ -34,6 +34,17 @@ const revenue = (overrides: Partial<RealRevenue> = {}): RealRevenue => ({
   lostByPlan: [],
   topCustomer: { name: "Alpha", mrr: 200, share: 10 },
   customerMrr: {},
+  expansionMrr: 0,
+  contractionMrr: 0,
+  buckets: [],
+  cohorts: [],
+  arpa: 200,
+  lifetimeMonths: null,
+  ltv: null,
+  trialConversion: null,
+  currency: "eur",
+  otherCurrencies: { count: 0, currencies: [] },
+  usageBased: { estimated: 0, missing: 0 },
   ...overrides,
 });
 

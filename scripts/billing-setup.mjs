@@ -1,6 +1,7 @@
 // Installe la facturation de SaasClair dans son compte Stripe (une fois ; relançable sans risque).
 // Crée ce qui manque : produits Starter, Growth et Pro, 6 prix HT (TVA à part, Stripe Tax), point de
-// réception des notifications, configuration du portail client. ADR-027, ADR-028.
+// réception des notifications (abonnements de SaasClair, et comptes Stripe connectés par les
+// clients), configuration du portail client. ADR-027, ADR-028.
 //
 // Lancé sur le serveur par deploy/scripts/billing-setup.sh, qui reporte dans le .env les valeurs
 // imprimées « CLÉ=valeur ». Aucune dépendance : appels REST de Stripe.
@@ -119,7 +120,44 @@ if (endpoints.data.some((endpoint) => endpoint.url === webhookUrl)) {
   console.log(`STRIPE_WEBHOOK_SECRET=${endpoint.secret}`);
 }
 
-// 3. Portail client : changer d'offre ou de carte, factures, résiliation en fin de période.
+// 3. Notifications des comptes Stripe connectés par les clients (Connect) : paiements,
+// résiliations et cartes changées arrivent en quelques secondes, et une déconnexion depuis Stripe
+// coupe le lien. Même liste que TRACKED_EVENTS (src/features/stripe/sync.ts), plus la déconnexion.
+const connectUrl = `${site}/api/stripe/webhook`;
+if (endpoints.data.some((endpoint) => endpoint.url === connectUrl)) {
+  console.log("• Point de réception des comptes connectés déjà présent.");
+} else {
+  const endpoint = await stripe("POST", "/v1/webhook_endpoints", {
+    url: connectUrl,
+    connect: true,
+    description: "SaasClair — comptes Stripe des clients (lecture)",
+    enabled_events: [
+      "account.application.deauthorized",
+      "customer.created",
+      "customer.updated",
+      "customer.deleted",
+      "customer.subscription.created",
+      "customer.subscription.updated",
+      "customer.subscription.deleted",
+      "customer.subscription.paused",
+      "customer.subscription.resumed",
+      "invoice.created",
+      "invoice.finalized",
+      "invoice.paid",
+      "invoice.payment_failed",
+      "invoice.updated",
+      "invoice.voided",
+      "invoice.marked_uncollectible",
+      "payment_method.attached",
+      "payment_method.updated",
+      "payment_method.automatically_updated",
+    ],
+  });
+  console.log("• Point de réception des comptes connectés créé.");
+  console.log(`STRIPE_CONNECT_WEBHOOK_SECRET=${endpoint.secret}`);
+}
+
+// 4. Portail client : changer d'offre ou de carte, factures, résiliation en fin de période.
 if (process.env.STRIPE_PORTAL_CONFIGURATION) {
   console.log("• Configuration du portail client déjà présente.");
 } else {
