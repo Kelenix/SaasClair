@@ -143,14 +143,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "anonymize_visitors": boolean,"audit": Json | null,"audited_at": string | null,"billing_provider": string | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"pricing_url": string | null,"script_detected_at": string | null,"setup_skipped_at": string | null,"signup_url": string | null,"site_key": string | null,"site_url": string | null,"stripe_account_id": string | null,"stripe_connected_at": string | null,"stripe_livemode": boolean | null,"stripe_sync_status": string | null,"stripe_synced_at": string | null,"updated_at": string
+                    "anonymize_visitors": boolean,"audit": Json | null,"audited_at": string | null,"billing_provider": string | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"pricing_url": string | null,"script_detected_at": string | null,"setup_skipped_at": string | null,"signup_url": string | null,"site_key": string | null,"site_url": string | null,"stripe_account_id": string | null,"stripe_connected_at": string | null,"stripe_full_synced_at": string | null,"stripe_livemode": boolean | null,"stripe_sync_status": string | null,"stripe_synced_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"audited_at"?: string | null,"billing_provider"?: string | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"pricing_url"?: string | null,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"signup_url"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"audited_at"?: string | null,"billing_provider"?: string | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"pricing_url"?: string | null,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"signup_url"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_full_synced_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"audited_at"?: string | null,"billing_provider"?: string | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"pricing_url"?: string | null,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"signup_url"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"audited_at"?: string | null,"billing_provider"?: string | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"pricing_url"?: string | null,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"signup_url"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_full_synced_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -205,14 +205,14 @@ isOneToOne: false
                   ]
                 },"stripe_invoices": {
                   Row: {
-                    "amount_due_cents": number,"amount_paid_cents": number,"attempt_count": number,"created_at": string,"currency": string,"customer_id": string | null,"id": string,"next_payment_attempt": string | null,"project_id": string,"status": string,"subscription_id": string | null
+                    "amount_due_cents": number,"amount_paid_cents": number,"attempt_count": number,"created_at": string,"currency": string,"customer_id": string | null,"id": string,"next_payment_attempt": string | null,"period_end": string | null,"period_start": string | null,"project_id": string,"recurring_cents": number | null,"status": string,"subscription_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_due_cents"?: number,"amount_paid_cents"?: number,"attempt_count"?: number,"created_at": string,"currency"?: string,"customer_id"?: string | null,"id": string,"next_payment_attempt"?: string | null,"project_id": string,"status": string,"subscription_id"?: string | null
+                    "amount_due_cents"?: number,"amount_paid_cents"?: number,"attempt_count"?: number,"created_at": string,"currency"?: string,"customer_id"?: string | null,"id": string,"next_payment_attempt"?: string | null,"period_end"?: string | null,"period_start"?: string | null,"project_id": string,"recurring_cents"?: number | null,"status": string,"subscription_id"?: string | null
                   }
                   Update: {
-                    "amount_due_cents"?: number,"amount_paid_cents"?: number,"attempt_count"?: number,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"id"?: string,"next_payment_attempt"?: string | null,"project_id"?: string,"status"?: string,"subscription_id"?: string | null
+                    "amount_due_cents"?: number,"amount_paid_cents"?: number,"attempt_count"?: number,"created_at"?: string,"currency"?: string,"customer_id"?: string | null,"id"?: string,"next_payment_attempt"?: string | null,"period_end"?: string | null,"period_start"?: string | null,"project_id"?: string,"recurring_cents"?: number | null,"status"?: string,"subscription_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"stripe_subscriptions": {
                   Row: {
-                    "billing_interval": string | null,"cancel_at": string | null,"cancel_at_period_end": boolean,"canceled_at": string | null,"card_expires_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"project_id": string,"status": string,"trial_end": string | null
+                    "billing_interval": string | null,"cancel_at": string | null,"cancel_at_period_end": boolean,"canceled_at": string | null,"card_expires_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"price_unknown": boolean,"project_id": string,"status": string,"trial_end": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id": string,"status": string,"trial_end"?: string | null
+                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"price_unknown"?: boolean,"project_id": string,"status": string,"trial_end"?: string | null
                   }
                   Update: {
-                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id"?: string,"status"?: string,"trial_end"?: string | null
+                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"price_unknown"?: boolean,"project_id"?: string,"status"?: string,"trial_end"?: string | null
                   }
                   Relationships: [
                     {
@@ -263,7 +263,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_system_stats":
+            "acquisition_summary":
+{ Args: { "p_buckets": number,"p_project": string,"p_since": string,"p_until": string }; Returns: Json
+                           },
+"admin_system_stats":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "claim_signup_attribution":
@@ -276,6 +279,9 @@ isOneToOne: false
 { Args: { "p_project": string }; Returns: {
               "channel": string,"email_hash": string,"first_seen": string
             }[]
+                           },
+"funnel_summary":
+{ Args: { "p_pricing": string,"p_project": string,"p_signup": string,"p_since": string }; Returns: Json
                            },
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean

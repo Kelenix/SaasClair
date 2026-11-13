@@ -5,7 +5,7 @@
 ## Snapshot
 
 - **Phase courante** : 6 — Mise en production : **en ligne sur https://saasclair.com**, déploiement automatique à chaque envoi sur `main`
-- **Dernière mise à jour** : 2026-11-13 — version `1.0.0-rc.1` (audit, puis lot C ; plan dans `AUDIT_ET_PLAN_D_ACTION.md`)
+- **Dernière mise à jour** : 2026-11-15 — version `1.0.0-rc.1` (audit, lots C, D, A puis B ; plan dans `AUDIT_ET_PLAN_D_ACTION.md`)
 - **Santé** : 🟢 OK — lint, types, 115 tests unitaires, 52 tests de bout en bout, build ; 0 vulnérabilité en production
 - **Prochaine action** : compte super administrateur (tâche 12), SMTP (tâche 11), mentions légales et vrais témoignages (tâches 8, 9, 14)
 
@@ -57,6 +57,7 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-11-15 — Lot B (chiffres exacts) : churn mensuel sur toutes les périodes, remises et prix à l'usage, une devise additionnée, API Stripe figée ; historique des factures (expansion, contraction, cohortes, valeur vie client, conversion des essais, graphique de l'accueil) ; suivi Stripe incrémental, nouvel essai sur 429, notifications Connect (`/api/stripe/webhook`) ; Acquisition et Tunnel regroupés par la base (`acquisition_summary`, `funnel_summary`, vérifiés identiques) ; collecte `replaceState`/`hashchange`, identifiants de clic, canaux IA et réseaux sociaux, www/app. 3 migrations. 252 tests unitaires. Action manuelle : relancer `billing-setup.sh` (point Connect).
 - 2026-11-14 — Lot A (sécurité) : lecture de site épinglée (anti-rebinding) et IPv6 durci, droits par colonne sur `projects` (vérifiés sur la base), révocation Stripe à la suppression, limites de connexion et d'emails, `/api/collect` borné, RGPD (25 mois, 13 mois, textes), newsletter côté serveur, actions GitHub épinglées. 220 tests unitaires.
 
 - 2026-11-13 — Lot D (prise en main) : inscription en 2 champs, offre gardée, plus d'écran « Votre SaaS » quand l'adresse est connue, « C'est fait, vérifier mon site », « Reliez votre site », liste de démarrage unique, « Je n'utilise pas Stripe » enregistré, tableau de bord pendant l'import, lien magique. Fusion automatique activée sur le dépôt (CI obligatoire sur main) ; analyse du site toujours à jour (PR n° 3).

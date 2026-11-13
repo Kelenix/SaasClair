@@ -4,6 +4,29 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Chiffres exacts (lot B)
+- **Churn mensuel** sur toutes les périodes : sur 12 mois, le churn d'un mois moyen (plus le
+  cumul de l'année) ; 7 jours ramenés au mois. Churn en revenu : départs et baisses d'offre.
+- **Revenu exact** : remises Stripe déduites, abonnements à paliers ou à l'usage estimés sur
+  leur dernière facture (ou signalés), une seule devise additionnée (les autres signalées),
+  version de l'API Stripe figée.
+- **Historique tiré des factures** : expansion, contraction, cohortes de rétention, valeur vie
+  client, conversion essai → payant et graphique « nouveau / expansion / perdu » de l'accueil,
+  dès la connexion de Stripe (migration `stripe_history`).
+- **Import Stripe incrémental** : chaque heure, seuls les objets changés sont relus (journal des
+  événements), import complet une fois par jour, nouvel essai si Stripe dit « trop de
+  requêtes ». **Notifications en temps réel** des comptes connectés (`/api/stripe/webhook`,
+  créé par `billing-setup.sh`) ; une déconnexion depuis Stripe coupe le lien et efface ses
+  données ; un client effacé dans Stripe l'est aussi ici.
+- **Acquisition et tunnel calculés par la base** (`acquisition_summary`, `funnel_summary`) :
+  plus de limite de 50 000 visites (migration `visit_aggregates`).
+- **Collecte** : `replaceState`, `hashchange` et routes par ancre ; gclid, msclkid, fbclid et
+  li_fat_id reconnus ; canaux « Assistants IA » et « Autres réseaux sociaux » (migration
+  `more_channels`) ; webmails classés en email ; `www.` et `app.` d'un même domaine reconnus
+  comme un seul site dans les deux sens, y compris pour les pages clés du tunnel.
+- Le titre du tableau de rétention dit ce que montrent les chiffres (plus de « vos nouveaux
+  clients restent plus longtemps » écrit d'avance).
+
 ### Sécurité (lot A)
 - **Analyse de site** : adresse vérifiée au moment de la connexion (plus de rebinding DNS),
   formes IPv6 qui cachent une adresse interne refusées, 10 analyses par heure et par compte.

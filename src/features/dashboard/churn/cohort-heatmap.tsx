@@ -23,16 +23,26 @@ const shade = (retention: number) => {
 
 /** Tableau de rétention par cohorte : une carte de chaleur qui apparaît case par case. */
 export function CohortHeatmap({ cohorts }: { cohorts: Cohort[] }) {
-  const months = cohorts[0]?.retention.length ?? 0;
-  const oldest = cohorts[0];
-  const recent = cohorts.findLast((cohort) => cohort.retention.length > 3);
+  const months = Math.max(0, ...cohorts.map((cohort) => cohort.retention.length));
+  // Comparaison au 3ᵉ mois, entre la plus ancienne cohorte et la plus récente qui l'a atteint.
+  const comparable = cohorts.filter((cohort) => cohort.retention.length > 3);
+  const oldest = comparable[0];
+  const recent = comparable.at(-1);
+  const gap = oldest && recent && oldest !== recent ? recent.retention[3] - oldest.retention[3] : 0;
+  // Le titre dit ce que montrent les chiffres, jamais une conclusion écrite d'avance.
+  const headline =
+    !oldest || !recent || oldest === recent
+      ? "Combien de clients restent, mois après mois."
+      : gap > 2
+        ? "Vos nouveaux clients restent plus longtemps."
+        : gap < -2
+          ? "Vos nouveaux clients partent plus vite qu'avant."
+          : "Vos clients restent aussi longtemps qu'avant.";
 
   return (
     <Card className="min-w-0">
       <CardEyebrow>Rétention par cohorte</CardEyebrow>
-      <p className="mb-1 font-serif text-xl font-semibold text-forest">
-        Vos nouveaux clients restent plus longtemps.
-      </p>
+      <p className="mb-1 font-serif text-xl font-semibold text-forest">{headline}</p>
       {oldest && recent && oldest !== recent && (
         <p className="mb-5 text-sm text-slate">
           Au 3ᵉ mois, {recent.retention[3]} % des clients arrivés en {recent.label} sont encore là,

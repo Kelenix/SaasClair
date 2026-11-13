@@ -67,3 +67,27 @@ test("le Stripe simulé n'est jamais ouvert sans autorisation", async ({ request
   const response = await request.get("/api/stripe-mock/v1/customers");
   expect(response.status()).toBe(401);
 });
+
+test("notifications des comptes connectés : signature exigée, compte inconnu ignoré", async ({
+  request,
+}) => {
+  const { createHmac } = await import("node:crypto");
+  const secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET ?? "whsec_mock_connect_local";
+  const payload = JSON.stringify({
+    id: "evt_e2e",
+    type: "invoice.paid",
+    account: "acct_inconnu",
+    data: { object: { id: "in_e2e" } },
+  });
+  const t = Math.floor(Date.now() / 1000);
+  const signature = createHmac("sha256", secret).update(`${t}.${payload}`).digest("hex");
+  const send = (header: string) =>
+    request.post("/api/stripe/webhook", {
+      headers: { "Content-Type": "application/json", "Stripe-Signature": header },
+      data: payload,
+    });
+  expect((await send(`t=${t},v1=${"0".repeat(64)}`)).status()).toBe(400);
+  const accepted = await send(`t=${t},v1=${signature}`);
+  expect(accepted.status()).toBe(200);
+  expect(await accepted.json()).toEqual({ received: true });
+});

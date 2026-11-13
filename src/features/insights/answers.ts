@@ -49,7 +49,7 @@ function churnAnswer({ revenue }: InsightFacts, insights: RealInsight[]): Answer
   const action = insights.find((insight) => insight.area === "Rétention");
   if (action) paragraphs.push(`À faire : ${action.action}`);
   return {
-    title: `Votre churn est de ${formatPercent(revenue.customerChurn)} sur 30 jours, ${trend} (${formatPercent(revenue.previous.customerChurn)} le mois d'avant).`,
+    title: `Votre churn est de ${formatPercent(revenue.customerChurn)} par mois, ${trend} (${formatPercent(revenue.previous.customerChurn)} le mois d'avant).`,
     paragraphs,
     basis: `${plural(revenue.previous.customersAtStart, "client payant")} le mois d'avant, abonnements Stripe`,
   };

@@ -81,6 +81,7 @@ jobs:
             echo "STRIPE_CONNECT_BASE=http://localhost:3001/api/stripe-mock"
             echo "CRON_SECRET=cron_secret_local_test"
             echo "STRIPE_WEBHOOK_SECRET=whsec_mock_local"
+            echo "STRIPE_CONNECT_WEBHOOK_SECRET=whsec_mock_connect_local"
           } > .env
       - run: npm run build
       - name: Application (build autonome, port 3001)

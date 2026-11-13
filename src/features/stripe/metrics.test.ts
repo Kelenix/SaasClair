@@ -202,6 +202,61 @@ describe("computeRevenue", () => {
     expect(r.payingCustomers).toBe(3);
   });
 
+  it("une seule devise additionnée : les autres sont signalées, jamais converties", () => {
+    const subs = [
+      sub("eur1", { currency: "eur" }),
+      sub("eur2", { currency: "eur" }),
+      sub("usd", { currency: "usd", mrr_cents: 50_000 }),
+    ];
+    const r = computeRevenue(subs, [], [], "30j", now);
+    expect(r.mrr).toBe(158);
+    expect(r.currency).toBe("eur");
+    expect(r.otherCurrencies).toEqual({ count: 1, currencies: ["USD"] });
+  });
+
+  it("abonnement à l'usage : revenu lu sur la dernière facture, sinon signalé", () => {
+    const subs = [
+      sub("metered", { mrr_cents: 0, price_unknown: true }),
+      sub("unknown", { mrr_cents: 0, price_unknown: true }),
+    ];
+    const recurring = [
+      {
+        subscription_id: "metered",
+        status: "paid",
+        recurring_cents: 12_345,
+        period_start: daysAgo(20),
+        period_end: daysAgo(-10),
+      },
+    ];
+    const r = computeRevenue(subs, [], [], "30j", now, recurring);
+    expect(r.mrr).toBe(123.45);
+    expect(r.usageBased).toEqual({ estimated: 1, missing: 1 });
+  });
+
+  it("expansion, contraction et départs : le revenu de début plus les mouvements donne l'actuel", () => {
+    const subs = [
+      sub("up", { mrr_cents: 9900 }),
+      sub("gone", { status: "canceled", ended_at: daysAgo(10) }),
+      sub("fresh", { created_at: daysAgo(4), mrr_cents: 2900 }),
+    ];
+    const recurring = [
+      {
+        subscription_id: "up",
+        status: "paid",
+        recurring_cents: 4900,
+        period_start: daysAgo(45),
+        period_end: daysAgo(15),
+      },
+    ];
+    const r = computeRevenue(subs, [], [], "30j", now, recurring);
+    expect(r).toMatchObject({ startMrr: 128, newMrr: 29, expansionMrr: 50, churnedMrr: 79 });
+    expect(r.startMrr + r.newMrr + r.expansionMrr - r.contractionMrr - r.churnedMrr).toBe(r.mrr);
+    // Valeur vie client : revenu moyen × durée de vie (1 ÷ churn mensuel).
+    expect(r.arpa).toBe(64);
+    expect(r.lifetimeMonths).toBe(2);
+    expect(r.ltv).toBe(128);
+  });
+
   it("historique sur 12 mois, sans rien inventer pour un compte vide", () => {
     expect(result.history).toHaveLength(12);
     expect(result.history.at(-1)?.mrr).toBe(result.mrr);

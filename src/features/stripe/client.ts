@@ -97,26 +97,49 @@ export async function deauthorizeAccount(config: StripeConfig, accountId: string
   return false;
 }
 
-/** Lit toutes les pages d'une liste Stripe (100 par page) du compte connecté. */
-export async function listAll<T extends { id: string }>(
+/**
+ * Version de l'API Stripe figée : la forme des objets lus ne change pas le jour où Stripe en
+ * publie une nouvelle (normalize.ts lit aussi les formes plus anciennes et plus récentes).
+ */
+export const STRIPE_VERSION = "2025-03-31.basil";
+
+type Params = Record<string, string | string[]>;
+
+const RETRIES = 4;
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Lecture sur le compte connecté. « Trop de requêtes » (429), erreur passagère de Stripe (5xx)
+ * ou réseau coupé : nouvel essai après le délai demandé par Stripe, sinon 1, 2, 4 puis 8 s.
+ */
+export async function stripeGet(
   config: StripeConfig,
   account: string,
   path: string,
-  params: Record<string, string> = {},
-  max = 20_000,
-): Promise<T[]> {
-  const items: T[] = [];
-  let startingAfter: string | undefined;
-  for (;;) {
-    const url = new URL(`${config.apiBase}${path}`);
-    url.search = new URLSearchParams({
-      limit: "100",
-      ...params,
-      ...(startingAfter ? { starting_after: startingAfter } : {}),
-    }).toString();
+  params: Params = {},
+  sleep: (ms: number) => Promise<unknown> = wait,
+) {
+  const url = new URL(`${config.apiBase}${path}`);
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    for (const item of Array.isArray(value) ? value : [value]) search.append(key, item);
+  }
+  url.search = search.toString();
+  for (let attempt = 0; ; attempt++) {
     const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${config.secretKey}`, "Stripe-Account": account },
-    });
+      headers: {
+        Authorization: `Bearer ${config.secretKey}`,
+        "Stripe-Account": account,
+        "Stripe-Version": STRIPE_VERSION,
+      },
+    }).catch(() => null);
+    const retryable = !response || response.status === 429 || response.status >= 500;
+    if (retryable && attempt < RETRIES) {
+      const asked = Number(response?.headers.get("retry-after"));
+      await sleep(asked > 0 ? Math.min(asked, 30) * 1000 : 1000 * 2 ** attempt);
+      continue;
+    }
+    if (!response) throw new Error(`Stripe ${path} : réseau injoignable`);
     if (!response.ok) {
       // Message de Stripe (jamais de clé) : paramètre refusé, droits insuffisants…
       const body = (await response.json().catch(() => null)) as {
@@ -124,7 +147,36 @@ export async function listAll<T extends { id: string }>(
       } | null;
       throw new Error(`Stripe ${path} : HTTP ${response.status} — ${body?.error?.message ?? ""}`);
     }
-    const page = (await response.json()) as { data: T[]; has_more: boolean };
+    return response.json() as Promise<unknown>;
+  }
+}
+
+/** Lit un objet du compte connecté (client, abonnement, facture). */
+export async function getObject<T>(
+  config: StripeConfig,
+  account: string,
+  path: string,
+  params: Params = {},
+) {
+  return (await stripeGet(config, account, path, params)) as T;
+}
+
+/** Lit toutes les pages d'une liste Stripe (100 par page) du compte connecté. */
+export async function listAll<T extends { id: string }>(
+  config: StripeConfig,
+  account: string,
+  path: string,
+  params: Params = {},
+  max = 20_000,
+): Promise<T[]> {
+  const items: T[] = [];
+  let startingAfter: string | undefined;
+  for (;;) {
+    const page = (await stripeGet(config, account, path, {
+      limit: "100",
+      ...params,
+      ...(startingAfter ? { starting_after: startingAfter } : {}),
+    })) as { data: T[]; has_more: boolean };
     items.push(...page.data);
     if (!page.has_more || page.data.length === 0 || items.length >= max) return items;
     startingAfter = page.data[page.data.length - 1].id;

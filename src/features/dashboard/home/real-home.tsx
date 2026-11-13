@@ -23,6 +23,7 @@ import { displaySiteUrl } from "@/lib/site-url";
 import { auditAgeLabel } from "@/features/setup/audit-age";
 import { RefreshAuditButton } from "@/features/setup/refresh-audit-button";
 import { KpiCards } from "./kpi-cards";
+import { RevenueChart } from "./revenue-chart";
 import { SectionTitle } from "../page-header";
 
 /** Source pas encore branchée, ou branchée sans données : une ligne claire et l'action à faire. */
@@ -197,6 +198,14 @@ export function RealHome({
         revenue && hasRevenueData(revenue) ? (
           <>
             <KpiCards kpis={revenueKpis(revenue)} />
+            {revenue.buckets.some(
+              (bucket) => bucket.newMrr || bucket.expansion || bucket.lost || bucket.contraction,
+            ) && (
+              <>
+                <SectionTitle title="Évolution du revenu" />
+                <RevenueChart buckets={revenue.buckets} />
+              </>
+            )}
             <SectionTitle title="Clients à risque" />
             <RiskList customers={revenue.atRisk} limit={3} />
           </>

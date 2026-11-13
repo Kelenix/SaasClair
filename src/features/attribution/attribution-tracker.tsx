@@ -21,7 +21,7 @@ export function AttributionTracker() {
     const source = read("utm_source") ?? (params.has("gclid") ? "google" : undefined);
     const medium = read("utm_medium") ?? (params.has("gclid") ? "cpc" : undefined);
     const value = {
-      channel: classifyChannel({ source, medium, referrer }),
+      channel: classifyChannel({ source, medium, referrer, clickIds: [...params.keys()] }),
       source,
       medium,
       campaign: read("utm_campaign"),

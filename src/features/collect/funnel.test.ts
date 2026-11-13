@@ -52,7 +52,11 @@ describe("computeFunnel", () => {
       { id: "desktop", name: "Ordinateur", visitors: 2, rate: 50 },
       { id: "mobile", name: "Mobile", visitors: 2, rate: 0 },
     ]);
-    expect(funnel.segments.channel[0].name).toBe("Recherche Google");
+    // À égalité de visiteurs, ordre alphabétique : toujours le même affichage.
+    expect(funnel.segments.channel.map((s) => [s.name, s.rate])).toEqual([
+      ["Accès direct", 0],
+      ["Recherche Google", 50],
+    ]);
   });
 
   it("page clé inconnue : étape absente, et la page la plus probable proposée", () => {

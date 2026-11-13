@@ -23,7 +23,8 @@ export function RevenueChart({ buckets }: { buckets: RevenueBucket[] }) {
   const maxUp = Math.max(...buckets.map((bucket) => bucket.newMrr + bucket.expansion));
   const lostOf = (bucket: RevenueBucket) => bucket.lost + bucket.contraction;
   const maxDown = Math.max(...buckets.map(lostOf));
-  const unit = PLOT_HEIGHT / Math.max(maxUp, maxDown * 1.6);
+  // Période sans mouvement : barres à zéro, jamais une division par zéro.
+  const unit = PLOT_HEIGHT / Math.max(maxUp, maxDown * 1.6, 1);
   const totals = buckets.reduce(
     (sum, bucket) => ({
       won: sum.won + bucket.newMrr + bucket.expansion,

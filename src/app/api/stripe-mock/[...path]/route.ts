@@ -109,6 +109,10 @@ function lists(path: string) {
           next_payment_attempt: t + 2 * DAY,
         },
       ];
+    // Aucun bon de réduction, aucun changement depuis l'import : le suivi horaire n'a rien à relire.
+    case "v1/coupons":
+    case "v1/events":
+      return [];
     case "v1/products":
       return [
         { id: "prod_pro", name: "Pro" },

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { deviceOf, isSameSite, parsePayload, toEvent, type Payload } from "./payload";
+import {
+  deviceOf,
+  isSameSite,
+  parsePayload,
+  pathOfPage,
+  rootDomain,
+  toEvent,
+  type Payload,
+} from "./payload";
 
 const base: Payload = {
   s: "4e8ad624",
@@ -62,6 +70,24 @@ describe("toEvent", () => {
     expect(toEvent(fromBlog, "https://monsaas.fr")?.referrer_host).toBeNull();
   });
 
+  it("visite de www vers app (et l'inverse) acceptée, sans provenance externe", () => {
+    const toWww = { ...base, u: "https://www.monsaas.fr/tarifs", r: "https://app.monsaas.fr/" };
+    const event = toEvent(toWww, "https://app.monsaas.fr");
+    expect(event).toMatchObject({ referrer_host: null, channel: "direct" });
+  });
+
+  it("clic publicitaire sans UTM : gclid et msclkid en publicité, fbclid en Facebook et Instagram", () => {
+    expect(
+      toEvent({ ...base, r: undefined, u: "https://monsaas.fr/?gclid=abc" }, null)?.channel,
+    ).toBe("ads");
+    expect(
+      toEvent({ ...base, r: undefined, u: "https://monsaas.fr/?msclkid=abc" }, null)?.channel,
+    ).toBe("ads");
+    expect(
+      toEvent({ ...base, r: undefined, u: "https://monsaas.fr/?fbclid=abc" }, null)?.channel,
+    ).toBe("instagram");
+  });
+
   it("l'identification exige l'empreinte de l'email", () => {
     expect(toEvent({ ...base, t: "identify" }, null)).toBeNull();
     const hash = "a".repeat(64);
@@ -73,6 +99,22 @@ describe("outils", () => {
   it("reconnaît le même site, avec ou sans www", () => {
     expect(isSameSite("www.monsaas.fr", "monsaas.fr")).toBe(true);
     expect(isSameSite("monsaas.fr.evil.com", "monsaas.fr")).toBe(false);
+  });
+
+  it("le site vitrine et l'application sont un seul site, dans les deux sens", () => {
+    expect(isSameSite("www.monsaas.fr", "app.monsaas.fr")).toBe(true);
+    expect(isSameSite("app.monsaas.fr", "www.monsaas.fr")).toBe(true);
+    expect(isSameSite("blog.monsaas.co.uk", "app.monsaas.co.uk")).toBe(true);
+    expect(rootDomain("app.monsaas.co.uk")).toBe("monsaas.co.uk");
+    // Hébergeur partagé : chaque sous-domaine est un autre site.
+    expect(isSameSite("autre.vercel.app", "monsaas.vercel.app")).toBe(false);
+    expect(isSameSite("monsaas.vercel.app", "monsaas.vercel.app")).toBe(true);
+  });
+
+  it("chemin : route d'application par l'ancre gardée, ancre de section ignorée", () => {
+    expect(pathOfPage(new URL("https://x.fr/#/tarifs?x=1"))).toBe("/tarifs");
+    expect(pathOfPage(new URL("https://x.fr/app/#!/compte"))).toBe("/app/compte");
+    expect(pathOfPage(new URL("https://x.fr/tarifs#faq"))).toBe("/tarifs");
   });
 
   it("déduit l'appareil de la largeur d'écran", () => {

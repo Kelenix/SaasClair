@@ -77,7 +77,7 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
 |---|---|---|---|
 | ✅ | **Emails avec Resend (tâche 11)** : fait par vous. J'ai activé la confirmation d'email dans `deploy/compose.prod.yaml` : elle sera en ligne dès la fusion de la PR n° 1. **Juste après la fusion**, testez une inscription avec une vraie adresse, et « mot de passe oublié ». | C'était la faille la plus grave : sans confirmation, n'importe qui pouvait créer un compte avec l'email d'un autre. | 5 min de test |
 | **2** | **Compte super administrateur en production** (tâche 12) | Sans lui, vous ne pouvez pas administrer. | 5 min |
-| **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur | Sans lui, vous ne pouvez pas encaisser. | 30 min |
+| **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur. Depuis le lot B, ce même script crée aussi le point de réception des **comptes Stripe de vos clients** (notifications en temps réel, déconnexion depuis Stripe) : **relancez-le une fois** même si vous l'avez déjà lancé, il ne recrée rien d'existant. | Sans lui, vous ne pouvez pas encaisser ; sans la relance, les chiffres de vos clients se mettent à jour chaque heure au lieu de quelques secondes. | 30 min (relance : 1 min) |
 | **4** | **Vrais témoignages** (tâche 8). Publier de faux avis est interdit. | Obligation légale. | Variable |
 | **5** | **Mentions légales et relecture juridique** de la confidentialité (tâche 9) | Obligation légale. Points à faire valider : durée de conservation des visites, empreinte des emails (voir lot A). | Avec un juriste |
 | **6** | **Email de contact** dans Administration › Paramètres (tâche 10) | Le bouton « Nous contacter » est vide sinon. | 2 min |
@@ -176,6 +176,35 @@ manuelle) ; sonde de santé détaillée laissée publique (test de mise en ligne
 
 ### Lot B — Exactitude et performance des chiffres
 
+**✅ Fait le 15 novembre (PR n° 6)** : B1 à B6. Une seule action de votre part : relancer
+`billing-setup.sh` sur le serveur (voir section 3, priorité 3) pour activer les notifications
+Stripe en temps réel. Sans cela, tout fonctionne avec le suivi horaire.
+
+- **B1** : le churn affiché est **mensuel** sur toutes les périodes (moyenne des mois de la
+  période ; 7 jours ramenés au mois). Le churn en revenu compte départs **et** baisses d'offre.
+- **B2** : remises Stripe déduites (pourcentage ou montant, « première facture » ignorée,
+  remise terminée ignorée) ; abonnements à paliers ou à l'usage estimés sur leur dernière
+  facture, ou signalés ; une seule devise additionnée, les autres signalées à l'écran ; version
+  de l'API Stripe figée (`2025-03-31.basil`).
+- **B3** : Acquisition et Tunnel calculés par la base (fonctions `acquisition_summary` et
+  `funnel_summary`) : plus de limite à 50 000 visites. Vérifié identique à l'ancien calcul.
+- **B4** : suivi horaire **incrémental** (journal des événements Stripe : seuls les objets
+  changés sont relus), import complet une fois par jour, nouvel essai automatique si Stripe dit
+  « trop de requêtes », notifications en temps réel (`/api/stripe/webhook`), clients effacés
+  dans Stripe effacés ici, et déconnexion depuis Stripe qui coupe le lien et efface ses données.
+- **B5** : la part récurrente de chaque facture est gardée (13 mois) : **expansion,
+  contraction, cohortes, valeur vie client, conversion essai → payant** et graphique
+  « nouveau / expansion / perdu » de l'accueil, sur les vraies données, dès la connexion.
+- **B6** : `replaceState`, `hashchange` et routes par ancre (`#/tarifs`) ; gclid, msclkid,
+  fbclid, li_fat_id ; deux canaux de plus, « Assistants IA » (ChatGPT, Perplexity, Claude,
+  Gemini, Copilot) et « Autres réseaux sociaux » (X, YouTube, Reddit…) ; webmails classés en
+  email (Gmail était compté en recherche Google) ; `www.` et `app.` d'un même domaine reconnus
+  comme un seul site dans les deux sens.
+
+À savoir : les nouvelles données se remplissent au premier import complet, lancé par le suivi
+horaire dans l'heure qui suit la mise en ligne. D'ici là, l'expansion et la contraction restent
+à zéro.
+
 | Étape | Effort |
 |---|---|
 | B1. Churn ramené au mois, quelle que soit la période choisie (sur 12 mois, 58 % s'affiche aujourd'hui à côté des 7 % mensuels que l'utilisateur connaît) | S |
@@ -193,11 +222,11 @@ manuelle) ; sonde de santé détaillée laissée publique (test de mise en ligne
 
 | Écran | Calculé sur les vraies données | Pas encore réel |
 |---|---|---|
-| Accueil | Revenu mensuel récurrent, churn, revenu à risque, nouveau revenu, 3 clients à risque, visiteurs, canaux, pages d'entrée, analyse du site | Conversion essai → payant, 3 insights, graphique nouveau / expansion / perdu, aperçu du tunnel |
+| Accueil | Revenu mensuel récurrent, churn mensuel, revenu à risque, conversion essai → payant (sinon nouveau revenu), graphique nouveau / expansion / perdu, 3 clients à risque, 3 insights, visiteurs, canaux, pages d'entrée, analyse du site (lots B et C) | — |
 | Acquisition | Visiteurs, canaux, pages d'entrée, campagnes, sites d'origine | Inscrits, clients et revenu par canal |
 | Tunnel | Rien | Tout |
-| Churn | Churn clients et revenu, revenu à risque, paiements à récupérer, liste à risque (règles) | Cohortes, raisons de départ, chronologie client, email de relance |
-| Revenus | Revenu mensuel récurrent sur 12 mois, nouveau, perdu, paiements échoués | Expansion, contraction, valeur vie client |
+| Churn | Churn mensuel clients et revenu, revenu à risque, paiements à récupérer, liste à risque (règles), cohortes (lot B) | Raisons de départ, chronologie client, email de relance |
+| Revenus | Revenu mensuel récurrent sur 12 mois (factures réelles), nouveau, expansion, contraction, départs, valeur vie client, paiements échoués (lot B) | — |
 | Insights | Réglages d'alertes | Moteur d'insights |
 | Barre de question, notifications | — | Aucun moteur, aucun email envoyé |
 

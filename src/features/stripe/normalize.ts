@@ -8,9 +8,28 @@ type Price = {
   unit_amount_decimal?: string | null;
   nickname?: string | null;
   product?: string | { name?: string | null } | null;
-  recurring?: { interval?: string; interval_count?: number } | null;
+  /** « tiered » : prix par paliers, que le prix seul ne permet pas de calculer. */
+  billing_scheme?: string | null;
+  recurring?: { interval?: string; interval_count?: number; usage_type?: string | null } | null;
 };
 type Item = { quantity?: number | null; price?: Price | null; current_period_end?: number | null };
+
+/** Bon de réduction Stripe : pourcentage ou montant par facture, pour une durée donnée. */
+export type StripeCoupon = {
+  id: string;
+  percent_off?: number | null;
+  amount_off?: number | null;
+  /** once (première facture seulement), repeating (quelques mois) ou forever. */
+  duration?: string | null;
+};
+/** Remise posée sur un abonnement (structure ancienne : coupon ; récente : source.coupon). */
+type Discount =
+  | string
+  | {
+      coupon?: StripeCoupon | string | null;
+      source?: { coupon?: StripeCoupon | string | null } | null;
+      end?: number | null;
+    };
 /** Moyen de paiement déplié (expand) : seul le mois d'expiration de la carte est lu. */
 type PaymentMethod = string | { card?: { exp_month?: number; exp_year?: number } | null } | null;
 
@@ -36,6 +55,21 @@ export type StripeSubscription = {
   current_period_end?: number | null;
   items?: { data?: Item[] };
   default_payment_method?: PaymentMethod;
+  /** Remises dépliées (expand data.discounts) ; l'ancienne API n'en porte qu'une. */
+  discounts?: Discount[] | null;
+  discount?: Discount | null;
+};
+/** Ligne de facture : l'ancienne API dit type et proration, la récente les range dans parent. */
+type InvoiceLine = {
+  amount?: number;
+  type?: string;
+  proration?: boolean;
+  parent?: {
+    type?: string;
+    subscription_item_details?: { proration?: boolean | null } | null;
+  } | null;
+  discount_amounts?: { amount?: number }[] | null;
+  period?: { start?: number; end?: number } | null;
 };
 export type StripeInvoice = {
   id: string;
@@ -49,6 +83,7 @@ export type StripeInvoice = {
   attempt_count?: number;
   created: number;
   next_payment_attempt?: number | null;
+  lines?: { data?: InvoiceLine[] } | null;
 };
 
 const iso = (seconds: number | null | undefined) =>
@@ -81,14 +116,61 @@ export const emailHash = (email: string) =>
 /** Mois par période de facturation. */
 const MONTHS: Record<string, number> = { day: 12 / 365, week: 12 / 52, month: 1, year: 12 };
 
-/** Revenu mensuel d'une ligne d'abonnement, en centimes (annuel ÷ 12, quantité comprise). */
-export function monthlyCents(item: Item) {
-  const price = item.price;
+/** Nombre de mois couverts par une période de facturation. */
+const monthsOf = (price: Price | null | undefined) => {
   const interval = price?.recurring?.interval;
-  if (!price || !interval || !(interval in MONTHS)) return 0;
+  return interval && interval in MONTHS
+    ? MONTHS[interval] * (price?.recurring?.interval_count || 1)
+    : null;
+};
+
+/**
+ * Revenu mensuel d'une ligne d'abonnement, en centimes (annuel ÷ 12, quantité comprise).
+ * Null quand le prix seul ne le dit pas (paliers, facturation à l'usage) : le revenu de ces
+ * abonnements est alors lu sur leur dernière facture (metrics.ts).
+ */
+export function monthlyCents(item: Item): number | null {
+  const price = item.price;
+  const months = monthsOf(price);
+  if (!price || months === null) return 0;
+  if (price.billing_scheme === "tiered" || price.recurring?.usage_type === "metered") return null;
   const unit = price.unit_amount ?? Number(price.unit_amount_decimal ?? 0);
-  const months = MONTHS[interval] * (price.recurring?.interval_count || 1);
   return (unit * (item.quantity ?? 1)) / months;
+}
+
+/** Bons de réduction encore actifs d'un abonnement (« once » : première facture seulement). */
+function activeCoupons(
+  subscription: StripeSubscription,
+  coupons: Map<string, StripeCoupon>,
+  now: number,
+) {
+  const discounts = subscription.discounts?.length
+    ? subscription.discounts
+    : subscription.discount
+      ? [subscription.discount]
+      : [];
+  return discounts.flatMap((discount) => {
+    if (typeof discount === "string") return [];
+    if (discount.end && discount.end * 1000 <= now) return [];
+    const ref = discount.coupon ?? discount.source?.coupon;
+    const coupon = typeof ref === "string" ? coupons.get(ref) : ref;
+    return coupon && coupon.duration !== "once" ? [coupon] : [];
+  });
+}
+
+/**
+ * Revenu mensuel après remises : pourcentages d'abord, puis montants fixes (par facture, ramenés
+ * au mois). Jamais négatif.
+ */
+export function discountedCents(cents: number, coupons: StripeCoupon[], months: number) {
+  let total = cents;
+  for (const coupon of coupons) {
+    if (coupon.percent_off) total *= 1 - coupon.percent_off / 100;
+  }
+  for (const coupon of coupons) {
+    if (coupon.amount_off) total -= coupon.amount_off / months;
+  }
+  return Math.max(0, total);
 }
 
 export function toCustomerRow(projectId: string, customer: StripeCustomer) {
@@ -105,6 +187,60 @@ export function toCustomerRow(projectId: string, customer: StripeCustomer) {
 
 export type StripeProduct = { id: string; name?: string | null };
 
+/** Événement Stripe (journal /v1/events ou notification) : seul l'objet concerné est lu. */
+export type StripeEvent = {
+  id: string;
+  type: string;
+  account?: string;
+  data?: { object?: { id?: string; customer?: string | { id: string } | null } | null } | null;
+};
+
+/** Identifiant Stripe sûr à placer dans une adresse (lettres, chiffres, « _ »). */
+const SAFE_ID = /^[A-Za-z0-9_]{3,255}$/;
+
+/**
+ * Objets à relire après une série d'événements, sans doublon. Un client dont la carte ou les
+ * réglages changent fait relire ses abonnements (la carte de secours de chacun).
+ */
+export function changesOf(events: StripeEvent[]) {
+  const customers = new Set<string>();
+  const subscriptionsOf = new Set<string>();
+  const subscriptions = new Set<string>();
+  const invoices = new Set<string>();
+  const deletedCustomers = new Set<string>();
+  for (const event of events) {
+    const object = event.data?.object;
+    const id = object?.id;
+    if (!id || !SAFE_ID.test(id)) continue;
+    if (event.type === "customer.deleted") deletedCustomers.add(id);
+    else if (event.type.startsWith("customer.subscription.")) subscriptions.add(id);
+    else if (event.type === "customer.created") customers.add(id);
+    else if (event.type === "customer.updated") subscriptionsOf.add(id);
+    else if (event.type.startsWith("invoice.")) invoices.add(id);
+    else if (event.type.startsWith("payment_method.")) {
+      const customer = idOf(object.customer);
+      if (customer && SAFE_ID.test(customer)) subscriptionsOf.add(customer);
+    }
+  }
+  for (const id of deletedCustomers) {
+    customers.delete(id);
+    subscriptionsOf.delete(id);
+  }
+  return {
+    customers,
+    subscriptionsOf,
+    subscriptions,
+    invoices,
+    deletedCustomers,
+    total:
+      customers.size +
+      subscriptionsOf.size +
+      subscriptions.size +
+      invoices.size +
+      deletedCustomers.size,
+  };
+}
+
 /**
  * Le nom de l'offre vient du produit : lu à part (liste des produits), car Stripe limite le
  * dépliage des objets à 4 niveaux (data.items.data.price.product en ferait 5).
@@ -112,12 +248,24 @@ export type StripeProduct = { id: string; name?: string | null };
 export function toSubscriptionRow(
   projectId: string,
   subscription: StripeSubscription,
-  productNames: Map<string, string> = new Map(),
-  /** Expiration de la carte par défaut de chaque client (customerCards). */
-  cards: Map<string, string> = new Map(),
+  {
+    productNames = new Map(),
+    cards = new Map(),
+    coupons = new Map(),
+    now = Date.now(),
+  }: {
+    productNames?: Map<string, string>;
+    /** Expiration de la carte par défaut de chaque client (customerCards). */
+    cards?: Map<string, string>;
+    /** Bons de réduction du compte, quand la remise ne les porte pas dépliés. */
+    coupons?: Map<string, StripeCoupon>;
+    now?: number;
+  } = {},
 ) {
   const items = subscription.items?.data ?? [];
   const interval = items[0]?.price?.recurring?.interval;
+  const amounts = items.map(monthlyCents);
+  const known = amounts.reduce<number>((total, cents) => total + (cents ?? 0), 0);
   const customerId = idOf(subscription.customer)!;
   const product = items[0]?.price?.product;
   const productName =
@@ -127,8 +275,16 @@ export function toSubscriptionRow(
     id: subscription.id,
     customer_id: customerId,
     status: subscription.status,
-    mrr_cents: Math.round(items.reduce((sum, item) => sum + monthlyCents(item), 0)),
-    currency: subscription.currency ?? "eur",
+    mrr_cents: Math.round(
+      discountedCents(
+        known,
+        activeCoupons(subscription, coupons, now),
+        monthsOf(items[0]?.price) ?? 1,
+      ),
+    ),
+    // Paliers ou usage : revenu lu sur les factures, pas sur le prix.
+    price_unknown: amounts.some((cents) => cents === null),
+    currency: (subscription.currency ?? "eur").toLowerCase(),
     plan_name: (productName ?? items[0]?.price?.nickname ?? null)?.slice(0, 200) ?? null,
     created_at: iso(subscription.created)!,
     canceled_at: iso(subscription.canceled_at),
@@ -146,7 +302,45 @@ export function toSubscriptionRow(
   };
 }
 
+const DAYS_PER_MONTH = 30.4375;
+
+/**
+ * Part récurrente d'une facture d'abonnement, ramenée au mois : lignes d'abonnement hors
+ * prorata, remises déduites, sur la période qu'elles couvrent. Le nombre de mois vient de la
+ * durée de la période (même sans le prix). Null si la facture n'en a pas (prorata, achat
+ * ponctuel). C'est l'historique réel du revenu de chaque abonnement (expansion, contraction).
+ */
+export function recurringPart(invoice: StripeInvoice) {
+  const lines = (invoice.lines?.data ?? []).filter((line) => {
+    const subscriptionLine =
+      line.type === "subscription" || line.parent?.type === "subscription_item_details";
+    const proration = line.proration ?? line.parent?.subscription_item_details?.proration ?? false;
+    return subscriptionLine && !proration && line.period?.start && line.period?.end;
+  });
+  if (!lines.length) return null;
+  const start = Math.min(...lines.map((line) => line.period!.start!));
+  const end = Math.max(...lines.map((line) => line.period!.end!));
+  const days = (end - start) / (24 * 60 * 60);
+  if (days <= 0) return null;
+  // Une période d'un mois fait 28 à 31 jours : arrondie au mois entier au-delà de 25 jours.
+  const months =
+    days >= 25 ? Math.max(1, Math.round(days / DAYS_PER_MONTH)) : days / DAYS_PER_MONTH;
+  const net = lines.reduce(
+    (total, line) =>
+      total +
+      (line.amount ?? 0) -
+      (line.discount_amounts ?? []).reduce((sum, discount) => sum + (discount.amount ?? 0), 0),
+    0,
+  );
+  return {
+    recurring_cents: Math.max(0, Math.round(net / months)),
+    period_start: iso(start)!,
+    period_end: iso(end)!,
+  };
+}
+
 export function toInvoiceRow(projectId: string, invoice: StripeInvoice) {
+  const recurring = recurringPart(invoice);
   return {
     project_id: projectId,
     id: invoice.id,
@@ -160,5 +354,8 @@ export function toInvoiceRow(projectId: string, invoice: StripeInvoice) {
     attempt_count: invoice.attempt_count ?? 0,
     created_at: iso(invoice.created)!,
     next_payment_attempt: iso(invoice.next_payment_attempt),
+    recurring_cents: recurring?.recurring_cents ?? null,
+    period_start: recurring?.period_start ?? null,
+    period_end: recurring?.period_end ?? null,
   };
 }
