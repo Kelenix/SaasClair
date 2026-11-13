@@ -86,7 +86,7 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
 
 | Action | Pourquoi |
 |---|---|
-| **Connexion Google** (tâche 3), sinon dites-moi de **masquer** les boutons Google et GitHub | Aujourd'hui, deux gros boutons en haut du formulaire mènent à « arrive bientôt ». C'est la première impasse du parcours. |
+| ✅ **Connexion Google et GitHub** (tâches 3 et 4) : déjà activées en production (vérifié le 13 novembre après la mise en ligne). | Rien à faire. |
 | **Surveillance externe gratuite** (UptimeRobot ou Better Stack) sur `https://saasclair.com/api/health`, toutes les 5 min, alerte par email | Si le site tombe, personne n'est prévenu. |
 | **Sauvegardes hors du serveur** : activer les sauvegardes Hostinger du VPS, ou un stockage objet | Les sauvegardes de nuit restent sur le même serveur. S'il est perdu, tout est perdu. |
 | **Clé Stripe restreinte en lecture** pour l'import des comptes clients, distincte de la clé de facturation. Je vous guiderai : c'est à confirmer sur votre compte Stripe. | Si la clé actuelle fuitait, elle donnerait l'écriture sur le Stripe de tous vos clients. |
@@ -103,7 +103,16 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
    reste à l'utilisateur que 4 jours de données.
 3. **Durées de conservation** : visites 25 mois et identifiant visiteur 13 mois, comme le
    recommande la CNIL ? Ce sera à faire valider par votre juriste.
-4. **Ordre des lots** de la section 4 : ma recommandation est **C → D → A → B**.
+4. ~~**Ordre des lots**~~ : lot C fait (13 novembre). Suite recommandée : **D → A → B**.
+5. **Relier automatiquement les inscrits à leurs visites (lot C4, partie restante)** : le script
+   lirait l'email saisi dans le formulaire de la page d'inscription détectée, et n'en enverrait
+   que l'empreinte. Aujourd'hui, il faut ajouter une ligne `saasclair("identify", email)`, ce qui
+   contredit un peu la « configuration zéro ». C'est une donnée personnelle (pseudonymisée) :
+   à valider avec votre juriste et à mentionner dans la politique de confidentialité.
+6. **Même visiteur sur `www.` et `app.`** : l'identifiant du visiteur est aujourd'hui gardé dans
+   le navigateur, site par site. Pour le partager entre vos sous-domaines, il faudrait un cookie
+   sur le domaine principal (13 mois au plus). Or le script promet aujourd'hui « sans cookie » :
+   à décider avec la question 5.
 
 ---
 
@@ -112,7 +121,12 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
 Effort : **S** = moins d'une demi-journée · **M** = 1 à 2 jours · **L** = 3 jours ou plus.
 Tout ce qui suit est faisable par moi, sans compte externe, sauf mention contraire.
 
-### Lot C — Tenir les 3 promesses (le plus fort impact)
+### Lot C — Tenir les 3 promesses : ✅ fait le 13 novembre (PR n° 2)
+
+Fait : C1, C2, C3, C5 en entier ; C4 sauf la capture automatique de l'email et le cookie entre
+sous-domaines (décisions 5 et 6 ci-dessus). Pas encore fait, faute de données : rétrogradation
+récente et remise qui se termine (lot B5), baisse d'usage de l'app (après la décision 5).
+
 
 | Étape | Effort | Ce que ça change pour l'utilisateur |
 |---|---|---|
@@ -134,7 +148,7 @@ Tout ce qui suit est faisable par moi, sans compte externe, sauf mention contrai
 | D6. **Inscription en 2 champs** (email, mot de passe ; le prénom est demandé plus tard) et offre choisie sur la page Tarifs gardée jusqu'au paiement | S | Moins de friction. Aujourd'hui, le choix d'offre est perdu. |
 | D7. **Accès au tableau de bord pendant l'import Stripe** | S | L'import tourne déjà en arrière-plan : inutile de bloquer l'écran. |
 | D8. **Question sur la page de paiement en production**, en partant de la page de tarifs détectée | S | Aujourd'hui, elle n'existe qu'en démonstration. |
-| D9. Masquer Google et GitHub tant qu'ils ne sont pas activés | S | Seulement si vous ne faites pas la tâche 3. |
+| ~~D9. Masquer Google et GitHub~~ | — | Inutile : les deux sont déjà actifs en production. |
 | D10. *(SMTP nécessaire)* **Connexion par lien magique** et emails de démarrage : J0 instructions, J+1 « votre site n'est pas encore relié », J-2 fin d'essai | M | Gros levier d'activation, une fois la tâche 11 faite. |
 
 ### Lot A — Sécurité (code)
@@ -201,7 +215,7 @@ Tout ce qui suit est faisable par moi, sans compte externe, sauf mention contrai
 | Étape | Champs | Clics | Remarque |
 |---|---|---|---|
 | Site vitrine | 1 | 1 | — |
-| Inscription | 3 | 1 | Google et GitHub mènent à « arrive bientôt » |
+| Inscription | 3 | 1 | Google et GitHub actifs en production |
 | Votre SaaS | 0 | 1 | Corrigé aujourd'hui (était 2 clics) |
 | Script | 0 | 1, puis travail hors de l'app | Attente sans fin si rien n'arrive (D1) |
 | Stripe | 0 | 1, plus 2 à 4 chez Stripe | Texte désormais cohérent |

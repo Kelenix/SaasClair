@@ -4,6 +4,32 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Ajouté (lot C : les 3 promesses tenues sur les vraies données)
+- **Moteur d'insights** (`src/features/insights/`) : paiements échoués à récupérer, départs
+  programmés, cartes qui expirent avant le prochain paiement, essais qui finissent dans 7 jours,
+  churn en hausse (avec l'offre en cause), dépendance à un gros client, problèmes du site
+  (HTTPS, mobile, inscription ou tarifs introuvables, lenteur, description et titre pour Google),
+  dépendance à un seul canal. Chaque insight cite ses chiffres, dit quoi faire et l'argent en jeu.
+- Accueil : « Vos priorités cette semaine » (les 3 premières). Page Insights réelle (à traiter,
+  argent en jeu, faits, ignorés). Barre de question qui répond avec les vrais chiffres (churn,
+  revenu, canaux, conversion). Alertes de la cloche tirées des mêmes insights.
+- **Score de risque explicable** : points par raison (résiliation programmée, impayé, retard,
+  paiement échoué, carte qui expire, renouvellement annuel proche, client récent), « à retenir »
+  dès 60, « à surveiller » de 35 à 59. Import Stripe : rythme de facturation et mois
+  d'expiration de la carte (migration `stripe_risk_signals`), rien d'autre de la carte.
+- **Tunnel réel** : visiteurs → tarifs → inscription → inscrits, étape qui perd le plus en or avec
+  cause et action, comparaison par appareil et par canal. Page introuvable : question en un
+  clic avec la page la plus visitée qui lui ressemble (migration `key_pages`).
+- **Revenu par canal** : clients Stripe reliés à leur canal d'arrivée par l'empreinte de leur
+  email (fonction `customer_first_touch`, migration `first_touch`), vraie couverture affichée
+  dans Acquisition et Paramètres.
+
+### Corrigé (lot C)
+- Les dates d'essai et de résiliation (`trial_end`, `cancel_at`) n'étaient pas lues : la
+  correction des essais de la version précédente n'agissait pas encore.
+- Passer de www.monsaas.fr à app.monsaas.fr n'est plus compté comme une provenance « Autre site ».
+- « Fait / Ignorer » acceptait seulement les insights de démonstration.
+
 ### Corrigé (audit du 13 novembre 2026, détail dans `AUDIT_ET_PLAN_D_ACTION.md`)
 - **Chiffres tronqués au-delà de 1 000 lignes** : visites, abonnements, clients, factures et
   listes de l'administration sont désormais lus page par page (`src/lib/supabase/fetch-all.ts`).

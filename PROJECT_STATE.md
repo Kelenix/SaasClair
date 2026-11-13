@@ -5,7 +5,7 @@
 ## Snapshot
 
 - **Phase courante** : 6 — Mise en production : **en ligne sur https://saasclair.com**, déploiement automatique à chaque envoi sur `main`
-- **Dernière mise à jour** : 2026-10-31 — version `1.0.0-rc.1`
+- **Dernière mise à jour** : 2026-11-13 — version `1.0.0-rc.1` (audit, puis lot C ; plan dans `AUDIT_ET_PLAN_D_ACTION.md`)
 - **Santé** : 🟢 OK — lint, types, 115 tests unitaires, 52 tests de bout en bout, build ; 0 vulnérabilité en production
 - **Prochaine action** : compte super administrateur (tâche 12), SMTP (tâche 11), mentions légales et vrais témoignages (tâches 8, 9, 14)
 
@@ -56,6 +56,9 @@
 - voir `docs/manual-tasks.md`
 
 ## Journal de session (résumé court, le plus récent en haut)
+
+- 2026-11-13 — Lot C (promesses tenues sur les vraies données) : moteur d'insights (`src/features/insights/`) branché sur l'accueil, la page Insights, la barre de question et les alertes ; score de risque explicable (7 signaux, carte qui expire et rythme de facturation importés) ; tunnel réel avec pages clés confirmées en un clic ; revenu par canal et couverture réelle (`customer_first_touch`). 4 migrations, vérifiées sur la base locale. Décisions ouvertes : identification automatique à l'inscription et cookie entre sous-domaines (RGPD).
+- 2026-11-13 — Audit complet (sécurité, données, prise en main) : `AUDIT_ET_PLAN_D_ACTION.md`. Corrigés et mis en ligne (PR n° 1) : lecture au-delà de 1 000 lignes, calculs du churn, redirection ouverte, textes Stripe, confirmation d'email obligatoire (Resend).
 
 - 2026-10-31 — Paiement des abonnements (ADR-027) : Stripe Checkout (TVA automatique, SEPA, PayPal), notifications signées et appliquées une fois, portail client, écran de fin d’essai, onglet Abonnement réel (usage réel du mois), prix HT exacts sur le site, script d’installation Stripe. Test de bout en bout du paiement avec le Stripe simulé. Attend la tâche n° 15 (Stripe Tax, SEPA, PayPal) puis l’installation.
 - 2026-10-31 — Accueil réunissant les trois sources réelles (retour utilisateur « une dashboard ne peut pas être vide ») : revenus Stripe, visiteurs du script, analyse du site (pages clés, référencement, vitesse, technologies), sections avec données d’abord, sinon action précise. Test de la FAQ rendu robuste (repère unique, délais adaptés à la charge).
