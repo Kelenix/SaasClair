@@ -4,6 +4,13 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Corrigé
+- **Suppression du compte par l'utilisateur** (droit à l'effacement) : Paramètres ›
+  Confidentialité › « Supprimer mon compte », après avoir retapé son email. Le bouton n'existait
+  pas : seul le super administrateur pouvait supprimer un compte. L'accès Stripe est coupé et
+  l'abonnement SaasClair arrêté avant l'effacement (`src/features/account/erase.ts`), aussi
+  depuis l'administration, qui laissait jusqu'ici l'abonnement continuer après la suppression.
+
 ### Ajouté (lot E : écrans entièrement réels)
 - **Raisons de départ** tirées de Stripe : déclarées (portail de résiliation) et observées
   (paiement échoué, résiliation dans les 3 premiers mois ou après), avec un constat seulement

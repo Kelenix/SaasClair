@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { EyeOff, ShieldCheck, Trash2 } from "lucide-react";
+import { EyeOff, ShieldCheck, Trash2, UserX } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardEyebrow } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { displaySiteUrl } from "@/lib/site-url";
-import { deleteProject } from "./actions";
+import { deleteMyAccount, deleteProject } from "./actions";
 
 /**
  * Suppression du projet : il faut retaper l'adresse du site (ou « supprimer » si le projet n'a
@@ -84,6 +84,70 @@ function DeleteProject({ siteUrl }: { siteUrl: string | null }) {
   );
 }
 
+/**
+ * Suppression du compte : il faut retaper son email. Tout est effacé, l'abonnement SaasClair est
+ * arrêté et l'accès Stripe coupé ; l'utilisateur revient au site, déconnecté.
+ */
+function DeleteAccount({ email }: { email: string }) {
+  const id = useId();
+  const [confirmation, setConfirmation] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const matches = confirmation.trim().toLowerCase() === email.toLowerCase();
+
+  const remove = () =>
+    startTransition(async () => {
+      // En cas de succès, le serveur déconnecte et renvoie vers le site.
+      const result = await deleteMyAccount(confirmation);
+      if (!result.ok) toast.error(result.message);
+    });
+
+  return (
+    <Dialog onOpenChange={() => setConfirmation("")}>
+      <DialogTrigger asChild>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="border-danger text-danger hover:bg-danger/5"
+        >
+          <Icon icon={UserX} anim="wiggle" /> Supprimer mon compte
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Supprimer votre compte ?</DialogTitle>
+          <DialogDescription>
+            Votre compte, votre projet, l&apos;historique de vos visites et de vos insights et vos
+            réglages seront effacés. Votre abonnement SaasClair s&apos;arrête aussitôt, sans nouveau
+            prélèvement, et l&apos;accès à votre Stripe est coupé. Rien ne pourra être récupéré.
+          </DialogDescription>
+        </DialogHeader>
+        <label htmlFor={id} className="text-sm font-semibold text-ink">
+          Pour confirmer, tapez votre email <span className="font-mono text-forest">{email}</span>
+        </label>
+        <Input
+          id={id}
+          type="email"
+          autoComplete="off"
+          value={confirmation}
+          onChange={(event) => setConfirmation(event.target.value)}
+        />
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost">Annuler</Button>
+          </DialogClose>
+          <Button
+            onClick={remove}
+            disabled={!matches || isPending}
+            className="bg-danger text-white hover:bg-danger/90"
+          >
+            {isPending ? "Suppression…" : "Supprimer mon compte"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /** Ce que SaasClair garde vraiment : la collecte est anonyme par construction, sans réglage. */
 const GUARANTEES = [
   "Aucune adresse IP enregistrée",
@@ -95,10 +159,15 @@ const GUARANTEES = [
 export function PrivacyPanel({
   siteUrl,
   hasProject,
+  email,
+  isSuperAdmin = false,
 }: {
   siteUrl: string | null;
   /** Un projet existe (même sans adresse de site) : il peut être supprimé. */
   hasProject: boolean;
+  /** Email du compte, à retaper pour le supprimer. */
+  email: string;
+  isSuperAdmin?: boolean;
 }) {
   return (
     <div className="grid grid-cols-1 items-start gap-4 @4xl:grid-cols-2">
@@ -141,6 +210,19 @@ export function PrivacyPanel({
         ) : (
           <p className="text-sm text-slate">Aucun projet relié pour l&apos;instant.</p>
         )}
+        <div className="mt-6 border-t border-line pt-5">
+          <p className="mb-1 font-semibold text-ink">Supprimer mon compte</p>
+          <p className="mb-4 text-sm text-slate">
+            Tout est effacé et votre abonnement s&apos;arrête. C&apos;est définitif.
+          </p>
+          {isSuperAdmin ? (
+            <p className="text-sm text-slate">
+              Compte super administrateur : retirez d&apos;abord ce rôle pour pouvoir le supprimer.
+            </p>
+          ) : (
+            <DeleteAccount email={email} />
+          )}
+        </div>
       </Card>
     </div>
   );

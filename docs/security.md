@@ -97,6 +97,14 @@
 - Stripe simulé : trois verrous (`STRIPE_MOCK`, `DEMO_DATA`, adresse différente de saasclair.com).
 - `main` exige les contrôles quality, secrets, image et e2e ; fusion automatique quand ils passent.
 
+## Suppression du compte
+
+- Par l'utilisateur (Paramètres › Confidentialité, email retapé) ou par le super administrateur
+  (fiche utilisateur). Dans les deux cas (`src/features/account/erase.ts`) : accès Stripe Connect
+  coupé chez Stripe, abonnement SaasClair arrêté aussitôt, puis compte effacé (projet, visites,
+  données Stripe, réglages, alertes : suppression en cascade). Un échec chez Stripe laisse le
+  compte intact. Un super administrateur ne peut pas se supprimer lui-même.
+
 ## Double authentification et session (lot A7)
 
 - Super administrateur : application d'authentification (TOTP) obligatoire. `is_super_admin()`

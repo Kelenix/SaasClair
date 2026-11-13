@@ -96,11 +96,20 @@ export function SignInForm() {
   const requested = params.get("next") ?? "";
   const next = safeRedirectPath(requested);
   const linkError = LINK_ERRORS[params.get("erreur") ?? ""];
+  const accountDeleted = params.get("compte") === "supprime";
   const { state, isPending, field, onSubmit } = useAuthForm(signInSchema, signIn);
   const [withLink, setWithLink] = useState(false);
 
   return (
     <>
+      {accountDeleted && (
+        <p
+          role="status"
+          className="mb-4 rounded-xl border border-emerald/30 bg-emerald-tint px-4 py-3 text-sm text-forest"
+        >
+          Votre compte est supprimé, avec toutes ses données. Votre abonnement est arrêté.
+        </p>
+      )}
       <OAuthButtons next={next} />
       <OrDivider />
       {withLink ? (

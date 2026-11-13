@@ -1,10 +1,8 @@
 "use server";
 
-import { deauthorizeAccount, stripeConfig } from "@/features/stripe/client";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import type { Database } from "@/lib/supabase/database.types";
+import { eraseAccount } from "@/features/account/erase";
 import { logAdminAction, superAdminOrNull } from "./guard";
 
 type Result = { ok: true } | { ok: false; message: string };
@@ -115,28 +113,9 @@ export async function deleteUser(userId: string, emailConfirmation: string): Pro
   if (profile.email.toLowerCase() !== emailConfirmation.trim().toLowerCase()) {
     return { ok: false, message: "L'email saisi ne correspond pas à ce compte." };
   }
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceKey)
-    return { ok: false, message: "Suppression indisponible : clé de service absente." };
-
-  const service = createAdminClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  // Accès Stripe du client coupé d'abord : sinon il resterait valable après la suppression.
-  const { data: project } = await service
-    .from("projects")
-    .select("stripe_account_id")
-    .eq("owner_id", userId)
-    .maybeSingle();
-  const config = stripeConfig();
-  if (project?.stripe_account_id && config) {
-    const done = await deauthorizeAccount(config, project.stripe_account_id);
-    if (!done) {
-      return { ok: false, message: "Stripe n'a pas répondu : le compte est intact. Réessayez." };
-    }
-  }
-  const { error } = await service.auth.admin.deleteUser(userId);
-  if (error) return { ok: false, message: "La suppression n'a pas abouti. Le compte est intact." };
+  // Accès Stripe coupé et abonnement SaasClair arrêté d'abord, puis effacement (account/erase.ts).
+  const erased = await eraseAccount(userId);
+  if (!erased.ok) return erased;
   await logAdminAction(admin.supabase, "compte.supprime", profile.email);
   revalidatePath("/admin", "layout");
   return { ok: true };
