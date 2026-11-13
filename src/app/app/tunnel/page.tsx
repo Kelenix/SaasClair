@@ -28,7 +28,9 @@ async function Tunnel() {
       pricing: pathOf(context.pricingUrl, context.siteUrl),
       signup: pathOf(context.signupUrl, context.siteUrl),
     };
-    const funnel = context.scriptDetected ? await getRealFunnel(period, new Date(), paths) : null;
+    const funnel = context.scriptDetected
+      ? await getRealFunnel(period, new Date(), paths, { stripe: context.stripeConnected })
+      : null;
     if (!funnel) {
       return (
         <NoData
@@ -36,7 +38,7 @@ async function Tunnel() {
           icon={Filter}
           needs="script"
           remaining={context.setupRemaining}
-          description="Votre tunnel (visite, tarifs, inscription) se dessinera ici dès que la ligne SaasClair sera installée sur votre site."
+          description="Votre tunnel (visite, tarifs, inscription, puis essai et paiement avec Stripe) se dessinera ici dès que la ligne SaasClair sera installée sur votre site."
           waiting="Aucune visite sur cette période : choisissez une période plus longue, ou attendez vos prochains visiteurs."
         />
       );

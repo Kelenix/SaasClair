@@ -5,6 +5,7 @@ import { purgeOldEvents } from "@/features/collect/retention";
 import { refreshStaleAudits } from "@/features/setup/refresh";
 import { isDemoMode } from "@/lib/demo-mode";
 import { syncAllStripeAccounts } from "@/features/stripe/sync";
+import { sendDueAlerts } from "@/features/alerts/run";
 
 /** Le secret de la tâche programmée, comparé à durée constante. */
 function authorized(request: NextRequest) {
@@ -16,8 +17,8 @@ function authorized(request: NextRequest) {
 
 /**
  * Tâche horaire (deploy/scripts/stripe-sync.sh, secret CRON_SECRET) : resynchronise tous les
- * comptes Stripe, réanalyse les sites dont l'analyse a plus de 6 heures, et efface les visites
- * de plus de 25 mois. Répond aussitôt ; le travail tourne après.
+ * comptes Stripe, réanalyse les sites dont l'analyse a plus de 6 heures, efface les visites de
+ * plus de 25 mois et envoie les alertes nouvelles. Répond aussitôt ; le travail tourne après.
  */
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -29,6 +30,8 @@ export async function POST(request: NextRequest) {
     if (!isDemoMode()) await refreshStaleAudits();
     // Conservation limitée (RGPD) : les visites de plus de 25 mois sont effacées.
     await purgeOldEvents();
+    // Alertes par email et Slack (jamais en démonstration : rien ne doit partir d'un exemple).
+    if (!isDemoMode()) await sendDueAlerts();
   });
   if (!config) return NextResponse.json({ error: "stripe_not_configured" }, { status: 503 });
   return NextResponse.json({ status: "started" }, { status: 202 });

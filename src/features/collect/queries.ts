@@ -85,6 +85,7 @@ export async function getRealFunnel(
   period: Period,
   now: Date,
   paths: KeyPaths,
+  options: { stripe?: boolean } = {},
 ): Promise<RealFunnel | null> {
   const user = await getUser();
   if (!user) return null;
@@ -106,5 +107,5 @@ export async function getRealFunnel(
   if (error) console.error("Tunnel :", error.message);
   const summary = data as FunnelSummary | null;
   if (!summary?.groups.length) return null;
-  return funnelFromSummary(summary, paths, (id) => CHANNEL_LABELS[id as Channel] ?? id);
+  return funnelFromSummary(summary, paths, (id) => CHANNEL_LABELS[id as Channel] ?? id, options);
 }

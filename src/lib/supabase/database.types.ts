@@ -37,6 +37,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"alert_deliveries": {
+                  Row: {
+                    "alert_id": string,"key": string,"owner_id": string,"sent_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "alert_id": string,"key": string,"owner_id": string,"sent_at"?: string
+                  }
+                  Update: {
+                    "alert_id"?: string,"key"?: string,"owner_id"?: string,"sent_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"alert_settings": {
                   Row: {
                     "disabled_alerts": (string)[],"email_enabled": boolean,"owner_id": string,"slack_webhook_url": string | null,"updated_at": string
@@ -225,14 +239,14 @@ isOneToOne: false
                   ]
                 },"stripe_subscriptions": {
                   Row: {
-                    "billing_interval": string | null,"cancel_at": string | null,"cancel_at_period_end": boolean,"canceled_at": string | null,"card_expires_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"price_unknown": boolean,"project_id": string,"status": string,"trial_end": string | null
+                    "billing_interval": string | null,"cancel_at": string | null,"cancel_at_period_end": boolean,"cancel_comment": string | null,"cancel_feedback": string | null,"cancel_reason": string | null,"canceled_at": string | null,"card_expires_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"price_unknown": boolean,"project_id": string,"status": string,"trial_end": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"price_unknown"?: boolean,"project_id": string,"status": string,"trial_end"?: string | null
+                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"cancel_comment"?: string | null,"cancel_feedback"?: string | null,"cancel_reason"?: string | null,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"price_unknown"?: boolean,"project_id": string,"status": string,"trial_end"?: string | null
                   }
                   Update: {
-                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"price_unknown"?: boolean,"project_id"?: string,"status"?: string,"trial_end"?: string | null
+                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"cancel_comment"?: string | null,"cancel_feedback"?: string | null,"cancel_reason"?: string | null,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"price_unknown"?: boolean,"project_id"?: string,"status"?: string,"trial_end"?: string | null
                   }
                   Relationships: [
                     {
@@ -281,7 +295,7 @@ isOneToOne: false
             }[]
                            },
 "funnel_summary":
-{ Args: { "p_pricing": string,"p_project": string,"p_signup": string,"p_since": string }; Returns: Json
+{ Args: { "p_pricing": string,"p_project": string,"p_signup": string,"p_since": string,"p_until"?: string }; Returns: Json
                            },
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean

@@ -18,7 +18,11 @@ export type FunnelRow = {
 export type KeyPage = "pricing" | "signup";
 export type KeyPaths = Record<KeyPage, string | null>;
 
-export type RealFunnelStep = { id: "visit" | KeyPage | "identified"; label: string; count: number };
+export type RealFunnelStep = {
+  id: "visit" | KeyPage | "identified" | "trial" | "paid";
+  label: string;
+  count: number;
+};
 
 export type Segment = { id: string; name: string; visitors: number; rate: number };
 
@@ -67,6 +71,9 @@ export type FunnelGroup = {
   pricing: boolean;
   signup: boolean;
   identified: boolean;
+  /** Inscrit relié à son client Stripe : essai démarré, puis abonnement payé (Stripe connecté). */
+  trial?: boolean;
+  paid?: boolean;
   visitors: number;
 };
 /** Groupes de visiteurs, et pages les plus vues [chemin, visiteurs] (pages clés à deviner). */
@@ -126,16 +133,25 @@ export function funnelFromSummary(
   summary: FunnelSummary,
   paths: KeyPaths,
   channelName: (id: string) => string = (id) => id,
+  /** Stripe connecté : le tunnel va jusqu'au paiement. */
+  options: { stripe?: boolean } = {},
 ): RealFunnel {
   const order: RealFunnelStep["id"][] = ["visit"];
   if (paths.pricing) order.push("pricing");
   if (paths.signup) order.push("signup");
   if (summary.groups.some((group) => group.identified)) order.push("identified");
+  // Au-delà de l'inscription, Stripe dit qui essaie et qui paie (inscrits reliés à leur client).
+  if (options.stripe && order.includes("identified")) {
+    if (summary.groups.some((group) => group.trial)) order.push("trial");
+    order.push("paid");
+  }
   // Étape la plus avancée atteinte par le groupe.
   const stageOf = (group: FunnelGroup) =>
     Math.max(
       0,
       group.identified ? order.indexOf("identified") : 0,
+      group.trial ? order.indexOf("trial") : 0,
+      group.paid ? order.indexOf("paid") : 0,
       group.signup ? order.indexOf("signup") : 0,
       group.pricing ? order.indexOf("pricing") : 0,
     );
@@ -146,6 +162,8 @@ export function funnelFromSummary(
     pricing: "Tarifs vus",
     signup: "Inscription ouverte",
     identified: "Inscrits",
+    trial: "Essai démarré",
+    paid: "Clients payants",
   };
   const countFrom = (index: number) =>
     staged.reduce((total, group) => total + (group.stage >= index ? group.visitors : 0), 0);
@@ -209,9 +227,23 @@ export const computeFunnel = (
 
 /** Constat, cause probable et action pour l'étape qui perd le plus. Aucun chiffre inventé. */
 export const STEP_ADVICE: Record<
-  KeyPage | "identified",
+  Exclude<RealFunnelStep["id"], "visit">,
   { title: string; cause: string; action: string }
 > = {
+  trial: {
+    title: "Peu d'inscrits démarrent un essai.",
+    cause:
+      "L'essai demande une carte bancaire, ou l'inscription ne mène pas tout de suite dans le produit.",
+    action:
+      "Ouvrez l'essai sans carte bancaire, et amenez l'inscrit directement dans le produit juste après son inscription.",
+  },
+  paid: {
+    title: "Peu d'inscrits deviennent clients payants.",
+    cause:
+      "La valeur n'est pas vue avant la fin de l'essai, ou le passage au paiement n'est pas rappelé.",
+    action:
+      "Envoyez un email 3 jours avant la fin de l'essai : ce que le client a déjà obtenu, et un lien direct pour payer.",
+  },
   pricing: {
     title: "Peu de visiteurs vont jusqu'à vos tarifs.",
     cause:

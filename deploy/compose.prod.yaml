@@ -32,6 +32,12 @@ x-web: &web
     STRIPE_OAUTH_SCOPE: ${STRIPE_OAUTH_SCOPE:-read_write}
     # Secret de la resynchronisation horaire (deploy/scripts/stripe-sync.sh).
     CRON_SECRET: ${CRON_SECRET:-}
+    # Alertes par email (lot E) : le même SMTP que les emails de connexion (Resend).
+    SMTP_HOST: ${SMTP_HOST:-}
+    SMTP_PORT: ${SMTP_PORT:-587}
+    SMTP_USER: ${SMTP_USER:-}
+    SMTP_PASS: ${SMTP_PASS:-}
+    SMTP_SENDER: ${SMTP_SENDER:-}
     # Abonnement SaasClair (Stripe Billing, ADR-027) : écrits par deploy/scripts/billing-setup.sh.
     STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
     # Notifications des comptes Stripe connectés (Connect) : écrit par billing-setup.sh.

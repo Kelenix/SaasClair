@@ -21,6 +21,15 @@ import {
   type RevenueBucket,
 } from "./history";
 
+import {
+  customerTimeline,
+  departureReasons,
+  retentionHook,
+  type Departures,
+  type PaidInvoice,
+  type TimelineEvent,
+} from "./customer-detail";
+
 // Revenus et churn calculés sur les données Stripe importées (fonctions pures, testées).
 // Montants dans la devise principale du compte (centimes ÷ 100). Les mouvements (nouveaux,
 // expansion, contraction, départs) viennent de l'historique des factures (history.ts).
@@ -48,6 +57,9 @@ export type SubscriptionRow = {
   currency?: string;
   /** Prix par paliers ou à l'usage : revenu lu sur la dernière facture. */
   price_unknown?: boolean;
+  /** Raison de départ observée par Stripe, et déclarée par le client. */
+  cancel_reason?: string | null;
+  cancel_feedback?: string | null;
 };
 export type InvoiceRow = {
   id: string;
@@ -57,6 +69,7 @@ export type InvoiceRow = {
   attempt_count: number;
   next_payment_attempt: string | null;
   currency?: string;
+  created_at?: string | null;
 };
 export type CustomerRow = { id: string; name: string | null; email: string | null };
 
@@ -80,6 +93,13 @@ export type AtRisk = {
   reasons: { kind: RiskReason; label: string }[];
   /** Fin de période (résiliation ou prochain renouvellement). */
   periodEnd: string | null;
+  /** Offre(s) en cours et date du premier paiement. */
+  plan: string | null;
+  since: string | null;
+  /** Faits Stripe, du plus récent au plus ancien. */
+  timeline: TimelineEvent[];
+  /** Accroche de l'email de relance, selon la première raison. */
+  hook: string;
 };
 export type FailedInvoice = {
   id: string;
@@ -125,6 +145,8 @@ export type RealRevenue = {
   otherCurrencies: { count: number; currencies: string[] };
   /** Abonnements à paliers ou à l'usage : estimés sur leur dernière facture, ou inconnus. */
   usageBased: { estimated: number; missing: number };
+  /** Raisons de départ des clients partis sur la période (déclarées et observées). */
+  departures: Departures;
   /** Revenu mensuel à chaque fin de mois, sur 12 mois. */
   history: { label: string; mrr: number }[];
   atRisk: AtRisk[];
@@ -210,7 +232,7 @@ export function computeRevenue(
   period: Period,
   now: Date,
   /** Part récurrente des factures d'abonnement (historique des montants facturés). */
-  recurringInvoices: RecurringInvoiceRow[] = [],
+  recurringInvoices: (RecurringInvoiceRow & PaidInvoice)[] = [],
 ): RealRevenue {
   const end = now.getTime();
   const days = PERIOD_DAYS[period];
@@ -283,6 +305,15 @@ export function computeRevenue(
   // Clients à risque : chaque abonnement apporte ses raisons, réunies par client (sans doublon).
   const dayMonth = (iso: string) =>
     new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  // Abonnements de chaque client, et date de son premier paiement (fiche client, départs).
+  const subsByCustomer = new Map<string, SubscriptionRow[]>();
+  const firstPaid = new Map<string, number>();
+  for (const sub of started) {
+    subsByCustomer.set(sub.customer_id, [...(subsByCustomer.get(sub.customer_id) ?? []), sub]);
+    if (!everPaid(sub)) continue;
+    const t = paidFrom(sub);
+    if (t < (firstPaid.get(sub.customer_id) ?? Infinity)) firstPaid.set(sub.customer_id, t);
+  }
   const byCustomerRisk = new Map<
     string,
     { reasons: Map<RiskReason, string>; cents: number; ends: string[] }
@@ -364,7 +395,22 @@ export function computeRevenue(
     );
     if (score < WATCH_SCORE) continue;
     const customer = names.get(customerId);
+    const own = subsByCustomer.get(customerId) ?? [];
+    const plans = [
+      ...new Set(own.filter((sub) => !sub.ended_at && sub.plan_name).map((sub) => sub.plan_name!)),
+    ];
+    const periodEnd = [...entry.ends].sort()[0] ?? null;
+    const first = firstPaid.get(customerId);
     atRisk.push({
+      plan: plans.join(", ") || null,
+      since: first !== undefined ? new Date(first).toISOString() : null,
+      timeline: customerTimeline(
+        own,
+        recurringInvoices,
+        failed.filter((invoice) => invoice.customer_id === customerId),
+        end,
+      ),
+      hook: retentionHook(kinds[0], plans.join(", ") || null, periodEnd),
       customerId,
       name: customer?.name || customer?.email || customerId,
       email: customer?.email ?? null,
@@ -373,7 +419,7 @@ export function computeRevenue(
       level: score >= RETAIN_SCORE ? "retain" : "watch",
       reasons: kinds.map((kind) => ({ kind, label: entry.reasons.get(kind)! })),
       // La première échéance : c'est elle qui fixe le temps pour agir.
-      periodEnd: [...entry.ends].sort()[0] ?? null,
+      periodEnd,
     });
   }
   atRisk.sort((a, b) => b.score - a.score || b.mrr - a.mrr);
@@ -446,6 +492,13 @@ export function computeRevenue(
       ? { name: nameOf(topId), mrr: euros(topCents!), share: percent(topCents!, totalCents) }
       : null;
 
+  // Raisons de départ : pour chaque client parti, son dernier abonnement arrêté.
+  const lastEnded = lostCustomerIds.flatMap((customerId) => {
+    const own = (subsByCustomer.get(customerId) ?? []).filter((sub) => sub.ended_at);
+    own.sort((a, b) => Date.parse(b.ended_at!) - Date.parse(a.ended_at!));
+    return own.slice(0, 1);
+  });
+
   // Valeur vie client : revenu moyen par client × durée de vie moyenne (1 ÷ churn mensuel).
   const arpa = byCustomer.size ? totalCents / byCustomer.size : 0;
   const lifetimeMonths = churn.customer > 0 ? 100 / churn.customer : null;
@@ -487,6 +540,7 @@ export function computeRevenue(
       currencies: [...new Set(others.map((sub) => (sub.currency ?? "eur").toUpperCase()))],
     },
     usageBased: { estimated, missing },
+    departures: departureReasons(lastEnded, firstPaid),
     history,
     atRisk,
     mrrAtRisk: Math.round(atRisk.reduce((total, risk) => total + risk.mrr, 0) * 100) / 100,

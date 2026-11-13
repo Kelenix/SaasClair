@@ -4,6 +4,19 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Ajouté (lot E : écrans entièrement réels)
+- **Raisons de départ** tirées de Stripe : déclarées (portail de résiliation) et observées
+  (paiement échoué, résiliation dans les 3 premiers mois ou après), avec un constat seulement
+  quand les chiffres le disent (migration `real_screens`).
+- **Fiche client** depuis la liste des clients à risque : signaux, échéance, chronologie Stripe
+  et email de relance rédigé selon la situation ; depuis l'accueil, lien vers la fiche.
+- **Tunnel jusqu'au paiement** : étapes « Essai démarré » et « Clients payants » (inscrits reliés
+  à leur client Stripe), conseils associés.
+- **Alertes envoyées** par email (SMTP Resend) et Slack, par la tâche horaire : client à
+  retenir, paiement refusé, script silencieux, chute des visites, baisse de conversion, résumé
+  du lundi. Une seule fois chacune (`alert_deliveries`) ; envoi raté retenté l'heure suivante.
+- `nodemailer` 10.5 (version corrigée, 0 vulnérabilité).
+
 ### Sécurité (lot A7)
 - **Double authentification du super administrateur** : application d'authentification reliée
   par QR code à la première visite de l'administration, puis code à 6 chiffres à chaque

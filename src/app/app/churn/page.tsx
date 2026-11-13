@@ -41,7 +41,7 @@ async function Churn({ searchParams }: Props) {
           period={period}
           liveLabel="Données Stripe"
         />
-        <RealChurnView data={real} />
+        <RealChurnView data={real} sender={context.firstName} initialOpenId={client} />
       </>
     );
   }

@@ -5,12 +5,12 @@ export const ALERTS = [
   {
     id: "churn-risk",
     label: "Client à risque de départ",
-    detail: "Dès qu'un client passe en risque élevé, avec l'action conseillée.",
+    detail: "Dès qu'un client passe « à retenir », avec ses raisons et un lien vers sa fiche.",
   },
   {
     id: "failed-payment",
     label: "Paiement échoué",
-    detail: "Avec la relance prête à envoyer.",
+    detail: "Avec le montant et la date du prochain essai de Stripe.",
   },
   {
     id: "conversion-drop",
