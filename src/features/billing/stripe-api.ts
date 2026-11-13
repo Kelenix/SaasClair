@@ -29,11 +29,15 @@ function encode(params: Params, prefix = "", out = new URLSearchParams()) {
   return out;
 }
 
-async function stripe<T>(method: "GET" | "POST", path: string, params: Params = {}): Promise<T> {
+async function stripe<T>(
+  method: "GET" | "POST" | "DELETE",
+  path: string,
+  params: Params = {},
+): Promise<T> {
   const config = stripeConfig();
   if (!config) throw new Error("Stripe n'est pas configuré.");
   const body = encode(params);
-  const url = `${config.apiBase}${path}${method === "GET" && body.size ? `?${body}` : ""}`;
+  const url = `${config.apiBase}${path}${method !== "POST" && body.size ? `?${body}` : ""}`;
   const response = await fetch(url, {
     method,
     headers: {
@@ -115,4 +119,17 @@ export function retrieveSubscription(id: string) {
     `/v1/subscriptions/${encodeURIComponent(id)}`,
     { expand: ["default_payment_method"] },
   );
+}
+
+/**
+ * Arrête tout de suite l'abonnement SaasClair (suppression du compte) : plus aucun prélèvement.
+ * Déjà arrêté chez Stripe : rien à faire.
+ */
+export async function cancelSubscriptionNow(id: string) {
+  try {
+    await stripe("DELETE", `/v1/subscriptions/${encodeURIComponent(id)}`);
+  } catch (error) {
+    const current = await retrieveSubscription(id).catch(() => null);
+    if (current?.status !== "canceled") throw error;
+  }
 }

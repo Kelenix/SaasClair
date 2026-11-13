@@ -74,7 +74,12 @@ async function Settings({ searchParams }: Props) {
             />
           ),
           confidentialite: (
-            <PrivacyPanel siteUrl={context.siteUrl} hasProject={Boolean(context.projectId)} />
+            <PrivacyPanel
+              siteUrl={context.siteUrl}
+              hasProject={Boolean(context.projectId)}
+              email={context.email}
+              isSuperAdmin={context.isSuperAdmin}
+            />
           ),
           integrations: <IntegrationsPanel />,
         }}
