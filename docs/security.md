@@ -12,7 +12,7 @@
 | Pages privées | `/configuration` et `/app` : redirection « optimiste » par le proxy + contrôle serveur dans la page |
 | Mots de passe | 8 caractères minimum (formulaire, serveur et `supabase/config.toml`), 72 maximum (limite bcrypt) |
 | Réinitialisation | Lien à usage unique (flux PKCE) ; même réponse que le compte existe ou non (pas d'énumération) |
-| Confirmation d'email | Désactivée en local, **à activer en production** (le formulaire gère déjà l'état « Regardez vos emails ») |
+| Confirmation d'email | **Obligatoire en production** (`GOTRUE_MAILER_AUTOCONFIRM: "false"`, envoi par Resend), désactivée en local ; le formulaire affiche « Regardez vos emails » |
 
 ## Validation et erreurs
 

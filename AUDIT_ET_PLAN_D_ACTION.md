@@ -28,8 +28,8 @@
 - **Le parcours compte encore 7 écrans, 8 à 10 clics et 5 à 6 décisions** avant le premier vrai
   chiffre. La cible proposée : **4 écrans, environ 5 clics**, avec des constats utiles dès la
   première seconde (section 4, lot D).
-- **Le risque de sécurité n°1 se règle de votre côté** : les emails ne sont pas confirmés en
-  production. C'est la tâche SMTP (section 3).
+- **Le risque de sécurité n°1 est réglé** : Resend est configuré et la confirmation d'email est
+  activée. Elle sera en ligne à la fusion de la PR n° 1 (section 3).
 
 ---
 
@@ -75,7 +75,7 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
 
 | Priorité | Action | Pourquoi | Temps |
 |---|---|---|---|
-| **1** | **Emails avec Resend (tâche 11)** : valider le domaine, mettre la clé dans `/srv/saasclair/.env`, puis passer `GOTRUE_MAILER_AUTOCONFIRM: "false"` dans `deploy/compose.prod.yaml`. Pour ce dernier fichier, dites-le-moi et je le modifie. | **Faille la plus grave.** Sans confirmation, quelqu'un peut créer un compte avec l'email d'un de vos clients. Si Google est activé ensuite, il peut même lui prendre son compte. Sans SMTP, « mot de passe oublié » ne marche pas non plus. | 30 min |
+| ✅ | **Emails avec Resend (tâche 11)** : fait par vous. J'ai activé la confirmation d'email dans `deploy/compose.prod.yaml` : elle sera en ligne dès la fusion de la PR n° 1. **Juste après la fusion**, testez une inscription avec une vraie adresse, et « mot de passe oublié ». | C'était la faille la plus grave : sans confirmation, n'importe qui pouvait créer un compte avec l'email d'un autre. | 5 min de test |
 | **2** | **Compte super administrateur en production** (tâche 12) | Sans lui, vous ne pouvez pas administrer. | 5 min |
 | **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur | Sans lui, vous ne pouvez pas encaisser. | 30 min |
 | **4** | **Vrais témoignages** (tâche 8). Publier de faux avis est interdit. | Obligation légale. | Variable |
@@ -181,7 +181,7 @@ Tout ce qui suit est faisable par moi, sans compte externe, sauf mention contrai
 
 | Gravité | Constat | Qui corrige |
 |---|---|---|
-| Élevée | Emails non confirmés en production | **Vous** (SMTP), puis moi (réglage) |
+| ~~Élevée~~ | Emails non confirmés en production : **corrigé** (Resend + confirmation obligatoire, en ligne à la fusion de la PR n° 1) | Fait |
 | Élevée | Accès Stripe en écriture, jamais révoqué | Moi (A4) + **vous** (clé restreinte) |
 | Moyenne | Rebinding DNS sur l'analyse d'URL, sans limite | Moi (A1) |
 | Moyenne | Limite de connexion inopérante (adresse du conteneur) | Moi (A5) |

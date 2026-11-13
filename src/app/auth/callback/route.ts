@@ -33,7 +33,12 @@ export async function GET(request: NextRequest) {
         });
       }
       const { data } = await supabase.auth.getUser();
-      const isNewAccount = data.user && Date.now() - Date.parse(data.user.created_at) < 2 * 60_000;
+      // Nouveau compte : créé à l'instant (Google, GitHub), ou email confirmé à l'instant (le clic
+      // sur le lien peut venir bien après la création du compte).
+      const isRecent = (iso?: string | null) =>
+        Boolean(iso) && Date.now() - Date.parse(iso!) < 2 * 60_000;
+      const isNewAccount =
+        data.user && (isRecent(data.user.created_at) || isRecent(data.user.email_confirmed_at));
       return NextResponse.redirect(new URL(isNewAccount ? withWelcome(next) : next, origin));
     }
   }

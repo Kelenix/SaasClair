@@ -34,7 +34,8 @@ export function SignUpForm() {
   if (state.status === "check-email") {
     return (
       <CheckEmail email={state.email}>
-        Cliquez dessus pour confirmer votre compte : la configuration démarre juste après.
+        Cliquez dessus pour confirmer votre compte : la configuration démarre juste après. Rien reçu
+        dans 2 minutes ? Regardez dans les indésirables.
       </CheckEmail>
     );
   }
@@ -86,7 +87,9 @@ export function SignUpForm() {
 }
 
 const LINK_ERRORS: Record<string, string> = {
-  lien: "Ce lien n'est plus valable. Connectez-vous, ou demandez un nouveau lien.",
+  // Aussi le cas d'un lien de confirmation ouvert dans un autre navigateur : l'email est bien
+  // confirmé, seule la session n'a pas pu s'ouvrir ici.
+  lien: "Ce lien n'a pas pu ouvrir votre session ici. Si vous veniez de confirmer votre email, c'est fait : connectez-vous. Sinon, demandez un nouveau lien.",
 };
 
 export function SignInForm() {

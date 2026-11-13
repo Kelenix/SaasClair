@@ -15,6 +15,9 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 - Dernier point du graphique des revenus = revenu affiché. « Churn involontaire » renommé
   « Paiements à récupérer » (c'est ce qu'il mesure).
 - **Redirection ouverte** après connexion (`/%09/autre-site`) bloquée.
+- **Confirmation d'email obligatoire en production** (emails envoyés par Resend) : personne ne
+  peut plus créer un compte au nom d'un autre. Lien de confirmation ouvert dans un autre
+  navigateur : message clair, et la conversion « inscription » est comptée au clic sur le lien.
 - Actions de démonstration (script détecté, Stripe connecté) refusées hors mode démo.
 - Webhook de facturation : une écriture refusée fait rejouer la notification au lieu de la perdre.
 - Secret de la resynchronisation Stripe : plus visible dans la liste des processus du serveur.
