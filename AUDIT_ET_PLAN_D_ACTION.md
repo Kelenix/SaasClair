@@ -236,46 +236,60 @@ horaire dans l'heure qui suit la mise en ligne. D'ici là, l'expansion et la con
 
 ### 5.1 État réel de chaque écran en production
 
+*Mis à jour le 16 novembre, après les lots A, B, C et D.*
+
 | Écran | Calculé sur les vraies données | Pas encore réel |
 |---|---|---|
-| Accueil | Revenu mensuel récurrent, churn mensuel, revenu à risque, conversion essai → payant (sinon nouveau revenu), graphique nouveau / expansion / perdu, 3 clients à risque, 3 insights, visiteurs, canaux, pages d'entrée, analyse du site (lots B et C) | — |
-| Acquisition | Visiteurs, canaux, pages d'entrée, campagnes, sites d'origine | Inscrits, clients et revenu par canal |
-| Tunnel | Rien | Tout |
-| Churn | Churn mensuel clients et revenu, revenu à risque, paiements à récupérer, liste à risque (règles), cohortes (lot B) | Raisons de départ, chronologie client, email de relance |
-| Revenus | Revenu mensuel récurrent sur 12 mois (factures réelles), nouveau, expansion, contraction, départs, valeur vie client, paiements échoués (lot B) | — |
-| Insights | Réglages d'alertes | Moteur d'insights |
-| Barre de question, notifications | — | Aucun moteur, aucun email envoyé |
+| Accueil | Revenu mensuel récurrent, churn mensuel, revenu à risque, conversion essai → payant (sinon nouveau revenu), graphique nouveau / expansion / perdu, 3 clients à risque, 3 insights de la semaine, visiteurs, canaux, pages d'entrée, analyse du site | — |
+| Acquisition | Visiteurs, canaux (dont Assistants IA et réseaux sociaux), pages d'entrée, campagnes, sites d'origine, clients et revenu par canal, part des clients reliés à leur provenance | Inscrits par canal (demande l'identification automatique à l'inscription, décision 5) |
+| Tunnel | Visiteurs → tarifs → inscription → inscrits, l'étape qui perd le plus (en or) avec sa cause et son action, comparaison par appareil et par canal, page clé confirmée en un clic | Étapes « activation » et « essai » (demandent de savoir ce que l'inscrit fait dans votre produit) |
+| Churn | Churn mensuel clients et revenu, revenu à risque, paiements à récupérer, clients à risque (7 signaux expliqués), cohortes de rétention | Raisons de départ, fiche client avec chronologie, email de relance préparé |
+| Revenus | Revenu mensuel récurrent sur 12 mois (montants facturés), nouveau, expansion, contraction, départs, valeur vie client, paiements échoués, devises et prix à l'usage signalés | — |
+| Insights | Moteur d'insights sur vos chiffres, suivi « fait / ignoré », réglages d'alertes | Mesure de l'impact après action |
+| Barre de question | Réponses rédigées à partir de vos vrais chiffres (churn, revenu, canaux, conversion) | Questions libres plus fines (un client précis, deux périodes comparées) |
+| Notifications | Alertes tirées des insights réels, dans l'application | Envoi par email ou Slack (aucun moteur d'envoi encore) |
 
-### 5.2 Sécurité : constats non encore corrigés
+### 5.2 Sécurité : où en sont les constats
 
-| Gravité | Constat | Qui corrige |
+*Mis à jour le 16 novembre.*
+
+| Gravité | Constat | État |
 |---|---|---|
-| ~~Élevée~~ | Emails non confirmés en production : **corrigé** (Resend + confirmation obligatoire, en ligne à la fusion de la PR n° 1) | Fait |
-| Élevée | Accès Stripe en écriture, jamais révoqué | Moi (A4) + **vous** (clé restreinte) |
-| Moyenne | Rebinding DNS sur l'analyse d'URL, sans limite | Moi (A1) |
-| Moyenne | Limite de connexion inopérante (adresse du conteneur) | Moi (A5) |
-| Moyenne | `/api/collect` polluable, sans quota | Moi (A2) |
-| Moyenne | RGPD : pas de purge, identifiant sans durée, « anonymisation » sans effet | Moi (A6) + **juriste** |
-| Moyenne | Déploiement équivalent à un accès administrateur du VPS partagé | Moi (épinglage) + **vous** (restriction de la clé SSH) |
-| Faible | Colonnes de projet modifiables, newsletter, IPv6 dans la garde réseau, CSP, pas de double authentification, effacement de compte incomplet | Moi (A3, A7, A8) |
+| Élevée | Emails non confirmés en production | ✅ Corrigé (Resend, confirmation obligatoire) |
+| Élevée | Accès Stripe jamais révoqué | ✅ Coupé à la suppression d'un projet ou d'un compte, et à la déconnexion depuis Stripe |
+| Élevée | Accès Stripe en écriture (`read_write`) | ⬜ **Vous** : clé restreinte en lecture (section 3). SaasClair ne fait déjà que lire. |
+| Moyenne | Rebinding DNS sur l'analyse d'URL, sans limite | ✅ Corrigé (adresse vérifiée à la connexion, 10 analyses par heure) |
+| Moyenne | Limite de connexion inopérante | ✅ Corrigé (par email et par adresse IP réelle) |
+| Moyenne | `/api/collect` polluable, sans quota | ✅ Corrigé (limites par visiteur, par site et par taille) |
+| Moyenne | RGPD : pas de purge, identifiant sans durée, « anonymisation » sans effet | ✅ Corrigé (25 mois, 13 mois, textes justes) ; ⬜ **juriste** pour valider les durées |
+| Moyenne | Déploiement équivalent à un accès administrateur du VPS partagé | ✅ Actions épinglées ; ⬜ **vous** : restreindre la clé SSH de déploiement |
+| Faible | Colonnes de projet modifiables, newsletter, IPv6, effacement de compte | ✅ Corrigé (lot A) |
+| Faible | Pas de double authentification | ✅ Obligatoire pour le super administrateur, exigée par la base (A7) |
+| Faible | CSP avec `unsafe-inline` | ✅ Durcie sans nonce (incompatible avec le pré-rendu) ; session illisible par le JavaScript (A7) |
+
+Il ne reste aucun constat que je puisse corriger seul : les 3 lignes ⬜ demandent votre compte
+Stripe, votre serveur ou un juriste.
 
 **Ce qui est bien fait** :
 - RLS partout, fonctions protégées (`search_path` vide), clé de service utilisée seulement après contrôle ;
-- OAuth Stripe à jeton anti-falsification, webhook signé et dédoublonné ;
+- OAuth Stripe à jeton anti-falsification, notifications signées et vérifiées ;
 - export CSV protégé contre les formules, pixels publicitaires validés et soumis au consentement ;
 - ports internes fermés, HSTS, aucun secret dans Git, 0 vulnérabilité dans les dépendances.
 
-### 5.3 Parcours actuel, compté
+### 5.3 Parcours compté (après le lot D)
 
 | Étape | Champs | Clics | Remarque |
 |---|---|---|---|
-| Site vitrine | 1 | 1 | — |
-| Inscription | 3 | 1 | Google et GitHub actifs en production |
-| Votre SaaS | 0 | 1 | Corrigé aujourd'hui (était 2 clics) |
-| Script | 0 | 1, puis travail hors de l'app | Attente sans fin si rien n'arrive (D1) |
-| Stripe | 0 | 1, plus 2 à 4 chez Stripe | Texte désormais cohérent |
-| C'est terminé | 0 | 1 | Chiffres inventés retirés |
-| Tableau de bord | — | — | 3 rappels de la même action (D3) |
+| Site vitrine | 1 (adresse du SaaS) | 1 | « Analyser mon SaaS » |
+| Inscription | 2 (email, mot de passe) | 1 | Ou Google, GitHub ; le prénom est déduit de l'email |
+| Votre SaaS | 0 | 0 | Écran sauté : l'adresse vient du site vitrine, l'analyse tourne en arrière-plan |
+| Relier le site | 0 | 1, puis travail hors de l'app | « C'est fait, vérifier mon site » dit ce qui manque ; aide au bout de 2 minutes |
+| Stripe | 0 | 1, plus 2 à 4 chez Stripe | Ou « Je n'utilise pas Stripe » (question fermée) |
+| C'est terminé | 0 | 1 | Vrais nombres importés |
+| Tableau de bord | — | — | Une seule liste de démarrage (« 1 sur 3 ») |
+
+Total : **3 champs et 4 à 5 clics** dans SaasClair (contre 4 champs et 6 clics avant), plus le
+travail d'installation sur votre site et l'autorisation chez Stripe.
 
 ---
 
