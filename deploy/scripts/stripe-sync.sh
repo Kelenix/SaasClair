@@ -11,8 +11,10 @@ color=$(active_color)
 [ "$color" != none ] || fail "Aucune version de l'application en service."
 port=$(env_value "WEB_PORT_${color^^}")
 
-status=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 -X POST \
-  -H "Authorization: Bearer $secret" "http://127.0.0.1:$port/api/stripe/sync")
+# L'en-tête passe par l'entrée standard (--config -), jamais en argument : invisible dans « ps ».
+status=$(printf 'header = "Authorization: Bearer %s"\n' "$secret" |
+  curl -sS -o /dev/null -w "%{http_code}" --max-time 15 -X POST --config - \
+    "http://127.0.0.1:$port/api/stripe/sync")
 case "$status" in
   202) log "Resynchronisation Stripe lancée ($(date -u +%Y-%m-%dT%H:%MZ))." ;;
   503) log "Stripe non configuré : rien à resynchroniser." ;;

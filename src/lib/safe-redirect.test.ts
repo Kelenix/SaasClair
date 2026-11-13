@@ -4,14 +4,24 @@ import { safeRedirectPath, setupPath } from "./safe-redirect";
 describe("safeRedirectPath", () => {
   it("garde les chemins internes", () => {
     expect(safeRedirectPath("/app/churn?periode=30j")).toBe("/app/churn?periode=30j");
+    expect(safeRedirectPath("/configuration?site=https%3A%2F%2Fmonsaas.fr#etape")).toBe(
+      "/configuration?site=https%3A%2F%2Fmonsaas.fr#etape",
+    );
   });
 
-  it.each([null, "", "https://evil.com", "//evil.com", "/\\evil.com", "javascript:alert(1)"])(
-    "refuse « %s » et renvoie vers la configuration",
-    (path) => {
-      expect(safeRedirectPath(path)).toBe("/configuration");
-    },
-  );
+  it.each([
+    null,
+    "",
+    "https://evil.com",
+    "//evil.com",
+    "/\\evil.com",
+    "javascript:alert(1)",
+    "/\t/evil.com",
+    "/\n/evil.com",
+    "/\r//evil.com",
+  ])("refuse « %s » et renvoie vers la configuration", (path) => {
+    expect(safeRedirectPath(path)).toBe("/configuration");
+  });
 });
 
 describe("setupPath", () => {
