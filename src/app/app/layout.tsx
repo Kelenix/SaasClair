@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Paywall, PastDueBanner } from "@/features/billing/paywall";
+import { trialDaysLeft } from "@/features/billing/plans";
 import { getDashboardContext } from "@/features/dashboard/context";
 import { getPeriod } from "@/features/dashboard/get-period";
 import { MobileNav } from "@/features/dashboard/mobile-nav";
@@ -18,6 +19,20 @@ import { Sidebar } from "@/features/dashboard/sidebar";
 import { NotificationsMenu, ProfileMenu } from "@/features/dashboard/topbar-menus";
 
 export const metadata: Metadata = { title: "Tableau de bord", robots: { index: false } };
+
+/** Jours d'essai restants, toujours visibles : la fin de l'essai ne tombe jamais par surprise. */
+function TrialBadge({ daysLeft }: { daysLeft: number }) {
+  const label =
+    daysLeft <= 1 ? "Dernier jour d'essai" : `Essai gratuit : ${daysLeft} jours restants`;
+  return (
+    <Link
+      href="/app/parametres?onglet=abonnement"
+      className="hidden min-h-11 items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest lg:inline-flex"
+    >
+      <Badge tone={daysLeft <= 2 ? "attention" : "neutral"}>{label}</Badge>
+    </Link>
+  );
+}
 
 async function DashboardShell({ children }: { children: React.ReactNode }) {
   const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
@@ -39,6 +54,9 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {context.demo && (
                 <Badge className="hidden 2xl:inline-flex">Données de démonstration</Badge>
+              )}
+              {context.access === "trial" && (
+                <TrialBadge daysLeft={trialDaysLeft(context.billing.trialEndsAt, new Date())} />
               )}
               <PeriodSelector />
               <NotificationsMenu demo={context.demo} />

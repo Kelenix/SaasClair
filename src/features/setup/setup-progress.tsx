@@ -15,7 +15,7 @@ const MILESTONES: { step: ActionStep; label: string }[] = [
 const PROGRESS: Record<SetupStep, number> = { site: 0.12, script: 0.45, stripe: 0.78, done: 1 };
 
 const CAPTION: Record<SetupStep, string> = {
-  site: "Avant de commencer",
+  site: "Votre site",
   script: "Étape 1 sur 2",
   stripe: "Étape 2 sur 2",
   done: "Terminé",
@@ -62,6 +62,9 @@ export function SetupProgress({
                     <m.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={SPRING}>
                       <Check className="size-3" strokeWidth={3} aria-hidden />
                     </m.span>
+                  ) : // Seules les 2 actions sont numérotées : « Étape 1 sur 2 », « Étape 2 sur 2 ».
+                  milestone === "site" ? (
+                    ""
                   ) : (
                     index
                   )}

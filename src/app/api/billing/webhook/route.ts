@@ -70,8 +70,11 @@ export async function POST(request: NextRequest) {
       .update(update)
       .eq("stripe_customer_id", update.stripe_customer_id)
       .select("id");
+    // Écriture refusée : erreur, pour que Stripe rejoue la notification (sinon perdue).
+    if (byCustomer.error) throw new Error(`profil non mis à jour (${byCustomer.error.code})`);
     if (!byCustomer.data?.length && userId) {
-      await service.from("profiles").update(update).eq("id", userId);
+      const byUser = await service.from("profiles").update(update).eq("id", userId);
+      if (byUser.error) throw new Error(`profil non mis à jour (${byUser.error.code})`);
     }
     return NextResponse.json({ received: true });
   } catch (error) {

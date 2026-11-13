@@ -280,11 +280,11 @@ const FAQ = [
   ],
   [
     "Mes données sont-elles en sécurité ?",
-    "Oui. Hébergement en Europe, Stripe en lecture uniquement, adresses email chiffrées avant comparaison.",
+    "Oui. Hébergement en Europe, Stripe seulement lu, jamais modifié, adresses email chiffrées avant comparaison.",
   ],
   [
     "Combien de temps avant les premiers résultats ?",
-    "Vos chiffres de revenu apparaissent dès la connexion de Stripe. Les premiers insights arrivent sous 24 heures.",
+    "Vos chiffres de revenu apparaissent dès la connexion de Stripe. Ils se mettent à jour chaque heure.",
   ],
 ];
 

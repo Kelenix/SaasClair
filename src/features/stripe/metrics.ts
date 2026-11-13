@@ -14,6 +14,10 @@ export type SubscriptionRow = {
   ended_at: string | null;
   cancel_at_period_end: boolean;
   current_period_end: string | null;
+  /** Résiliation programmée à une date précise (Stripe `cancel_at`). */
+  cancel_at?: string | null;
+  /** Fin de l'essai gratuit : le revenu ne compte qu'à partir de cette date. */
+  trial_end?: string | null;
 };
 export type InvoiceRow = {
   id: string;
@@ -51,9 +55,9 @@ export type RealRevenue = {
   churnedMrr: number;
   activeSubscriptions: number;
   trialing: number;
-  /** Abonnements arrêtés sur la période ÷ abonnements actifs au début (%). */
+  /** Clients payants au début de la période qui n'ont plus d'abonnement à la fin ÷ clients payants au début (%). */
   customerChurn: number;
-  /** Revenu perdu ÷ revenu au début de la période (%). */
+  /** Revenu perdu des abonnements payants au début ÷ revenu au début de la période (%). */
   revenueChurn: number;
   /** Revenu mensuel à chaque fin de mois, sur 12 mois. */
   history: { label: string; mrr: number }[];
@@ -74,12 +78,28 @@ const euros = (cents: number) => Math.round(cents) / 100;
 const percent = (part: number, whole: number) =>
   whole ? Math.round((part / whole) * 1000) / 10 : 0;
 
-/** Abonnement en cours à l'instant t (essais exclus du revenu, faute d'historique précis). */
-function payingAt(sub: SubscriptionRow, t: number) {
+/** Début du revenu : fin de l'essai s'il y en a eu un, sinon création de l'abonnement. */
+const paidFrom = (sub: SubscriptionRow) =>
+  Math.max(Date.parse(sub.created_at), time(sub.trial_end ?? null) ?? 0);
+
+/** A rapporté de l'argent : ni jamais démarré, ni encore en essai, ni arrêté pendant l'essai. */
+function everPaid(sub: SubscriptionRow) {
   if (NEVER_STARTED.has(sub.status) || sub.status === "trialing") return false;
   const ended = time(sub.ended_at);
-  return Date.parse(sub.created_at) <= t && (ended === null || ended > t);
+  return ended === null || ended > paidFrom(sub);
 }
+
+/** Abonnement payant à l'instant t (période d'essai exclue). */
+function payingAt(sub: SubscriptionRow, t: number) {
+  if (!everPaid(sub)) return false;
+  const ended = time(sub.ended_at);
+  return paidFrom(sub) <= t && (ended === null || ended > t);
+}
+
+const endedWithin = (sub: SubscriptionRow, start: number, end: number) => {
+  const t = time(sub.ended_at);
+  return t !== null && t > start && t <= end;
+};
 
 const MONTHS = new Intl.DateTimeFormat("fr-FR", { month: "short" });
 
@@ -103,15 +123,28 @@ export function computeRevenue(
 
   const current = started.filter((sub) => PAYING.has(sub.status) && !sub.ended_at);
   const atStart = started.filter((sub) => payingAt(sub, start));
+  // Nouveau revenu : abonnements devenus payants pendant la période (essais convertis compris).
   const created = started.filter((sub) => {
-    const t = Date.parse(sub.created_at);
-    return t > start && t <= end && sub.status !== "trialing";
+    const t = paidFrom(sub);
+    return everPaid(sub) && t > start && t <= end;
   });
-  const ended = started.filter((sub) => {
-    const t = time(sub.ended_at);
-    return t !== null && t > start && t <= end;
-  });
+  // Revenu perdu : abonnements payants arrêtés pendant la période (un essai annulé n'en est pas).
+  const ended = started.filter((sub) => everPaid(sub) && endedWithin(sub, start, end));
+  const endedFromStart = atStart.filter((sub) => endedWithin(sub, start, end));
   const sum = (subs: SubscriptionRow[]) => subs.reduce((total, sub) => total + sub.mrr_cents, 0);
+
+  // Churn clients : un client qui change d'offre (résiliation puis nouvel abonnement) reste.
+  const customersAtStart = new Set(atStart.map((sub) => sub.customer_id));
+  const stillThere = new Set(
+    started
+      .filter((sub) => sub.status !== "trialing" || time(sub.ended_at) === null)
+      .filter((sub) => {
+        const t = time(sub.ended_at);
+        return t === null || t > end;
+      })
+      .map((sub) => sub.customer_id),
+  );
+  const lostCustomers = [...customersAtStart].filter((id) => !stillThere.has(id)).length;
 
   const history = Array.from({ length: 12 }, (_, i) => {
     const month = new Date(now.getFullYear(), now.getMonth() - 11 + i + 1, 1);
@@ -121,6 +154,8 @@ export function computeRevenue(
       mrr: euros(sum(started.filter((sub) => payingAt(sub, t)))),
     };
   });
+  // Dernier point = le revenu affiché (un abonnement impayé n'y compte plus).
+  history[history.length - 1].mrr = euros(sum(current));
 
   // Paiements échoués : factures encore ouvertes après au moins une tentative.
   const names = new Map(customers.map((c) => [c.id, c]));
@@ -143,9 +178,15 @@ export function computeRevenue(
   const risks = new Map<string, AtRisk>();
   for (const sub of current.concat(started.filter((s) => s.status === "unpaid"))) {
     const reasons: AtRisk["reasons"] = [];
-    if (sub.cancel_at_period_end) {
-      const date = sub.current_period_end
-        ? new Date(sub.current_period_end).toLocaleDateString("fr-FR", {
+    const cancelAt = time(sub.cancel_at ?? null);
+    const cancelDate = sub.cancel_at_period_end
+      ? sub.current_period_end
+      : cancelAt !== null && cancelAt > end
+        ? sub.cancel_at!
+        : null;
+    if (cancelDate !== null || sub.cancel_at_period_end) {
+      const date = cancelDate
+        ? new Date(cancelDate).toLocaleDateString("fr-FR", {
             day: "numeric",
             month: "long",
           })
@@ -167,18 +208,28 @@ export function computeRevenue(
     if (!reasons.length) continue;
     const customer = names.get(sub.customer_id);
     const existing = risks.get(sub.customer_id);
+    // Plusieurs abonnements du même client : chaque raison n'apparaît qu'une fois.
+    const merged = existing
+      ? existing.reasons.concat(
+          reasons.filter((r) => !existing.reasons.some((e) => e.kind === r.kind)),
+        )
+      : reasons;
     const score = Math.min(
       99,
-      Math.max(...reasons.map((r) => RISK[r.kind])) + (reasons.length - 1) * 5,
+      Math.max(...merged.map((r) => RISK[r.kind])) + (merged.length - 1) * 5,
     );
+    const ends = [existing?.periodEnd ?? null, cancelDate ?? sub.current_period_end]
+      .filter((value): value is string => Boolean(value))
+      .sort();
     risks.set(sub.customer_id, {
       customerId: sub.customer_id,
       name: customer?.name || customer?.email || sub.customer_id,
       email: customer?.email ?? null,
-      mrr: euros(sub.mrr_cents) + (existing?.mrr ?? 0),
-      score: Math.max(score, existing?.score ?? 0),
-      reasons: existing ? existing.reasons.concat(reasons) : reasons,
-      periodEnd: sub.current_period_end,
+      mrr: Math.round((euros(sub.mrr_cents) + (existing?.mrr ?? 0)) * 100) / 100,
+      score,
+      reasons: merged,
+      // La première échéance : c'est elle qui fixe le temps pour agir.
+      periodEnd: ends[0] ?? null,
     });
   }
   const atRisk = [...risks.values()].sort((a, b) => b.score - a.score || b.mrr - a.mrr);
@@ -203,8 +254,8 @@ export function computeRevenue(
     churnedMrr: euros(sum(ended)),
     activeSubscriptions: current.length,
     trialing: started.filter((sub) => sub.status === "trialing" && !sub.ended_at).length,
-    customerChurn: percent(ended.length, atStart.length),
-    revenueChurn: percent(sum(ended), sum(atStart)),
+    customerChurn: percent(lostCustomers, customersAtStart.size),
+    revenueChurn: percent(sum(endedFromStart), sum(atStart)),
     history,
     atRisk,
     mrrAtRisk: Math.round(atRisk.reduce((total, risk) => total + risk.mrr, 0) * 100) / 100,

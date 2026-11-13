@@ -1,5 +1,6 @@
 "use server";
 
+import { isDemoMode } from "@/lib/demo-mode";
 import { normalizeSiteUrl } from "@/lib/site-url";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { auditSite } from "./fetch-site";
@@ -8,6 +9,7 @@ import type { SiteAudit } from "./site-analysis";
 type Result<T> = { ok: true; data: T } | { ok: false; message: string };
 
 const SAVE_ERROR = "Nous n'avons pas pu enregistrer cette étape. Réessayez dans un instant.";
+const SIMULATION_OFF = "Cette étape se valide automatiquement dès que la connexion est réelle.";
 
 async function authenticatedClient() {
   const user = await getUser();
@@ -58,6 +60,8 @@ export async function skipSetup(): Promise<Result<{ siteKey: string }>> {
  * avec la collecte réelle, c'est la première visite reçue qui appellera cette mise à jour.
  */
 export async function markScriptDetected(): Promise<Result<null>> {
+  // En production, seule une vraie visite reçue par /api/collect marque le script comme installé.
+  if (!isDemoMode()) return { ok: false, message: SIMULATION_OFF };
   const { supabase, user } = await authenticatedClient();
   // upsert : l'étape peut être reprise depuis le tableau de bord avant que le projet existe.
   const { error } = await supabase
@@ -71,6 +75,8 @@ export async function markScriptDetected(): Promise<Result<null>> {
 
 /** Étape 2, sans clés Stripe (poste de développement) : connexion simulée. */
 export async function connectStripe(): Promise<Result<null>> {
+  // En production, seul le retour OAuth de Stripe (/api/stripe/callback) relie un compte.
+  if (!isDemoMode()) return { ok: false, message: SIMULATION_OFF };
   const { supabase, user } = await authenticatedClient();
   const { error } = await supabase
     .from("projects")

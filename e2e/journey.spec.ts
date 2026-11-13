@@ -28,11 +28,10 @@ test("de la page d'accueil au tableau de bord en 2 actions", async ({ page }) =>
   await page.getByRole("button", { name: /Créer mon compte/ }).click();
   await expect(page).toHaveURL(/\/configuration/, { timeout: 30_000 });
 
-  // Étape 0 : adresse reprise du site vitrine, analyse réelle, puis « Continuer ».
+  // Étape 0 : adresse reprise du site vitrine, analyse lancée seule, puis « Continuer ».
   await expect(page.getByRole("textbox", { name: "Adresse de votre SaaS" })).toHaveValue(
     /example\.com/,
   );
-  await page.getByRole("button", { name: "Analyser" }).click();
   await page.getByRole("button", { name: /Continuer/ }).click({ timeout: 30_000 });
 
   // Action 1 : copier la ligne de script ; la détection (simulée) passe seule à la suite.

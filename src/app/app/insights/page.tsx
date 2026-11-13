@@ -39,7 +39,7 @@ async function Insights() {
           needs="script"
           remaining={context.setupRemaining}
           description="Chaque lundi, vos insights (constat, cause probable, action et impact en euros) apparaîtront ici. Il faut d'abord vos premières données."
-          waiting="Vos premiers insights arriveront le lundi qui suit vos premières données."
+          waiting="Vos données arrivent bien. Les insights automatiques arrivent dans une prochaine version : en attendant, vos clients à risque sont dans Churn."
         />
         {alertsSection}
       </>

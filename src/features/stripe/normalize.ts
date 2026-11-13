@@ -28,6 +28,8 @@ export type StripeSubscription = {
   canceled_at?: number | null;
   ended_at?: number | null;
   cancel_at_period_end?: boolean;
+  cancel_at?: number | null;
+  trial_end?: number | null;
   current_period_end?: number | null;
   items?: { data?: Item[] };
 };
@@ -105,6 +107,8 @@ export function toSubscriptionRow(
     canceled_at: iso(subscription.canceled_at),
     ended_at: iso(subscription.ended_at),
     cancel_at_period_end: Boolean(subscription.cancel_at_period_end),
+    cancel_at: iso(subscription.cancel_at),
+    trial_end: iso(subscription.trial_end),
     // Versions récentes de l'API : la fin de période est portée par les lignes.
     current_period_end: iso(subscription.current_period_end ?? items[0]?.current_period_end),
   };

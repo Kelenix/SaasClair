@@ -4,6 +4,33 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Corrigé (audit du 13 novembre 2026, détail dans `AUDIT_ET_PLAN_D_ACTION.md`)
+- **Chiffres tronqués au-delà de 1 000 lignes** : visites, abonnements, clients, factures et
+  listes de l'administration sont désormais lus page par page (`src/lib/supabase/fetch-all.ts`).
+- **Churn** : calculé sur les clients payants au début de la période (plus jamais au-delà de
+  100 %), un changement d'offre n'est plus un départ, un essai annulé n'est plus compté comme
+  revenu puis comme départ, un essai converti compte en nouveau revenu à sa date de conversion.
+  Migration `stripe_trials` (`trial_end`, `cancel_at`), remplie à la prochaine resynchronisation.
+- Résiliation programmée à une date précise : le client apparaît à risque. Raisons sans doublon.
+- Dernier point du graphique des revenus = revenu affiché. « Churn involontaire » renommé
+  « Paiements à récupérer » (c'est ce qu'il mesure).
+- **Redirection ouverte** après connexion (`/%09/autre-site`) bloquée.
+- **Confirmation d'email obligatoire en production** (emails envoyés par Resend) : personne ne
+  peut plus créer un compte au nom d'un autre. Lien de confirmation ouvert dans un autre
+  navigateur : message clair, et la conversion « inscription » est comptée au clic sur le lien.
+- Actions de démonstration (script détecté, Stripe connecté) refusées hors mode démo.
+- Webhook de facturation : une écriture refusée fait rejouer la notification au lieu de la perdre.
+- Secret de la resynchronisation Stripe : plus visible dans la liste des processus du serveur.
+
+### Modifié (prise en main)
+- L'analyse du site démarre seule quand l'adresse vient du site vitrine (un clic de moins).
+- Écran final : plus de « 91 % » ni de « recommandations sous 24 heures » inventés.
+- Stripe : « jamais modifié » au lieu de « lecture uniquement » (l'autorisation Stripe est en
+  lecture et écriture), avec une phrase qui prévient avant la page de Stripe.
+- Jours d'essai restants affichés dans l'en-tête du tableau de bord.
+- « Copier le message » à côté de l'envoi au développeur.
+- Tunnel et Insights : message d'attente honnête (fonction encore à venir).
+
 ### Modifié
 - **Nouveaux prix** : Starter 9,99 €, Growth 19,99 €, Pro 29,90 € HT par mois (−20 % en annuel).
   L'offre Pro se paie en ligne comme les autres : plus de « sur devis ». Essai gratuit de 7 jours.
