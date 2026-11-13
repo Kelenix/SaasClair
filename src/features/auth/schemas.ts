@@ -15,12 +15,9 @@ const password = z
   .min(PASSWORD_MIN_LENGTH, `Choisissez au moins ${PASSWORD_MIN_LENGTH} caractères.`)
   .max(72, "72 caractères au maximum.");
 
+/** Inscription en 2 champs : le prénom est facultatif (déduit de l'email quand c'est sûr). */
 export const signUpSchema = z.object({
-  firstName: z
-    .string()
-    .trim()
-    .min(1, "Comment devons-nous vous appeler ?")
-    .max(40, "40 caractères au maximum."),
+  firstName: z.string().trim().max(40, "40 caractères au maximum.").default(""),
   email,
   password,
 });

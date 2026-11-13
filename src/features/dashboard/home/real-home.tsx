@@ -35,7 +35,7 @@ function SourceHint({
   icon: LucideIcon;
   title: string;
   description: string;
-  action?: { label: string; href: string };
+  action?: { label: string; href: string } | false;
 }) {
   return (
     <Card className="flex flex-col gap-4 sm:flex-row sm:items-center" data-icon-trigger>
@@ -165,6 +165,8 @@ function SiteSummary({ siteUrl, audit }: { siteUrl: string; audit: SiteAudit }) 
 }
 
 type RealHomeProps = {
+  /** Liste de démarrage affichée au-dessus : les cartes ne répètent pas son bouton. */
+  hasSetupList?: boolean;
   siteUrl: string | null;
   audit: SiteAudit | null;
   /** Date de la dernière analyse du site. */
@@ -179,6 +181,7 @@ type RealHomeProps = {
  * Les sections qui ont des données passent devant ; les autres disent quoi faire. Jamais vide.
  */
 export function RealHome({
+  hasSetupList = false,
   siteUrl,
   audit,
   auditedAt = null,
@@ -208,7 +211,9 @@ export function RealHome({
             icon={CreditCard}
             title="Revenus, churn et clients à risque"
             description="Connectez Stripe en un clic : SaasClair ne fait que lire vos données."
-            action={{ label: "Connecter Stripe", href: "/configuration?etape=stripe" }}
+            action={
+              !hasSetupList && { label: "Connecter Stripe", href: "/configuration?etape=stripe" }
+            }
           />
         ),
     },
@@ -227,15 +232,17 @@ export function RealHome({
         ) : scriptDetected ? (
           <SourceHint
             icon={Users}
-            title="Le script est installé."
+            title="Votre site est relié."
             description="Aucune visite sur cette période : choisissez une période plus longue, ou attendez vos prochains visiteurs."
           />
         ) : (
           <SourceHint
             icon={Code}
             title="D'où viennent vos visiteurs"
-            description="Installez la ligne de script, une seule fois : vos visites et vos canaux apparaîtront ici."
-            action={{ label: "Installer le script", href: "/configuration?etape=script" }}
+            description="Ajoutez la ligne SaasClair à votre site, une seule fois : vos visites et vos canaux apparaîtront ici."
+            action={
+              !hasSetupList && { label: "Relier mon site", href: "/configuration?etape=script" }
+            }
           />
         ),
     },
@@ -250,7 +257,9 @@ export function RealHome({
             icon={Globe}
             title="Votre site"
             description="Ajoutez l'adresse de votre SaaS : nous analysons ses pages clés, sa vitesse et son référencement."
-            action={{ label: "Ajouter l'adresse", href: "/configuration?etape=site" }}
+            action={
+              !hasSetupList && { label: "Ajouter l'adresse", href: "/configuration?etape=site" }
+            }
           />
         ),
     },

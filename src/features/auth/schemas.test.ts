@@ -17,11 +17,10 @@ describe("signUpSchema", () => {
   });
 
   it("explique chaque erreur en français, champ par champ", () => {
-    const result = signUpSchema.safeParse({ firstName: "", email: "nadia@", password: "court" });
+    const result = signUpSchema.safeParse({ email: "nadia@", password: "court" });
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(fieldErrorsOf(result.error)).toEqual({
-      firstName: "Comment devons-nous vous appeler ?",
       email: "Cette adresse semble incomplète. Vérifiez le @ et le domaine.",
       password: "Choisissez au moins 8 caractères.",
     });

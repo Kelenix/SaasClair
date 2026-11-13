@@ -57,6 +57,8 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-11-13 — Lot D (prise en main) : inscription en 2 champs, offre gardée, plus d'écran « Votre SaaS » quand l'adresse est connue, « C'est fait, vérifier mon site », « Reliez votre site », liste de démarrage unique, « Je n'utilise pas Stripe » enregistré, tableau de bord pendant l'import, lien magique. Fusion automatique activée sur le dépôt (CI obligatoire sur main) ; analyse du site toujours à jour (PR n° 3).
+
 - 2026-11-13 — Lot C (promesses tenues sur les vraies données) : moteur d'insights (`src/features/insights/`) branché sur l'accueil, la page Insights, la barre de question et les alertes ; score de risque explicable (7 signaux, carte qui expire et rythme de facturation importés) ; tunnel réel avec pages clés confirmées en un clic ; revenu par canal et couverture réelle (`customer_first_touch`). 4 migrations, vérifiées sur la base locale. Décisions ouvertes : identification automatique à l'inscription et cookie entre sous-domaines (RGPD).
 - 2026-11-13 — Audit complet (sécurité, données, prise en main) : `AUDIT_ET_PLAN_D_ACTION.md`. Corrigés et mis en ligne (PR n° 1) : lecture au-delà de 1 000 lignes, calculs du churn, redirection ouverte, textes Stripe, confirmation d'email obligatoire (Resend).
 

@@ -32,6 +32,8 @@ export type DashboardContext = {
   siteKey: string | null;
   scriptDetected: boolean;
   stripeConnected: boolean;
+  /** Stripe relié, premier import en cours (pas encore « connecté »). */
+  stripeImporting: boolean;
   anonymizeVisitors: boolean;
   /** Début de l'essai gratuit (7 jours, TRIAL_DAYS). */
   accountCreatedAt: string;
@@ -50,6 +52,8 @@ export type DashboardContext = {
     periodEnd: string | null;
     cancelAtPeriodEnd: boolean;
     hasStripeCustomer: boolean;
+    /** Offre choisie sur la page Tarifs avant l'inscription (présélectionnée au paiement). */
+    planIntent: string | null;
   };
 };
 
@@ -91,6 +95,7 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
     siteKey: project?.id.slice(0, 8) ?? null,
     scriptDetected: Boolean(project?.script_detected_at),
     stripeConnected: Boolean(project?.stripe_connected_at),
+    stripeImporting: !project?.stripe_connected_at && project?.stripe_sync_status === "importing",
     anonymizeVisitors: project?.anonymize_visitors ?? true,
     accountCreatedAt: user.created_at,
     isSuperAdmin: profile?.role === "super_admin",
@@ -105,6 +110,7 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
       periodEnd: profile?.current_period_end ?? null,
       cancelAtPeriodEnd: profile?.cancel_at_period_end ?? false,
       hasStripeCustomer: Boolean(profile?.stripe_customer_id),
+      planIntent: (user.user_metadata.plan_intent as string | undefined) ?? null,
     },
     feedback: Object.fromEntries((feedback ?? []).map((row) => [row.insight_id, row.status])),
   };

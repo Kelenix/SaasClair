@@ -85,6 +85,7 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
               <Paywall
                 trialEnded={context.billing.status === "trialing"}
                 hasStripeCustomer={context.billing.hasStripeCustomer}
+                preferred={context.billing.planIntent}
               />
             ) : (
               <>

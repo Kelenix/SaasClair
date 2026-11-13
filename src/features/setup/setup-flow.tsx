@@ -124,6 +124,7 @@ export function SetupFlow({ initial }: { initial: SetupState }) {
                 demo={state.demo}
                 result={state.stripeResult}
                 onDone={() => complete("stripe")}
+                onSkip={() => advance("stripe", state.completed)}
               />
             )}
             {state.step === "done" && <StepDone siteUrl={state.siteUrl} />}

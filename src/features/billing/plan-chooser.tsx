@@ -37,7 +37,8 @@ export function PortalButton({ variant = "secondary" }: { variant?: "secondary" 
 }
 
 /** Choix de l'offre : mensuel ou annuel (−20 %), puis la page de paiement Stripe. */
-export function PlanChooser() {
+/** Choix de l'offre ; `preferred` : celle choisie sur la page Tarifs avant l'inscription. */
+export function PlanChooser({ preferred = null }: { preferred?: string | null }) {
   const [interval, setInterval] = useState<Interval>("monthly");
   const { isPending, go } = useStripeRedirect();
 
@@ -60,7 +61,11 @@ export function PlanChooser() {
       </div>
       <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-3">
         {PLANS.map((plan) => {
-          const isRecommended = "isRecommended" in plan && plan.isRecommended;
+          const isPreferred = plan.id === preferred;
+          // L'offre choisie avant l'inscription passe devant la recommandation par défaut.
+          const isRecommended = preferred
+            ? isPreferred
+            : "isRecommended" in plan && plan.isRecommended;
           return (
             <Card
               key={plan.id}
@@ -68,7 +73,9 @@ export function PlanChooser() {
             >
               <div className="mb-1 flex items-center justify-between gap-2">
                 <p className="font-serif text-xl font-semibold text-forest">{plan.name}</p>
-                {isRecommended && <Badge tone="attention">Le plus choisi</Badge>}
+                {isRecommended && (
+                  <Badge tone="attention">{isPreferred ? "Votre choix" : "Le plus choisi"}</Badge>
+                )}
               </div>
               <p className="mb-4 text-sm text-slate">{plan.pitch}</p>
               <p className="mb-1 text-ink">

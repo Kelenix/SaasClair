@@ -101,7 +101,7 @@ export function ProjectPanel({ project, demo }: { project: ProjectInfo; demo: bo
           icon={Rocket}
           anim="bounce"
           title="Votre SaaS n'est pas encore relié."
-          description="Deux actions suffisent : installer une ligne de script, puis connecter Stripe."
+          description="Deux actions suffisent : relier votre site (une ligne à coller), puis connecter Stripe."
           action={
             <Button asChild>
               <a href="/configuration?etape=site">
@@ -156,7 +156,7 @@ export function ProjectPanel({ project, demo }: { project: ProjectInfo; demo: bo
         </ul>
         {project.siteKey && (
           <div className="mb-5">
-            <p className="mb-1.5 text-sm font-semibold text-ink">Votre ligne de script</p>
+            <p className="mb-1.5 text-sm font-semibold text-ink">Votre ligne SaasClair</p>
             <CopyBlock snippet={scriptSnippet(project.siteKey)} onCopied={() => {}} />
           </div>
         )}

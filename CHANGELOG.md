@@ -4,6 +4,25 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Modifié (lot D : prise en main simplifiée)
+- **Inscription en 2 champs** (email, mot de passe) : le prénom est déduit de l'email quand la
+  forme est claire (« prenom.nom@ »), sinon « Bonjour. ». L'offre choisie sur la page Tarifs est
+  gardée et mise en avant au moment de payer (« Votre choix »).
+- **Plus d'écran « Votre SaaS »** quand l'adresse vient du site vitrine : le projet est créé à
+  l'arrivée, l'analyse tourne en arrière-plan, et l'onglet de la bonne plateforme s'ouvre dès
+  qu'elle est prête.
+- **« C'est fait, vérifier mon site »** : SaasClair lit la page d'accueil et dit ce qui manque
+  (ligne absente ou non publiée, autre clé, site injoignable) ; trouvée, l'étape est validée.
+  Aide affichée au bout de 2 minutes sans visite.
+- Moins de jargon : « Reliez votre site » au lieu de « Installez le script », partout.
+- **Une seule liste de démarrage** sur l'accueil (« 1 sur 3 », étapes faites cochées) ; les
+  cartes ne répètent plus son bouton. « Import Stripe en cours… » pendant l'import.
+- **« Je n'utilise pas Stripe »** : question fermée (Paddle, Lemon Squeezy, pas encore de
+  paiements), réponse enregistrée (migration `billing_provider`), étape passée.
+- Pendant l'import Stripe : « Voir mon tableau de bord pendant l'import ».
+- **Connexion par lien magique** (« Sans mot de passe : recevoir un lien par email »), email en
+  français aux couleurs de la marque.
+
 ### Modifié (analyse du site toujours à jour)
 - L'analyse du site n'était faite qu'une fois, à la configuration : une correction (titre,
   description…) ne se voyait jamais. Elle est maintenant relancée seule au-delà de 6 heures (à

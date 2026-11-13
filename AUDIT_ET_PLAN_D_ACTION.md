@@ -138,6 +138,11 @@ récente et remise qui se termine (lot B5), baisse d'usage de l'app (après la d
 
 ### Lot D — Simplifier la prise en main (parcours cible : 4 écrans, environ 5 clics)
 
+**✅ Fait le 13 novembre (PR n° 4)** : D1, D2, D3, D4, D5, D6, D7, D10 (lien magique). D8 sans
+objet (le tunnel réel ne se sert pas de la page de paiement), D9 inutile (Google et GitHub
+actifs). Reste de D10 : les emails de démarrage (J0, J+1, fin d'essai), qui demandent un envoi
+d'emails par l'application elle-même.
+
 | Étape | Effort | Détail |
 |---|---|---|
 | D1. **Bouton « C'est fait, vérifier mon site »** sur l'étape script | S | SaasClair lit la page d'accueil et y cherche la ligne et la bonne clé. Diagnostic clair : « ligne introuvable, site publié ? » ou « clé différente ». Aide affichée au bout de 2 minutes au lieu d'une attente sans fin. |

@@ -9,7 +9,8 @@ test.use({
 
 test("de la page d'accueil au tableau de bord en 2 actions", async ({ page }) => {
   test.setTimeout(120_000);
-  const email = `parcours-${Date.now()}@test.saasclair.fr`;
+  // Prénom déduit de l'email (forme « prenom.nom »), inscription en 2 champs.
+  const email = `camille.parcours+${Date.now()}@test.saasclair.fr`;
 
   // Site vitrine : l'adresse saisie suit l'utilisateur jusqu'à la configuration.
   await page.goto("/", { waitUntil: "networkidle" });
@@ -22,21 +23,19 @@ test("de la page d'accueil au tableau de bord en 2 actions", async ({ page }) =>
 
   // Inscription.
   await page.waitForLoadState("networkidle");
-  await page.getByLabel("Prénom").fill("Camille");
-  await page.getByLabel("Email professionnel").fill(email);
+  await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Mot de passe").fill("Parcours-2026!");
   await page.getByRole("button", { name: /Créer mon compte/ }).click();
   await expect(page).toHaveURL(/\/configuration/, { timeout: 30_000 });
 
-  // Étape 0 : adresse reprise du site vitrine, analyse lancée seule, puis « Continuer ».
-  await expect(page.getByRole("textbox", { name: "Adresse de votre SaaS" })).toHaveValue(
-    /example\.com/,
-  );
-  await page.getByRole("button", { name: /Continuer/ }).click({ timeout: 30_000 });
+  // L'adresse vient du site vitrine : pas d'écran « Votre SaaS », on commence par relier le site
+  // (l'analyse tourne en arrière-plan).
+  await expect(page.locator("h1", { hasText: "Reliez votre site." })).toBeVisible();
+  await expect(page.getByRole("button", { name: /example\.com/ })).toBeVisible();
 
-  // Action 1 : copier la ligne de script ; la détection (simulée) passe seule à la suite.
+  // Action 1 : copier la ligne ; la détection (simulée) passe seule à la suite.
   await page.getByRole("button", { name: "Copier" }).first().click();
-  await expect(page.getByText("Script détecté. Première visite reçue.")).toBeVisible({
+  await expect(page.getByText("Votre site est relié.")).toBeVisible({
     timeout: 15_000,
   });
 
@@ -61,8 +60,7 @@ test("chaque étape peut être passée, puis reprise depuis le bandeau du tablea
 }) => {
   test.setTimeout(120_000);
   await page.goto("/inscription", { waitUntil: "networkidle" });
-  await page.getByLabel("Prénom").fill("Camille");
-  await page.getByLabel("Email professionnel").fill(`passer-${Date.now()}@test.saasclair.fr`);
+  await page.getByLabel("Email", { exact: true }).fill(`passer-${Date.now()}@test.saasclair.fr`);
   await page.getByLabel("Mot de passe").fill("Parcours-2026!");
   await page.getByRole("button", { name: /Créer mon compte/ }).click();
   await expect(page).toHaveURL(/\/configuration/, { timeout: 30_000 });
@@ -70,7 +68,7 @@ test("chaque étape peut être passée, puis reprise depuis le bandeau du tablea
 
   // Les 3 étapes passées l'une après l'autre : arrivée sur le tableau de bord.
   const visibleTitle = page.locator("h1").filter({ visible: true }).first();
-  for (const title of ["Installez le script.", "Connectez Stripe."]) {
+  for (const title of ["Reliez votre site.", "Connectez Stripe."]) {
     await page.getByRole("button", { name: "Passer cette étape" }).click();
     await expect(visibleTitle).toHaveText(title);
   }
@@ -80,8 +78,8 @@ test("chaque étape peut être passée, puis reprise depuis le bandeau du tablea
   await expect(banner).toContainText("Plus que 3 étapes");
 
   // Reprise d'une étape précise ; ensuite /configuration seul ramène au tableau de bord.
-  await banner.getByRole("link", { name: /Installer le script/ }).click();
-  await expect(visibleTitle).toHaveText("Installez le script.", { timeout: 20_000 });
+  await banner.getByRole("link", { name: /Relier votre site/ }).click();
+  await expect(visibleTitle).toHaveText("Reliez votre site.", { timeout: 20_000 });
   await page.goto("/configuration");
   await expect(page).toHaveURL(/\/app$/, { timeout: 20_000 });
 });

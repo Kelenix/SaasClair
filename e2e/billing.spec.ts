@@ -7,8 +7,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test("l'offre Growth annuelle se paie et l'abonnement devient actif", async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto("/inscription", { waitUntil: "networkidle" });
-  await page.getByLabel("Prénom").fill("Camille");
-  await page.getByLabel("Email professionnel").fill(`paiement-${Date.now()}@test.saasclair.fr`);
+  await page.getByLabel("Email", { exact: true }).fill(`paiement-${Date.now()}@test.saasclair.fr`);
   await page.getByLabel("Mot de passe").fill("Paiement-2026!");
   await page.getByRole("button", { name: /Créer mon compte/ }).click();
   await expect(page).toHaveURL(/\/configuration/, { timeout: 30_000 });

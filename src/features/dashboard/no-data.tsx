@@ -7,7 +7,7 @@ import type { ActionStep } from "@/features/setup/steps";
 
 const STEP_ACTIONS: Record<ActionStep, string> = {
   site: "Ajouter l'adresse de mon SaaS",
-  script: "Installer le script",
+  script: "Relier mon site",
   stripe: "Connecter Stripe",
 };
 

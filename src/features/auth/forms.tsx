@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { ArrowRight, Globe } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { safeRedirectPath, setupPath } from "@/lib/safe-redirect";
 import { displaySiteUrl, normalizeSiteUrl } from "@/lib/site-url";
-import { requestPasswordReset, signIn, signUp, updatePassword } from "./actions";
+import { requestMagicLink, requestPasswordReset, signIn, signUp, updatePassword } from "./actions";
 import {
   AuthField,
   CheckEmail,
@@ -28,7 +29,9 @@ const PASSWORD_HINT = `Au moins ${PASSWORD_MIN_LENGTH} caractères.`;
 const LINK = "rounded-md font-semibold text-forest underline-offset-4 hover:underline";
 
 export function SignUpForm() {
-  const site = normalizeSiteUrl(useSearchParams().get("site") ?? "");
+  const params = useSearchParams();
+  const site = normalizeSiteUrl(params.get("site") ?? "");
+  const offer = params.get("offre") ?? "";
   const { state, isPending, field, onSubmit } = useAuthForm(signUpSchema, signUp);
 
   if (state.status === "check-email") {
@@ -54,14 +57,9 @@ export function SignUpForm() {
       <OrDivider />
       <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <input type="hidden" name="site" value={site ?? ""} />
+        <input type="hidden" name="offre" value={offer} />
         <FormAlert message={state.message} />
-        <AuthField label="Prénom" autoComplete="given-name" {...field("firstName")} />
-        <AuthField
-          label="Email professionnel"
-          type="email"
-          autoComplete="email"
-          {...field("email")}
-        />
+        <AuthField label="Email" type="email" autoComplete="email" {...field("email")} />
         <AuthField
           label="Mot de passe"
           type="password"
@@ -99,28 +97,40 @@ export function SignInForm() {
   const next = safeRedirectPath(requested);
   const linkError = LINK_ERRORS[params.get("erreur") ?? ""];
   const { state, isPending, field, onSubmit } = useAuthForm(signInSchema, signIn);
+  const [withLink, setWithLink] = useState(false);
 
   return (
     <>
       <OAuthButtons next={next} />
       <OrDivider />
-      <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-        <input type="hidden" name="next" value={requested} />
-        <FormAlert message={state.message ?? linkError} />
-        <AuthField label="Email" type="email" autoComplete="email" {...field("email")} />
-        <AuthField
-          label="Mot de passe"
-          type="password"
-          autoComplete="current-password"
-          {...field("password")}
-        />
-        <Link href="/mot-de-passe-oublie" className={`${LINK} -mt-1 self-end text-[13px]`}>
-          Mot de passe oublié ?
-        </Link>
-        <SubmitButton isPending={isPending}>
-          Se connecter <Icon icon={ArrowRight} anim="nudge" />
-        </SubmitButton>
-      </form>
+      {withLink ? (
+        <MagicLinkForm next={requested} onPassword={() => setWithLink(false)} />
+      ) : (
+        <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+          <input type="hidden" name="next" value={requested} />
+          <FormAlert message={state.message ?? linkError} />
+          <AuthField label="Email" type="email" autoComplete="email" {...field("email")} />
+          <AuthField
+            label="Mot de passe"
+            type="password"
+            autoComplete="current-password"
+            {...field("password")}
+          />
+          <Link href="/mot-de-passe-oublie" className={`${LINK} -mt-1 self-end text-[13px]`}>
+            Mot de passe oublié ?
+          </Link>
+          <SubmitButton isPending={isPending}>
+            Se connecter <Icon icon={ArrowRight} anim="nudge" />
+          </SubmitButton>
+          <button
+            type="button"
+            onClick={() => setWithLink(true)}
+            className={`${LINK} min-h-11 cursor-pointer self-center text-sm`}
+          >
+            Sans mot de passe : recevoir un lien par email
+          </button>
+        </form>
+      )}
       <p className="mt-6 text-center text-sm text-slate">
         Pas encore de compte ?{" "}
         <Link href="/inscription" className={LINK}>
@@ -128,6 +138,38 @@ export function SignInForm() {
         </Link>
       </p>
     </>
+  );
+}
+
+/** Connexion sans mot de passe : un lien à usage unique, valable une heure. */
+function MagicLinkForm({ next, onPassword }: { next: string; onPassword: () => void }) {
+  const { state, isPending, field, onSubmit } = useAuthForm(resetRequestSchema, requestMagicLink);
+
+  if (state.status === "check-email") {
+    return (
+      <CheckEmail email={state.email}>
+        S&apos;il correspond à un compte, il vous connecte en un clic : ouvrez-le dans ce même
+        navigateur. Rien reçu dans 2 minutes ? Regardez dans les indésirables.
+      </CheckEmail>
+    );
+  }
+
+  return (
+    <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+      <input type="hidden" name="next" value={next} />
+      <FormAlert message={state.message} />
+      <AuthField label="Email" type="email" autoComplete="email" {...field("email")} />
+      <SubmitButton isPending={isPending}>
+        Recevoir mon lien de connexion <Icon icon={ArrowRight} anim="nudge" />
+      </SubmitButton>
+      <button
+        type="button"
+        onClick={onPassword}
+        className={`${LINK} min-h-11 cursor-pointer self-center text-sm`}
+      >
+        Se connecter avec un mot de passe
+      </button>
+    </form>
   );
 }
 
