@@ -28,7 +28,7 @@
 
 ## Secrets
 
-- Seule la clé publique `anon` est exposée au navigateur. La clé `service_role` n'est utilisée nulle part pour l'instant.
+- Seule la clé publique `anon` est exposée au navigateur. La clé `service_role` n'est utilisée que côté serveur (`src/lib/supabase/service.ts`, `server-only`), toujours après un contrôle d'identité, une signature (webhook) ou un secret (tâche horaire) : réception des visites, import Stripe, étapes faites, analyses automatiques, newsletter, suppression de compte.
 - `.env` et `supabase/.env` sont ignorés par Git et exclus de l'image Docker.
 - Le compte de démonstration de `supabase/seed.sql` n'existe qu'en local (le fichier n'est jamais appliqué en production).
 
@@ -36,7 +36,7 @@
 
 - Table `projects` : RLS activée, lecture / création / modification limitées au propriétaire (`auth.uid()`), suppression ajoutée à l'incrément 7. Advisors de sécurité Supabase : aucune alerte.
 - **Vérifié avec un second compte** : il ne voit aucun projet, ne peut pas modifier celui de Nadia, et la création d'un projet au nom d'un autre est refusée (`42501`). Un visiteur anonyme ne voit rien.
-- Contrainte SQL : Stripe ne peut pas être marqué connecté avant le script.
+- **Droits par colonne** (audit, A3, migration `projects_column_privileges`) : un compte n'écrit que `site_url`, `audit`, `audited_at`, `setup_skipped_at`, `billing_provider`, `checkout_url`, `signup_url`, `pricing_url`, `anonymize_visitors` (et `owner_id`, contrôlé par la RLS). « Site relié », « Stripe connecté », le compte Stripe et l'identifiant ne sont écrits que par le serveur. **Vérifié** sur la base : mise à jour du compte Stripe et choix de l'identifiant refusés (`permission denied`), adresse du site acceptée.
 
 ## Espace super administrateur
 
@@ -54,7 +54,7 @@
   - les scripts ne se chargent qu'après consentement, et jamais dans le tableau de bord des clients ;
   - la CSP de production n'autorise que les domaines Google, Meta et LinkedIn concernés.
 - **Provenance** : le cookie interne `sc_provenance` (30 jours) garde le canal du premier passage, uniquement pour attribuer l'inscription. Aucun envoi à un tiers.
-- **Newsletter** : la RLS n'autorise que l'insertion publique (aucune lecture), et le formulaire contient un piège à robots. **À prévoir en production** : une limite de débit dans Nginx.
+- **Newsletter** : inscription par le formulaire seulement (piège à robots, 5 par IP et par quart d'heure), écrite par le serveur ; l'insertion directe par l'API publique est fermée (migration `newsletter_server_only`). Même réponse qu'une adresse soit déjà inscrite ou non.
 
 ## Formulaires de compte (incrément 8)
 
@@ -64,18 +64,31 @@
 
 - Table `alert_settings` : RLS (lecture, création, modification par le seul propriétaire). **Vérifié** : un autre compte ne voit aucune ligne et sa modification ne touche rien (`UPDATE 0`).
 - Webhook Slack : validé par Zod et par une contrainte SQL (`https://hooks.slack.com/services/…` uniquement), **jamais renvoyé au navigateur** (seul « connecté oui / non » l'est). Il donne le droit de poster dans un canal : à traiter comme un secret.
-- Suppression du projet : politique RLS `projects_delete_own`, action serveur qui exige de retaper l'adresse du site, et efface aussi `insight_feedback`. Le compte et ses réglages d'alertes restent.
-- Anonymisation des visiteurs : colonne `projects.anonymize_visitors`, active par défaut. Elle s'appliquera à la collecte réelle (pas encore de collecte).
+- Suppression du projet : politique RLS `projects_delete_own`, action serveur qui exige de retaper l'adresse du site (ou « supprimer » sans adresse), **coupe d'abord l'accès Stripe chez Stripe** (`/oauth/deauthorize`), et efface aussi `insight_feedback`. Même chose pour la suppression d'un compte par l'administrateur.
+- Collecte anonyme par construction (plus d'interrupteur, qui ne faisait rien) : aucune adresse IP enregistrée, aucun cookie, identifiant aléatoire gardé 13 mois au plus dans le navigateur, emails réduits à une empreinte SHA-256, **visites effacées au bout de 25 mois** (tâche horaire).
 
 ## Audit d'URL et SSRF (incrément 4)
 
-- L'audit télécharge une page fournie par l'utilisateur : chaque hôte (et chaque redirection, 3 au maximum) est résolu et refusé s'il pointe vers une adresse interne (privée, boucle locale, lien local, CGNAT, multicast, IPv6 équivalentes ; testé).
-- Ports 80 et 443 uniquement, délai de 8 s, 1,5 Mo lus au maximum, HTML uniquement, réservé aux utilisateurs connectés.
-- Risque résiduel : rebinding DNS entre la vérification et la connexion. Parade possible si besoin : épingler l'adresse résolue (agent HTTP personnalisé) ou passer par un proxy sortant.
+- L'audit télécharge une page fournie par l'utilisateur (`src/features/setup/safe-get.ts`) : la résolution DNS est vérifiée **au moment de la connexion** (option `lookup` de `https.request`), donc l'adresse contrôlée est celle utilisée — plus de rebinding DNS possible. Chaque redirection (3 au maximum) est revérifiée.
+- Adresses refusées : privées, boucle locale, lien local, CGNAT, bancs d'essai, multicast, et en IPv6 toutes les formes qui cachent une IPv4 interne (`::ffff:7f00:1`, `::a.b.c.d`, `64:ff9b::/96`, `2002::/16`) ; testé.
+- Ports 80 et 443 uniquement, délai de 8 s, 1,5 Mo lus au maximum, HTML uniquement, réservé aux utilisateurs connectés, **10 analyses par heure et par compte**.
+
+## Limites de débit (audit, A2 et A5)
+
+- Nginx limite le site, l'API et l'authentification par adresse IP (`deploy/nginx/saasclair.conf`).
+- Connexion : 8 mots de passe ratés par email et 30 par IP en 15 minutes ; inscription, mot de passe oublié et lien magique : 10 emails par IP en 15 minutes (`src/features/auth/actions.ts`). Nécessaire car les appels à Supabase Auth partent du serveur : Supabase ne voit pas l'IP du visiteur.
+- Réception des visites (`/api/collect`) : 120 par minute et par IP, 50 000 par heure et par site, corps limité à 4 Ko même sans `Content-Length`. Un projet sans adresse apprend celle de sa première visite, puis refuse les autres sites.
+- Limiteurs en mémoire (une seule instance de l'application) : remis à zéro au redémarrage.
+
+## Chaîne de déploiement (audit, A8)
+
+- Actions GitHub épinglées par empreinte de commit (étiquette notée en commentaire).
+- Stripe simulé : trois verrous (`STRIPE_MOCK`, `DEMO_DATA`, adresse différente de saasclair.com).
+- `main` exige les contrôles quality, secrets, image et e2e ; fusion automatique quand ils passent.
 
 ## Points ouverts
-
-- Rate limiting : celui de Supabase Auth s'applique ; la limitation Nginx arrivera avec le déploiement (incrément 9).
-- CSP avec `'unsafe-inline'` pour les scripts (scripts en ligne de Next.js) : à durcir avec un nonce si besoin.
+- CSP avec `'unsafe-inline'` pour les scripts (scripts en ligne de Next.js) : à durcir avec un nonce (lot A7, reporté).
+- Clé SSH de déploiement : la restreindre à `deploy.sh` dans `authorized_keys` sur le serveur (action manuelle).
+- `/api/health?complet=1` reste public (test de mise en ligne du déploiement), limité en débit par Nginx.
 - Double authentification (.docx §8) : prévue côté Supabase, pas encore exposée dans l'interface (évolution).
 - Envoi réel des alertes (email, Slack) : pas encore de moteur d'alertes ; les réglages sont enregistrés et seront lus par lui.

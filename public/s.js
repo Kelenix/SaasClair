@@ -1,5 +1,5 @@
 /*! SaasClair — script de collecte (https://saasclair.com). Pages vues et provenance, sans
-cookie ni adresse IP. Identification facultative d'un inscrit : saasclair("identify", email),
+cookie ni adresse IP ; identifiant du visiteur gardé 13 mois au plus. Identification facultative d'un inscrit : saasclair("identify", email),
 envoyée sous forme d'empreinte SHA-256, jamais en clair. */
 (function () {
   "use strict";
@@ -25,10 +25,18 @@ envoyée sous forme d'empreinte SHA-256, jamais en clair. */
       return ("0" + b.toString(36)).slice(-2);
     }).join("");
   }
+  // Identifiant gardé 13 mois au plus (recommandation CNIL), puis remplacé par un nouveau.
+  var MAX_AGE_MS = 395 * 24 * 60 * 60 * 1000;
   var visitor;
   try {
-    visitor = localStorage.getItem("sc_vid") || randomId();
-    localStorage.setItem("sc_vid", visitor);
+    var since = Number(localStorage.getItem("sc_vid_t")) || 0;
+    visitor = localStorage.getItem("sc_vid");
+    if (!visitor || !since || Date.now() - since > MAX_AGE_MS) {
+      // Identifiant d'avant cette règle (sans date) : daté d'aujourd'hui, pas remplacé.
+      if (!visitor || since) visitor = randomId();
+      localStorage.setItem("sc_vid", visitor);
+      localStorage.setItem("sc_vid_t", String(Date.now()));
+    }
   } catch {
     visitor = randomId();
   }

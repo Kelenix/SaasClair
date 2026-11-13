@@ -74,7 +74,7 @@ async function Settings({ searchParams }: Props) {
             />
           ),
           confidentialite: (
-            <PrivacyPanel siteUrl={context.siteUrl} anonymizeVisitors={context.anonymizeVisitors} />
+            <PrivacyPanel siteUrl={context.siteUrl} hasProject={Boolean(context.projectId)} />
           ),
           integrations: <IntegrationsPanel />,
         }}

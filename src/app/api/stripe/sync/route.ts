@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { after, NextResponse, type NextRequest } from "next/server";
 import { stripeConfig } from "@/features/stripe/client";
+import { purgeOldEvents } from "@/features/collect/retention";
 import { refreshStaleAudits } from "@/features/setup/refresh";
 import { isDemoMode } from "@/lib/demo-mode";
 import { syncAllStripeAccounts } from "@/features/stripe/sync";
@@ -15,8 +16,8 @@ function authorized(request: NextRequest) {
 
 /**
  * Tâche horaire (deploy/scripts/stripe-sync.sh, secret CRON_SECRET) : resynchronise tous les
- * comptes Stripe, puis réanalyse les sites dont l'analyse a plus de 6 heures. Répond aussitôt ;
- * le travail tourne après.
+ * comptes Stripe, réanalyse les sites dont l'analyse a plus de 6 heures, et efface les visites
+ * de plus de 25 mois. Répond aussitôt ; le travail tourne après.
  */
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
     // En démonstration (poste local, CI), les analyses automatiques sont coupées, comme sur
     // l'accueil : elles remplaceraient l'exemple du compte de démonstration.
     if (!isDemoMode()) await refreshStaleAudits();
+    // Conservation limitée (RGPD) : les visites de plus de 25 mois sont effacées.
+    await purgeOldEvents();
   });
   if (!config) return NextResponse.json({ error: "stripe_not_configured" }, { status: 503 });
   return NextResponse.json({ status: "started" }, { status: 202 });

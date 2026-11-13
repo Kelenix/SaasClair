@@ -17,17 +17,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { displaySiteUrl } from "@/lib/site-url";
-import { deleteProject, setAnonymizeVisitors } from "./actions";
+import { deleteProject } from "./actions";
 
-/** Suppression du projet : il faut retaper l'adresse du site, l'action est définitive. */
-function DeleteProject({ siteUrl }: { siteUrl: string }) {
+/**
+ * Suppression du projet : il faut retaper l'adresse du site (ou « supprimer » si le projet n'a
+ * pas encore d'adresse). L'action est définitive ; l'accès Stripe est coupé chez Stripe.
+ */
+function DeleteProject({ siteUrl }: { siteUrl: string | null }) {
   const id = useId();
-  const domain = displaySiteUrl(siteUrl);
+  const expected = siteUrl ? displaySiteUrl(siteUrl) : "supprimer";
   const [confirmation, setConfirmation] = useState("");
   const [isPending, startTransition] = useTransition();
-  const matches = confirmation.trim().toLowerCase() === domain.toLowerCase();
+  const matches = confirmation.trim().toLowerCase() === expected.toLowerCase();
 
   const remove = () =>
     startTransition(async () => {
@@ -49,14 +51,15 @@ function DeleteProject({ siteUrl }: { siteUrl: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Supprimer {domain} ?</DialogTitle>
+          <DialogTitle>{siteUrl ? `Supprimer ${expected} ?` : "Supprimer le projet ?"}</DialogTitle>
           <DialogDescription>
-            Le suivi de votre site et l&apos;historique de vos insights seront effacés. Votre compte
-            et vos réglages d&apos;alertes restent : vous pourrez relier un site à nouveau.
+            Le suivi de votre site et l&apos;historique de vos insights seront effacés, et
+            l&apos;accès à votre Stripe coupé. Votre compte et vos réglages d&apos;alertes restent :
+            vous pourrez relier un site à nouveau.
           </DialogDescription>
         </DialogHeader>
         <label htmlFor={id} className="text-sm font-semibold text-ink">
-          Pour confirmer, tapez <span className="font-mono text-forest">{domain}</span>
+          Pour confirmer, tapez <span className="font-mono text-forest">{expected}</span>
         </label>
         <Input
           id={id}
@@ -81,27 +84,22 @@ function DeleteProject({ siteUrl }: { siteUrl: string }) {
   );
 }
 
+/** Ce que SaasClair garde vraiment : la collecte est anonyme par construction, sans réglage. */
+const GUARANTEES = [
+  "Aucune adresse IP enregistrée",
+  "Aucun cookie : un identifiant aléatoire, gardé 13 mois au plus dans le navigateur",
+  "Emails jamais en clair : seulement leur empreinte (SHA-256)",
+  "Visites effacées au bout de 25 mois",
+];
+
 export function PrivacyPanel({
   siteUrl,
-  anonymizeVisitors,
+  hasProject,
 }: {
   siteUrl: string | null;
-  anonymizeVisitors: boolean;
+  /** Un projet existe (même sans adresse de site) : il peut être supprimé. */
+  hasProject: boolean;
 }) {
-  const [isAnonymous, setIsAnonymous] = useState(anonymizeVisitors);
-  const [, startTransition] = useTransition();
-
-  const toggle = (next: boolean) => {
-    setIsAnonymous(next);
-    startTransition(async () => {
-      const result = await setAnonymizeVisitors(next);
-      if (!result.ok) {
-        setIsAnonymous(!next);
-        toast.error(result.message);
-      } else toast.success(next ? "Visiteurs anonymisés." : "Anonymisation désactivée.");
-    });
-  };
-
   return (
     <div className="grid grid-cols-1 items-start gap-4 @4xl:grid-cols-2">
       <Card>
@@ -116,24 +114,14 @@ export function PrivacyPanel({
             <Icon icon={ShieldCheck} anim="pop" />
           </span>
         </div>
-        <div className="flex items-center justify-between gap-4 rounded-2xl bg-cream p-4">
-          <span className="flex items-start gap-3">
-            <Icon icon={EyeOff} anim="wiggle" className="mt-0.5 size-4 text-forest" />
-            <span>
-              <span className="block font-semibold text-ink">Anonymiser les visiteurs</span>
-              <span className="block text-[13px] text-slate">
-                Aucune adresse IP n&apos;est conservée. Les clients restent reliés à leur
-                provenance.
-              </span>
-            </span>
-          </span>
-          <Switch
-            checked={isAnonymous}
-            onCheckedChange={toggle}
-            disabled={!siteUrl}
-            aria-label="Anonymiser les visiteurs"
-          />
-        </div>
+        <ul className="flex flex-col gap-2.5 rounded-2xl bg-cream p-4">
+          {GUARANTEES.map((guarantee) => (
+            <li key={guarantee} className="flex items-start gap-3 text-sm text-ink">
+              <Icon icon={EyeOff} anim="wiggle" className="mt-0.5 size-4 shrink-0 text-forest" />
+              {guarantee}
+            </li>
+          ))}
+        </ul>
         <p className="mt-4 text-sm text-slate">
           SaasClair ne fait que lire votre compte Stripe : nous ne modifions jamais rien sur votre
           compte.
@@ -148,7 +136,7 @@ export function PrivacyPanel({
         <p className="mb-5 text-[15px] text-ink">
           La suppression efface le projet et tout son historique. Elle ne peut pas être annulée.
         </p>
-        {siteUrl ? (
+        {hasProject ? (
           <DeleteProject siteUrl={siteUrl} />
         ) : (
           <p className="text-sm text-slate">Aucun projet relié pour l&apos;instant.</p>

@@ -77,10 +77,10 @@ export default function PrivacyPage() {
               <>
                 <strong>Avec le script installé sur votre site</strong> : les pages vues, le site
                 d&apos;origine, les paramètres de campagne (UTM), la largeur d&apos;écran et un
-                identifiant aléatoire du visiteur, gardé dans le navigateur sur votre site. Pas de
-                cookie tiers, pas d&apos;adresse IP enregistrée, et les adresses des pages sont
-                gardées sans leurs paramètres. Si vous identifiez un inscrit, seule une empreinte
-                chiffrée de son email nous parvient.
+                identifiant aléatoire du visiteur, gardé 13 mois au plus dans le navigateur sur
+                votre site. Pas de cookie tiers, pas d&apos;adresse IP enregistrée, et les adresses
+                des pages sont gardées sans leurs paramètres. Si vous identifiez un inscrit, seule
+                l&apos;empreinte de son email (SHA-256, jamais l&apos;email lui-même) nous parvient.
               </>,
               <>
                 <strong>Avec Stripe connecté</strong> : vos clients (nom, email), leurs abonnements
@@ -142,6 +142,7 @@ export default function PrivacyPage() {
           <List
             items={[
               "Votre compte et les données de votre SaaS : tant que votre compte existe. Vous pouvez supprimer votre projet et ses données à tout moment, depuis Paramètres › Confidentialité.",
+              "Les visites reçues par le script : 25 mois, puis elles sont effacées automatiquement. L'identifiant du visiteur, dans son navigateur : 13 mois au plus.",
               "Les sauvegardes : 14 jours, puis elles sont effacées automatiquement.",
               "La newsletter : jusqu'à votre désinscription.",
             ]}

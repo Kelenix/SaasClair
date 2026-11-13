@@ -34,7 +34,6 @@ export type DashboardContext = {
   stripeConnected: boolean;
   /** Stripe relié, premier import en cours (pas encore « connecté »). */
   stripeImporting: boolean;
-  anonymizeVisitors: boolean;
   /** Début de l'essai gratuit (7 jours, TRIAL_DAYS). */
   accountCreatedAt: string;
   feedback: Record<string, InsightStatus>;
@@ -96,7 +95,6 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
     scriptDetected: Boolean(project?.script_detected_at),
     stripeConnected: Boolean(project?.stripe_connected_at),
     stripeImporting: !project?.stripe_connected_at && project?.stripe_sync_status === "importing",
-    anonymizeVisitors: project?.anonymize_visitors ?? true,
     accountCreatedAt: user.created_at,
     isSuperAdmin: profile?.role === "super_admin",
     isSuspended: profile?.subscription_status === "suspended",

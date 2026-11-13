@@ -1,5 +1,6 @@
 "use server";
 
+import { deauthorizeAccount, stripeConfig } from "@/features/stripe/client";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -121,6 +122,19 @@ export async function deleteUser(userId: string, emailConfirmation: string): Pro
   const service = createAdminClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  // Accès Stripe du client coupé d'abord : sinon il resterait valable après la suppression.
+  const { data: project } = await service
+    .from("projects")
+    .select("stripe_account_id")
+    .eq("owner_id", userId)
+    .maybeSingle();
+  const config = stripeConfig();
+  if (project?.stripe_account_id && config) {
+    const done = await deauthorizeAccount(config, project.stripe_account_id);
+    if (!done) {
+      return { ok: false, message: "Stripe n'a pas répondu : le compte est intact. Réessayez." };
+    }
+  }
   const { error } = await service.auth.admin.deleteUser(userId);
   if (error) return { ok: false, message: "La suppression n'a pas abouti. Le compte est intact." };
   await logAdminAction(admin.supabase, "compte.supprime", profile.email);

@@ -4,6 +4,25 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Sécurité (lot A)
+- **Analyse de site** : adresse vérifiée au moment de la connexion (plus de rebinding DNS),
+  formes IPv6 qui cachent une adresse interne refusées, 10 analyses par heure et par compte.
+- **Droits par colonne** sur les projets : « site relié », « Stripe connecté », compte Stripe et
+  identifiant ne sont plus modifiables par l'API publique (migration
+  `projects_column_privileges`).
+- **Suppression** d'un projet ou d'un compte : l'accès Stripe est d'abord coupé chez Stripe. Un
+  projet sans adresse peut enfin être supprimé.
+- **Limites** : 8 mots de passe ratés par email et 30 par IP en 15 minutes ; 10 emails
+  (inscription, mot de passe oublié, lien magique) par IP ; réception des visites limitée par
+  IP et par site, corps borné même sans en-tête de longueur ; un site sans adresse apprend celle
+  de sa première visite.
+- **RGPD** : visites effacées au bout de 25 mois, identifiant visiteur gardé 13 mois au plus,
+  interrupteur « Anonymiser » (sans effet) remplacé par les garanties réelles, textes « emails
+  chiffrés » corrigés (empreinte SHA-256) dans le site et la FAQ (migration `privacy_wording`).
+- **Newsletter** écrite par le serveur seulement, limitée par IP, même réponse si déjà inscrit.
+- Actions GitHub épinglées par empreinte ; Stripe simulé sous triple verrou ;
+  `docs/security.md` à jour.
+
 ### Modifié (lot D : prise en main simplifiée)
 - **Inscription en 2 champs** (email, mot de passe) : le prénom est déduit de l'email quand la
   forme est claire (« prenom.nom@ »), sinon « Bonjour. ». L'offre choisie sur la page Tarifs est

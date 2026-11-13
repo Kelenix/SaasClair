@@ -120,7 +120,13 @@ function lists(path: string) {
   }
 }
 
-const enabled = () => process.env.STRIPE_MOCK === "true";
+// Trois verrous (audit de sécurité, A8) : la variable du Stripe simulé, les données d'exemple
+// (jamais en production) et une adresse qui n'est pas celle du site en ligne. Activé par erreur
+// en production, il donnerait sinon un abonnement gratuit à n'importe quel compte.
+const enabled = () =>
+  process.env.STRIPE_MOCK === "true" &&
+  process.env.DEMO_DATA === "true" &&
+  !/^https:\/\/(www\.)?saasclair\.com/.test(SITE_URL);
 const notFound = () => NextResponse.json({ error: "not_found" }, { status: 404 });
 const authorized = (request: NextRequest) =>
   request.headers.get("authorization") === `Bearer ${process.env.STRIPE_SECRET_KEY}`;

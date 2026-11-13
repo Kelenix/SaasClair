@@ -57,6 +57,8 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-11-14 — Lot A (sécurité) : lecture de site épinglée (anti-rebinding) et IPv6 durci, droits par colonne sur `projects` (vérifiés sur la base), révocation Stripe à la suppression, limites de connexion et d'emails, `/api/collect` borné, RGPD (25 mois, 13 mois, textes), newsletter côté serveur, actions GitHub épinglées. 220 tests unitaires.
+
 - 2026-11-13 — Lot D (prise en main) : inscription en 2 champs, offre gardée, plus d'écran « Votre SaaS » quand l'adresse est connue, « C'est fait, vérifier mon site », « Reliez votre site », liste de démarrage unique, « Je n'utilise pas Stripe » enregistré, tableau de bord pendant l'import, lien magique. Fusion automatique activée sur le dépôt (CI obligatoire sur main) ; analyse du site toujours à jour (PR n° 3).
 
 - 2026-11-13 — Lot C (promesses tenues sur les vraies données) : moteur d'insights (`src/features/insights/`) branché sur l'accueil, la page Insights, la barre de question et les alertes ; score de risque explicable (7 signaux, carte qui expire et rythme de facturation importés) ; tunnel réel avec pages clés confirmées en un clic ; revenu par canal et couverture réelle (`customer_first_touch`). 4 migrations, vérifiées sur la base locale. Décisions ouvertes : identification automatique à l'inscription et cookie entre sous-domaines (RGPD).
