@@ -22,6 +22,9 @@ export type DashboardContext = {
   setupRemaining: ActionStep[];
   /** Page de paiement : détectée par l'analyse ou confirmée en un clic. Null = à confirmer. */
   checkoutUrl: string | null;
+  /** Pages d'inscription et de tarifs : confirmées en un clic, sinon trouvées par l'analyse. */
+  signupUrl: string | null;
+  pricingUrl: string | null;
   /** Identifiant du site dans la ligne de script. */
   siteKey: string | null;
   scriptDetected: boolean;
@@ -78,6 +81,8 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
     isSetupComplete: setupRemaining.length === 0,
     setupRemaining,
     checkoutUrl: project?.checkout_url ?? audit?.pages.checkout ?? null,
+    signupUrl: project?.signup_url ?? audit?.pages.signup ?? null,
+    pricingUrl: project?.pricing_url ?? audit?.pages.pricing ?? null,
     siteKey: project?.id.slice(0, 8) ?? null,
     scriptDetected: Boolean(project?.script_detected_at),
     stripeConnected: Boolean(project?.stripe_connected_at),

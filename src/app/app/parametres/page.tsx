@@ -6,6 +6,9 @@ import { BillingPanel } from "@/features/dashboard/settings/billing-panel";
 import { IntegrationsPanel } from "@/features/dashboard/settings/integrations-panel";
 import { PrivacyPanel } from "@/features/dashboard/settings/privacy-panel";
 import { ProjectPanel } from "@/features/dashboard/settings/project-panel";
+import { coverageLine } from "@/features/collect/channel-revenue";
+import { getCustomerLinks } from "@/features/collect/queries";
+import { getRealRevenue } from "@/features/stripe/queries";
 import { SettingsTabs } from "@/features/dashboard/settings/settings-tabs";
 import { SETTINGS_TABS, type SettingsTab } from "@/features/dashboard/settings/tabs";
 import { TeamPanel } from "@/features/dashboard/settings/team-panel";
@@ -25,6 +28,9 @@ async function Settings({ searchParams }: Props) {
     .select("*", { count: "exact", head: true })
     .eq("type", "pageview")
     .gte("occurred_at", new Date(now.getFullYear(), now.getMonth(), 1).toISOString());
+  const links = context.stripeConnected
+    ? await getCustomerLinks(await getRealRevenue("30j", now))
+    : null;
   const initial = SETTINGS_TABS.some((tab) => tab.id === onglet)
     ? (onglet as SettingsTab)
     : "projet";
@@ -49,6 +55,10 @@ async function Settings({ searchParams }: Props) {
                 checkoutUrl: context.checkoutUrl,
                 scriptDetected: context.scriptDetected,
                 stripeConnected: context.stripeConnected,
+                coverage:
+                  links && links.paying
+                    ? { share: links.coverage, line: coverageLine(links) }
+                    : null,
               }}
               demo={context.demo}
             />

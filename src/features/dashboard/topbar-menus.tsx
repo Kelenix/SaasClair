@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, m } from "motion/react";
-import { Bell, CreditCard, LogOut, Settings, ShieldCheck, UserMinus, Wrench } from "lucide-react";
+import {
+  Bell,
+  CreditCard,
+  Globe,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  UserMinus,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/features/auth/actions";
+import { loadAlerts, type Alert } from "@/features/insights/actions";
 import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +53,8 @@ const NOTIFICATIONS = [
   },
 ];
 
-// Notifications lues, gardées dans le navigateur (démonstration : pas encore de moteur d'alertes).
+// Notifications lues, gardées dans le navigateur (identifiants par semaine : une alerte qui
+// revient la semaine suivante est de nouveau non lue).
 const READ_KEY = "sc_notifications_lues";
 const readListeners = new Set<() => void>();
 const subscribeToRead = (listener: () => void) => {
@@ -78,9 +90,33 @@ const markRead = (ids: string[]) => {
   readListeners.forEach((listener) => listener());
 };
 
-/** Alertes du compte. Hors données d'exemple, il n'y en a pas encore (pas de moteur d'alertes). */
+const ALERT_ICONS: Record<Alert["kind"], typeof Bell> = {
+  payment: CreditCard,
+  churn: UserMinus,
+  conversion: Wrench,
+  site: Globe,
+  acquisition: Users,
+};
+
+/**
+ * Alertes du compte : en démonstration, une liste d'exemple ; sinon les insights du moment,
+ * calculés sur les vraies données et chargés après l'affichage (la page n'attend pas).
+ */
 export function NotificationsMenu({ demo }: { demo: boolean }) {
-  const notifications = demo ? NOTIFICATIONS : [];
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  useEffect(() => {
+    if (demo) return;
+    let isCurrent = true;
+    loadAlerts()
+      .then((items) => isCurrent && setAlerts(items))
+      .catch(() => undefined);
+    return () => {
+      isCurrent = false;
+    };
+  }, [demo]);
+  const notifications = demo
+    ? NOTIFICATIONS
+    : alerts.map((alert) => ({ ...alert, icon: ALERT_ICONS[alert.kind] }));
   const read = useSyncExternalStore(subscribeToRead, readIds, () => NONE_READ);
   const unread = notifications.filter((item) => !read.includes(item.id)).length;
 

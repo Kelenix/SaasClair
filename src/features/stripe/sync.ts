@@ -2,6 +2,7 @@ import "server-only";
 import { createServiceClient } from "@/lib/supabase/service";
 import { listAll, type StripeConfig } from "./client";
 import {
+  customerCards,
   toCustomerRow,
   toInvoiceRow,
   toSubscriptionRow,
@@ -39,8 +40,15 @@ export async function syncStripeAccount(config: StripeConfig, projectId: string,
   try {
     const since = Math.floor(Date.now() / 1000) - 365 * DAY_S;
     const [customers, subscriptions, invoices, products] = await Promise.all([
-      listAll<StripeCustomer>(config, account, "/v1/customers"),
-      listAll<StripeSubscription>(config, account, "/v1/subscriptions", { status: "all" }),
+      // Moyens de paiement dépliés : seul le mois d'expiration des cartes est gardé (risque de
+      // paiement échoué au prochain renouvellement).
+      listAll<StripeCustomer>(config, account, "/v1/customers", {
+        "expand[]": "data.invoice_settings.default_payment_method",
+      }),
+      listAll<StripeSubscription>(config, account, "/v1/subscriptions", {
+        status: "all",
+        "expand[]": "data.default_payment_method",
+      }),
       listAll<StripeInvoice>(config, account, "/v1/invoices", { "created[gte]": String(since) }),
       listAll<StripeProduct>(config, account, "/v1/products"),
     ]);
@@ -51,9 +59,12 @@ export async function syncStripeAccount(config: StripeConfig, projectId: string,
       "stripe_customers",
       customers.filter((customer) => !customer.deleted).map((c) => toCustomerRow(projectId, c)),
     );
+    const cards = customerCards(customers);
     await upsertInBatches(
       "stripe_subscriptions",
-      subscriptions.map((subscription) => toSubscriptionRow(projectId, subscription, productNames)),
+      subscriptions.map((subscription) =>
+        toSubscriptionRow(projectId, subscription, productNames, cards),
+      ),
     );
     await upsertInBatches(
       "stripe_invoices",

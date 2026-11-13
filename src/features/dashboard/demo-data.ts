@@ -21,7 +21,7 @@ export type Kpi = {
 
 export type Insight = {
   id: string;
-  area: "Acquisition" | "Conversion" | "Rétention";
+  area: "Acquisition" | "Conversion" | "Rétention" | "Revenus";
   title: string;
   finding: string;
   cause: string;

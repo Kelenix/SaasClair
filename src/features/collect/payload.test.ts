@@ -50,6 +50,18 @@ describe("toEvent", () => {
     expect(event?.channel).toBe("direct");
   });
 
+  it("passer du site vitrine à l'application (www → app) reste interne", () => {
+    const toApp = {
+      ...base,
+      u: "https://app.monsaas.fr/inscription",
+      r: "https://www.monsaas.fr/",
+    };
+    expect(toEvent(toApp, "https://monsaas.fr")?.referrer_host).toBeNull();
+    expect(toEvent(toApp, null)?.referrer_host).toBeNull();
+    const fromBlog = { ...base, u: "https://app.monsaas.fr/", r: "https://blog.monsaas.fr/x" };
+    expect(toEvent(fromBlog, "https://monsaas.fr")?.referrer_host).toBeNull();
+  });
+
   it("l'identification exige l'empreinte de l'email", () => {
     expect(toEvent({ ...base, t: "identify" }, null)).toBeNull();
     const hash = "a".repeat(64);

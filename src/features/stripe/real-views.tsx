@@ -30,7 +30,11 @@ export function EmptyStripe({ what }: { what: string }) {
   );
 }
 
-/** Clients à risque : vraies raisons tirées de Stripe (résiliation, impayé, échec de paiement). */
+/**
+ * Clients à risque : vraies raisons tirées de Stripe (résiliation, impayé, paiement échoué, carte
+ * qui expire, renouvellement annuel proche, client récent). Le score additionne les points de
+ * chaque raison : c'est une priorité, pas une probabilité.
+ */
 export function RiskList({ customers, limit }: { customers: AtRisk[]; limit?: number }) {
   const shown = limit ? customers.slice(0, limit) : customers;
   if (!shown.length) {
@@ -39,7 +43,7 @@ export function RiskList({ customers, limit }: { customers: AtRisk[]; limit?: nu
         <StateMessage
           icon={HeartPulse}
           title="Aucun client à risque."
-          description="Aucune résiliation programmée, aucun impayé, aucun paiement échoué. Nous vous prévenons dès qu'un signal apparaît."
+          description="Aucune résiliation programmée, aucun impayé, aucun paiement échoué, aucune carte sur le point d'expirer. Nous vous prévenons dès qu'un signal apparaît."
         />
       </Card>
     );
@@ -72,8 +76,13 @@ export function RiskList({ customers, limit }: { customers: AtRisk[]; limit?: nu
             </p>
             <div>
               <p className="mb-1.5 flex justify-between text-xs text-slate">
-                <span>Risque de départ</span>
-                <span className="font-semibold text-gold-ink tabular-nums">{customer.score} %</span>
+                <span className="font-semibold text-ink">
+                  {customer.level === "retain" ? "À retenir" : "À surveiller"}
+                </span>
+                <span className="text-gold-ink tabular-nums">
+                  <span className="sr-only">Score de risque : </span>
+                  {customer.score} / 100
+                </span>
               </p>
               <GrowBar share={customer.score} tone="gold" delay={index * STAGGER} />
             </div>

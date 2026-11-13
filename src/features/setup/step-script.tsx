@@ -32,7 +32,7 @@ const ADVANCE_AFTER_SUCCESS_MS = 1800;
 const STATUS_POLL_MS = 4000;
 const COPIED_FEEDBACK_MS = 2500;
 
-export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied: () => void }) {
+export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied?: () => void }) {
   const [isCopied, setIsCopied] = useState(false);
 
   async function copy() {
@@ -40,7 +40,7 @@ export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied: ()
       await navigator.clipboard.writeText(snippet);
       setIsCopied(true);
       toast.success("Ligne copiée. Collez-la dans votre site.");
-      onCopied();
+      onCopied?.();
       setTimeout(() => setIsCopied(false), COPIED_FEEDBACK_MS);
     } catch {
       toast.error("La copie n'a pas fonctionné. Sélectionnez la ligne et copiez-la à la main.");

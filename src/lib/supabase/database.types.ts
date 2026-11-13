@@ -143,14 +143,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"script_detected_at": string | null,"setup_skipped_at": string | null,"site_key": string | null,"site_url": string | null,"stripe_account_id": string | null,"stripe_connected_at": string | null,"stripe_livemode": boolean | null,"stripe_sync_status": string | null,"stripe_synced_at": string | null,"updated_at": string
+                    "anonymize_visitors": boolean,"audit": Json | null,"checkout_url": string | null,"created_at": string,"id": string,"owner_id": string,"pricing_url": string | null,"script_detected_at": string | null,"setup_skipped_at": string | null,"signup_url": string | null,"site_key": string | null,"site_url": string | null,"stripe_account_id": string | null,"stripe_connected_at": string | null,"stripe_livemode": boolean | null,"stripe_sync_status": string | null,"stripe_synced_at": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"pricing_url"?: string | null,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"signup_url"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
+                    "anonymize_visitors"?: boolean,"audit"?: Json | null,"checkout_url"?: string | null,"created_at"?: string,"id"?: string,"owner_id"?: string,"pricing_url"?: string | null,"script_detected_at"?: string | null,"setup_skipped_at"?: string | null,"signup_url"?: string | null,"site_key"?: never,"site_url"?: string | null,"stripe_account_id"?: string | null,"stripe_connected_at"?: string | null,"stripe_livemode"?: boolean | null,"stripe_sync_status"?: string | null,"stripe_synced_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -225,14 +225,14 @@ isOneToOne: false
                   ]
                 },"stripe_subscriptions": {
                   Row: {
-                    "cancel_at": string | null,"cancel_at_period_end": boolean,"canceled_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"project_id": string,"status": string,"trial_end": string | null
+                    "billing_interval": string | null,"cancel_at": string | null,"cancel_at_period_end": boolean,"canceled_at": string | null,"card_expires_at": string | null,"created_at": string,"currency": string,"current_period_end": string | null,"customer_id": string,"ended_at": string | null,"id": string,"mrr_cents": number,"plan_name": string | null,"project_id": string,"status": string,"trial_end": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id": string,"status": string,"trial_end"?: string | null
+                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at": string,"currency"?: string,"current_period_end"?: string | null,"customer_id": string,"ended_at"?: string | null,"id": string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id": string,"status": string,"trial_end"?: string | null
                   }
                   Update: {
-                    "cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id"?: string,"status"?: string,"trial_end"?: string | null
+                    "billing_interval"?: string | null,"cancel_at"?: string | null,"cancel_at_period_end"?: boolean,"canceled_at"?: string | null,"card_expires_at"?: string | null,"created_at"?: string,"currency"?: string,"current_period_end"?: string | null,"customer_id"?: string,"ended_at"?: string | null,"id"?: string,"mrr_cents"?: number,"plan_name"?: string | null,"project_id"?: string,"status"?: string,"trial_end"?: string | null
                   }
                   Relationships: [
                     {
@@ -271,6 +271,11 @@ isOneToOne: false
                            },
 "clean_channel":
 { Args: { "referrer": string,"value": string }; Returns: string
+                           },
+"customer_first_touch":
+{ Args: { "p_project": string }; Returns: {
+              "channel": string,"email_hash": string,"first_seen": string
+            }[]
                            },
 "is_super_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean

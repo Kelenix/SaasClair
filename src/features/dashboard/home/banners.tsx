@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 import { displaySiteUrl } from "@/lib/site-url";
 import type { ActionStep } from "@/features/setup/steps";
-import { confirmCheckoutPage } from "../actions";
+import { confirmKeyPage, type KeyPageKind } from "../actions";
 
 const BANNER_MOTION = {
   initial: { opacity: 0, y: -8 },
@@ -27,22 +27,38 @@ const BANNER_MOTION = {
   transition: { duration: DURATION.screen, ease: EASE_OUT },
 };
 
+const KEY_PAGE_LABELS: Record<KeyPageKind, { name: string; placeholder: string }> = {
+  checkout: { name: "votre page de paiement", placeholder: "/paiement" },
+  signup: { name: "votre page d'inscription", placeholder: "/inscription" },
+  pricing: { name: "votre page de tarifs", placeholder: "/tarifs" },
+};
+
 /**
- * Mode secours (.docx §3.3) : quand l'analyse n'a pas trouvé la page de paiement, on propose
- * la plus probable et l'utilisateur confirme en un clic. Jamais de formulaire de réglages.
+ * Mode secours (.docx §3.3) : quand l'analyse n'a pas trouvé une page clé, on propose la plus
+ * probable (la plus visitée qui lui ressemble) et l'utilisateur confirme en un clic. Sans
+ * proposition, un seul champ. Jamais de formulaire de réglages.
  */
-export function CheckoutBanner({ siteUrl }: { siteUrl: string }) {
+export function KeyPageBanner({
+  kind,
+  siteUrl,
+  guess,
+}: {
+  kind: KeyPageKind;
+  siteUrl: string;
+  /** Adresse proposée ; null = on demande directement. */
+  guess: string | null;
+}) {
   const inputId = useId();
-  const guess = `${siteUrl}/checkout`;
+  const { name, placeholder } = KEY_PAGE_LABELS[kind];
   const [isVisible, setIsVisible] = useState(true);
-  const [isChoosing, setIsChoosing] = useState(false);
+  const [isChoosing, setIsChoosing] = useState(!guess);
   const [path, setPath] = useState("");
   const [isPending, startTransition] = useTransition();
 
   const confirm = (url: string) =>
     startTransition(async () => {
       setIsVisible(false);
-      const result = await confirmCheckoutPage(url);
+      const result = await confirmKeyPage(kind, url);
       if (result.ok) toast.success("Merci, c'est noté. Votre tunnel est à jour.");
       else {
         setIsVisible(true);
@@ -64,10 +80,20 @@ export function CheckoutBanner({ siteUrl }: { siteUrl: string }) {
               <Icon icon={CircleHelp} anim="wiggle" />
             </span>
             <p className="flex-1 text-[15px] text-ink">
-              Nous n&apos;avons pas trouvé votre page de paiement. Est-ce celle-ci :{" "}
-              <strong className="break-all text-forest">{displaySiteUrl(guess)}</strong> ?
+              Nous n&apos;avons pas trouvé {name}.{" "}
+              {guess ? (
+                <>
+                  Est-ce celle-ci :{" "}
+                  <strong className="break-all text-forest">
+                    {displaySiteUrl(new URL(guess, siteUrl).toString())}
+                  </strong>{" "}
+                  ?
+                </>
+              ) : (
+                "Quelle est son adresse ?"
+              )}
             </p>
-            {!isChoosing && (
+            {!isChoosing && guess && (
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => confirm(guess)} disabled={isPending}>
                   Oui
@@ -87,13 +113,13 @@ export function CheckoutBanner({ siteUrl }: { siteUrl: string }) {
               className="mt-4 flex flex-col gap-2 sm:flex-row"
             >
               <label htmlFor={inputId} className="sr-only">
-                Adresse de votre page de paiement
+                Adresse de {name}
               </label>
               <Input
                 id={inputId}
                 value={path}
                 onChange={(event) => setPath(event.target.value)}
-                placeholder="/paiement"
+                placeholder={placeholder}
                 className="bg-white"
               />
               <Button type="submit" size="md" disabled={isPending}>
@@ -162,4 +188,9 @@ export function SetupBanner({ remaining, demo }: { remaining: ActionStep[]; demo
       </ul>
     </m.section>
   );
+}
+
+/** Page de paiement : proposition par défaut « /checkout » (accueil, données d'exemple). */
+export function CheckoutBanner({ siteUrl }: { siteUrl: string }) {
+  return <KeyPageBanner kind="checkout" siteUrl={siteUrl} guess={`${siteUrl}/checkout`} />;
 }

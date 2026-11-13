@@ -14,17 +14,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { DURATION, EASE_OUT } from "@/lib/motion";
+import { askQuestion } from "@/features/insights/actions";
 import { answerQuestion, SUGGESTED_QUESTIONS, type Answer } from "./answers";
 
 const THINKING_MS = 900;
 
-// Sans données d'exemple : pas de réponse inventée tant qu'aucune donnée n'est arrivée.
-const NO_DATA_ANSWER: Answer = {
-  title: "Je n'ai pas encore de données à analyser.",
-  paragraphs: [
-    "Je réponds à partir de vos visites et de vos paiements. Dès que le script et Stripe m'auront envoyé leurs premières données, posez-moi de nouveau votre question.",
-  ],
-  basis: "Aucune donnée reçue pour l'instant",
+// La réponse n'a pas pu être calculée (session expirée, réseau) : on le dit simplement.
+const ERROR_ANSWER: Answer = {
+  title: "Je n'ai pas pu répondre cette fois.",
+  paragraphs: ["Vérifiez votre connexion, puis reposez votre question dans un instant."],
+  basis: "Aucune donnée lue",
 };
 
 /** Barre « Posez une question à vos données… » : la réponse arrive comme un insight rédigé. */
@@ -42,7 +41,14 @@ export function QuestionBar({ demo }: { demo: boolean }) {
     setAnswer(null);
     setIsOpen(true);
     setQuestion("");
-    setTimeout(() => setAnswer(demo ? answerQuestion(trimmed) : NO_DATA_ANSWER), THINKING_MS);
+    if (demo) {
+      setTimeout(() => setAnswer(answerQuestion(trimmed)), THINKING_MS);
+      return;
+    }
+    // Vraies données : réponse calculée sur le serveur à partir des chiffres du compte.
+    askQuestion(trimmed)
+      .then((result) => setAnswer(result ?? ERROR_ANSWER))
+      .catch(() => setAnswer(ERROR_ANSWER));
   }
 
   return (

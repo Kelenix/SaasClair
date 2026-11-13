@@ -6,6 +6,8 @@ import { formatNumber, formatPercent } from "@/lib/format";
 import { STAGGER } from "@/lib/motion";
 import type { Kpi } from "@/features/dashboard/demo-data";
 import type { RealAcquisition, Ranked } from "./aggregate";
+import { ChannelRevenue } from "./channel-revenue";
+import type { CustomerLinks } from "./linking";
 
 /** Classement (canaux, pages, campagnes, sites d'origine) avec barres qui poussent. */
 export function RankedCard({
@@ -88,17 +90,33 @@ export function visitKpis(data: RealAcquisition): Kpi[] {
 }
 
 /** Écran Acquisition sur les vraies visites reçues par le script. */
-export function RealAcquisitionView({ data }: { data: RealAcquisition }) {
+export function RealAcquisitionView({
+  data,
+  links = null,
+}: {
+  data: RealAcquisition;
+  /** Clients payants reliés à leur canal (null : Stripe pas encore connecté). */
+  links?: CustomerLinks | null;
+}) {
   return (
     <>
       <KpiCards kpis={visitKpis(data)} />
 
+      {links && (
+        <>
+          <SectionTitle title="Ce que chaque canal rapporte" />
+          <ChannelRevenue links={links} />
+        </>
+      )}
+
       <SectionTitle
         title="D'où viennent vos visiteurs"
         detail={
-          <p className="text-sm text-slate">
-            Les inscrits, clients et revenus par canal arrivent avec la connexion Stripe.
-          </p>
+          !links && (
+            <p className="text-sm text-slate">
+              Connectez Stripe pour voir aussi les clients et le revenu par canal.
+            </p>
+          )
         }
       />
       <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2">

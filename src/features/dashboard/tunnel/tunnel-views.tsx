@@ -14,7 +14,10 @@ import type { FunnelStep, Insight } from "../demo-data";
 import { weakestCell, type Comparison } from "./data";
 
 /** Tunnel visuel : chaque étape s'élargit depuis le centre, la perte entre deux étapes est chiffrée. */
-export function FunnelChart({ funnel, weakest }: { funnel: FunnelStep[]; weakest: number }) {
+/** Étape du tunnel ; le repère « habituel » n'existe qu'en démonstration (jamais inventé). */
+type ChartStep = Omit<FunnelStep, "benchmark"> & { benchmark?: number };
+
+export function FunnelChart({ funnel, weakest }: { funnel: ChartStep[]; weakest: number }) {
   const max = funnel[0].count || 1;
   return (
     <Card>
@@ -32,7 +35,7 @@ export function FunnelChart({ funnel, weakest }: { funnel: FunnelStep[]; weakest
         {funnel.map((step, index) => {
           const isWeakest = index === weakest;
           const previous = funnel[index - 1];
-          const passRate = previous ? step.count / previous.count : 1;
+          const passRate = previous ? (previous.count ? step.count / previous.count : 0) : 1;
           return (
             <m.li key={step.id} variants={fadeUp}>
               {previous && (
@@ -47,8 +50,9 @@ export function FunnelChart({ funnel, weakest }: { funnel: FunnelStep[]; weakest
                     −{formatPercent((1 - passRate) * 100, 0)}
                   </span>
                   <span className="tabular-nums">
-                    {formatNumber(previous.count - step.count)} perdus · habituel −
-                    {formatPercent((1 - step.benchmark) * 100, 0)}
+                    {formatNumber(previous.count - step.count)} perdus
+                    {step.benchmark !== undefined &&
+                      ` · habituel −${formatPercent((1 - step.benchmark) * 100, 0)}`}
                   </span>
                 </div>
               )}

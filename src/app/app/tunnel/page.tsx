@@ -14,20 +14,54 @@ import {
   WeakestStepCard,
 } from "@/features/dashboard/tunnel/tunnel-views";
 
+import { pathOf } from "@/features/collect/funnel";
+import { getRealFunnel } from "@/features/collect/queries";
+import { funnelSummary, RealTunnel } from "@/features/collect/real-funnel";
+import { KeyPageBanner } from "@/features/dashboard/home/banners";
+
 export const metadata: Metadata = { title: "Tunnel de conversion" };
 
 async function Tunnel() {
   const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
   if (!context.demo) {
+    const paths = {
+      pricing: pathOf(context.pricingUrl, context.siteUrl),
+      signup: pathOf(context.signupUrl, context.siteUrl),
+    };
+    const funnel = context.scriptDetected ? await getRealFunnel(period, new Date(), paths) : null;
+    if (!funnel) {
+      return (
+        <NoData
+          title="Tunnel de conversion"
+          icon={Filter}
+          needs="script"
+          remaining={context.setupRemaining}
+          description="Votre tunnel (visite, tarifs, inscription) se dessinera ici dès que la ligne SaasClair sera installée sur votre site."
+          waiting="Aucune visite sur cette période : choisissez une période plus longue, ou attendez vos prochains visiteurs."
+        />
+      );
+    }
+    // Page clé introuvable : question en un clic, avec la page la plus probable d'après les visites.
+    const missing = (["signup", "pricing"] as const).filter((kind) => !paths[kind]);
     return (
-      <NoData
-        title="Tunnel de conversion"
-        icon={Filter}
-        needs="script"
-        remaining={context.setupRemaining}
-        description="Votre tunnel (visite, inscription, activation, essai, paiement) se dessinera ici dès que le script sera installé sur votre site."
-        waiting="Vos visites arrivent bien. Le calcul du tunnel arrive dans une prochaine version : en attendant, vos canaux sont dans Acquisition."
-      />
+      <>
+        {context.siteUrl &&
+          missing.map((kind) => (
+            <KeyPageBanner
+              key={kind}
+              kind={kind}
+              siteUrl={context.siteUrl!}
+              guess={funnel.guesses[kind]}
+            />
+          ))}
+        <PageHeader
+          title="Tunnel de conversion"
+          summary={funnelSummary(funnel)}
+          period={period}
+          liveLabel="Calculé sur vos visites"
+        />
+        <RealTunnel funnel={funnel} />
+      </>
     );
   }
   const data = getTunnelData(period);

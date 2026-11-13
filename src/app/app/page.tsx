@@ -12,6 +12,11 @@ import { PageHeader, SectionTitle } from "@/features/dashboard/page-header";
 import { getRealAcquisition } from "@/features/collect/queries";
 import { RealHome, realSummary } from "@/features/dashboard/home/real-home";
 import { getRealRevenue } from "@/features/stripe/queries";
+import { buildInsights } from "@/features/insights/engine";
+import { getInsightFacts } from "@/features/insights/queries";
+import type { InsightStatus } from "@/features/dashboard/context";
+
+const ORDER: Record<InsightStatus | "pending", number> = { pending: 0, done: 1, ignored: 2 };
 
 async function Home() {
   const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
@@ -27,6 +32,16 @@ async function Home() {
   // Vraies données (Stripe, visites, analyse du site) dès qu'une source existe, et toujours en
   // production ; l'exemple seulement en local, pour un compte sans aucune donnée réelle.
   if (!context.demo || hasRealSource) {
+    // Les 3 priorités de la semaine, sur les 30 derniers jours : celles à traiter d'abord.
+    const insights = buildInsights(await getInsightFacts({ period, revenue, visits }))
+      .map((insight, index) => ({
+        insight,
+        index,
+        rank: ORDER[context.feedback[insight.id] ?? "pending"],
+      }))
+      .sort((a, b) => a.rank - b.rank || a.index - b.index)
+      .slice(0, 3)
+      .map(({ insight }) => insight);
     return (
       <>
         {!context.isSetupComplete && (
@@ -38,6 +53,20 @@ async function Home() {
           period={period}
           liveLabel="Santé de votre SaaS"
         />
+        {insights.length > 0 && (
+          <section aria-labelledby="accueil-priorites">
+            <SectionTitle
+              id="accueil-priorites"
+              title="Vos priorités cette semaine"
+              detail={
+                <p className="text-sm text-slate">
+                  Calculées sur vos vraies données des 30 derniers jours.
+                </p>
+              }
+            />
+            <InsightCards insights={insights} feedback={context.feedback} measurable={false} />
+          </section>
+        )}
         <RealHome
           siteUrl={context.siteUrl}
           audit={context.audit}
