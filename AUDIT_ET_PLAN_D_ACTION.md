@@ -76,7 +76,7 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
 | Priorité | Action | Pourquoi | Temps |
 |---|---|---|---|
 | ✅ | **Emails avec Resend (tâche 11)** : fait par vous. J'ai activé la confirmation d'email dans `deploy/compose.prod.yaml` : elle sera en ligne dès la fusion de la PR n° 1. **Juste après la fusion**, testez une inscription avec une vraie adresse, et « mot de passe oublié ». | C'était la faille la plus grave : sans confirmation, n'importe qui pouvait créer un compte avec l'email d'un autre. | 5 min de test |
-| **2** | **Compte super administrateur en production** (tâche 12) | Sans lui, vous ne pouvez pas administrer. | 5 min |
+| ✅ | **Compte super administrateur en production** (tâche 12) : fait par vous, double authentification reliée et vérifiée. | Rien à faire. | — |
 | **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur. Depuis le lot B, ce même script crée aussi le point de réception des **comptes Stripe de vos clients** : ✅ relancé, notifications en temps réel actives. | Sans lui, vous ne pouvez pas encaisser ; sans la relance, les chiffres de vos clients se mettent à jour chaque heure au lieu de quelques secondes. | 30 min (relance : 1 min) |
 | **4** | **Vrais témoignages** (tâche 8). Publier de faux avis est interdit. | Obligation légale. | Variable |
 | **5** | **Mentions légales et relecture juridique** de la confidentialité (tâche 9) | Obligation légale. Points à faire valider : durée de conservation des visites, empreinte des emails (voir lot A). | Avec un juriste |
