@@ -88,14 +88,17 @@ const param = (url: URL, name: string, max: number) =>
 export function toEvent(payload: Payload, siteUrl: string | null): EventRow | null {
   const page = parseUrl(payload.u);
   if (!page) return null;
-  if (siteUrl) {
-    const site = parseUrl(siteUrl);
-    if (!site || !isSameSite(page.hostname, site.hostname)) return null;
-  }
+  const site = siteUrl ? parseUrl(siteUrl) : null;
+  if (siteUrl && (!site || !isSameSite(page.hostname, site.hostname))) return null;
   if (payload.t === "identify" && !payload.e) return null;
 
+  // Provenance externe seulement : un passage de www.monsaas.fr à app.monsaas.fr reste interne.
   const referrer = parseUrl(payload.r);
-  const external = referrer && !isSameSite(referrer.hostname, page.hostname) ? referrer : null;
+  const internal = (host: string) =>
+    isSameSite(host, page.hostname) ||
+    isSameSite(page.hostname, host) ||
+    (site !== null && isSameSite(host, site.hostname));
+  const external = referrer && !internal(referrer.hostname) ? referrer : null;
   const utmSource = param(page, "utm_source", 100);
   const utmMedium = param(page, "utm_medium", 100);
 

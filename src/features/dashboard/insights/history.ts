@@ -11,6 +11,10 @@ export type InsightEntry = Insight & {
   status: InsightStatus | null;
   /** Revenu mensuel mesuré après action ; null = mesure en cours. */
   measured: number | null;
+  /** false : vraies données, l'effet n'est pas (encore) mesuré, on ne le promet pas. */
+  measurable?: boolean;
+  /** Écran où agir. */
+  href?: string;
 };
 
 type PastInsight = Insight & {

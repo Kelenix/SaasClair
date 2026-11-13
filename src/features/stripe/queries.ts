@@ -33,7 +33,7 @@ export const getRealRevenue = cache(
           supabase
             .from("stripe_subscriptions")
             .select(
-              "id, customer_id, status, mrr_cents, plan_name, created_at, ended_at, cancel_at_period_end, current_period_end",
+              "id, customer_id, status, mrr_cents, plan_name, created_at, ended_at, cancel_at_period_end, current_period_end, trial_end, cancel_at, billing_interval, card_expires_at",
             )
             .eq("project_id", project.id)
             .order("id")

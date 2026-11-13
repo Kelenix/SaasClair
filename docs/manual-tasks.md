@@ -7,8 +7,8 @@
 |---|-------|-------|------------|------|
 | 1 | Garder **Docker Desktop** lancé pendant le développement (`npm run up`) | Dès l'incrément 0 | Oui, pour lancer l'app | ⬜ |
 | 2 | (Facultatif) Envoyer les logos en **SVG ou PNG haute définition** s'ils existent | Quand vous voulez | Non | ⬜ |
-| 3 | Créer une **application OAuth Google** (procédure ci-dessous) | Quand vous voulez | Non (l'email fonctionne seul) | ⬜ |
-| 4 | Créer une **application OAuth GitHub** (procédure ci-dessous) | Quand vous voulez | Non | ⬜ |
+| 3 | Créer une **application OAuth Google** (procédure ci-dessous) | Quand vous voulez | Non (l'email fonctionne seul) | ✅ (actif en production, vérifié le 13/11/2026) |
+| 4 | Créer une **application OAuth GitHub** (procédure ci-dessous) | Quand vous voulez | Non | ✅ (actif en production, vérifié le 13/11/2026) |
 | 5 | Fournir le **VPS Hostinger** (plan, IP, accès SSH par clé) et le **nom de domaine** (et où sont gérés ses DNS) | Incrément 9 | Oui, pour la mise en ligne | ⬜ |
 | 6 | Créer le **dépôt GitHub** et y enregistrer les secrets de déploiement | Incrément 9 | Oui, pour la mise en ligne | ⬜ |
 | 7 | **Stripe Connect** (pour que vos clients connectent leur Stripe en un clic, en lecture seule) : procédure ci-dessous. Commencer en **mode test**, puis refaire en mode réel | Avant d’ouvrir les inscriptions | Oui, pour l’étape Stripe | ⬜ |

@@ -10,7 +10,7 @@ export type SiteAudit = {
   technologies: string[];
 };
 
-const PAGE_PATTERNS = {
+export const PAGE_PATTERNS = {
   signup:
     /(sign-?up|register|inscription|creer-un-compte|create-account|get-started|essai|trial|start)/i,
   pricing: /(pricing|tarif|prix|plans?\b|price)/i,

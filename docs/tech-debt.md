@@ -5,14 +5,14 @@
 
 | # | Sujet | Situation actuelle | À faire | Priorité |
 |---|-------|--------------------|---------|----------|
-| 1 | Collecte réelle des visites | Script et réception en place, écran Acquisition réel (ADR-023) ; tunnel, inscrits par canal et insights encore à calculer ; agrégation en JavaScript jusqu’à 50 000 pages vues par période | Agrégation SQL, durée de conservation des visites, tunnel et insights sur les vraies données | P1 |
+| 1 | Collecte réelle des visites | Script, réception, Acquisition, tunnel (pages clés), revenu par canal et insights réels (lot C) ; agrégation en JavaScript jusqu’à 50 000 lignes par période | Agrégation SQL, durée de conservation des visites, identification automatique à l’inscription (décision RGPD), identifiant partagé entre sous-domaines | P1 |
 | 2 | Stripe (clients) | Connexion, import à la connexion puis chaque heure, écrans Revenus, Churn et Accueil réels (ADR-024, ADR-026) ; montants supposés en euros | Webhooks Connect en complément de la resynchronisation horaire (ADR-026), import incrémental, suppression des clients effacés dans Stripe, expansion et contraction (historique des changements d’offre), cohortes de rétention, multi-devises, déconnexion depuis les Paramètres | P1 |
 | 19 | Connexion Stripe en vraie lecture seule | OAuth Connect en `read_write` (`read_only` réservé aux extensions, ADR-025) ; SaasClair ne fait que lire | Application Stripe (Stripe Apps) avec droits de lecture uniquement, validée par Stripe, puis `STRIPE_OAUTH_SCOPE=read_only` ou bascule vers l'application | P1 |
 | 3 | Facturation de SaasClair | Stripe Checkout, notifications signées, portail client, accès selon l’abonnement (ADR-027) | Rappel par email avant la fin de l’essai, codes promo dans l’administration | P2 |
 | 4 | Envoi d'emails | Emails d'authentification seulement ; alertes et invitations non envoyées | Service d'envoi (SMTP / Brevo), moteur d'alertes, invitations d'équipe persistées | P1 |
-| 5 | Barre de question | Réponses rédigées de démonstration | Moteur d'insights relié aux vraies données | P2 |
+| 5 | Barre de question | Réponses rédigées à partir des vrais chiffres, par sujet (churn, revenu, canaux, conversion) | Questions libres plus fines (comparaisons de périodes, un client précis) | P3 |
 | 6 | Historique du revenu (administration) | Estimé à partir des abonnés actuels | Historique réel depuis Stripe Billing | P2 |
-| 7 | État « lu » des notifications | Gardé dans le navigateur | Table par compte, alimentée par le moteur d'alertes | P2 |
+| 7 | État « lu » des notifications | Alertes tirées des insights réels ; état « lu » gardé dans le navigateur, emails non envoyés | Table par compte et envoi par email (Resend) | P2 |
 | 8 | Liste des utilisateurs | 5 000 profils lus puis filtrés dans le navigateur | Recherche et pagination côté serveur au-delà de 5 000 comptes | P3 |
 | 9 | Limite de débit | Nginx limite le site, l'API et plus strictement la connexion (`deploy/nginx/saasclair.conf`) | Limite dédiée sur l'inscription à la newsletter si des abus apparaissent | P3 |
 | 16 | Sauvegardes hors serveur | Chaque nuit sur le VPS, 14 jours (ADR-021) | Copie chiffrée hors du VPS (stockage objet, ou sauvegardes Hostinger activées) | P1 |

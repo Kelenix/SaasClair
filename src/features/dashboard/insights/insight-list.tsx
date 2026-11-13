@@ -44,6 +44,7 @@ const AREAS: { value: AreaFilter; label: string }[] = [
   { value: "Acquisition", label: "Acquisition" },
   { value: "Conversion", label: "Conversion" },
   { value: "Rétention", label: "Rétention" },
+  { value: "Revenus", label: "Revenus" },
 ];
 
 const STATUS_LABELS: Record<StatusFilter, string> = {
@@ -62,6 +63,13 @@ function Outcome({ entry }: { entry: InsightEntry }) {
     return (
       <Badge>
         <Icon icon={CircleSlash} className="size-3.5" /> Ignoré
+      </Badge>
+    );
+  }
+  if (entry.status === "done" && entry.measurable === false) {
+    return (
+      <Badge tone="growth">
+        <Icon icon={Check} anim="pop" className="size-3.5" /> Fait
       </Badge>
     );
   }

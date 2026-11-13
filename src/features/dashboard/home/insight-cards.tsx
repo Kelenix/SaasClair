@@ -21,14 +21,21 @@ const DONE_MESSAGE: Record<InsightStatus, string> = {
   done: "Marqué comme fait. Nous mesurerons l'effet dans 14 jours.",
   ignored: "Ignoré. Nous ne vous le reproposerons pas.",
 };
+// Vraies données : pas encore de mesure d'effet, on ne la promet pas.
+const REAL_DONE_MESSAGE: Record<InsightStatus, string> = {
+  done: "Marqué comme fait. Bravo.",
+  ignored: "Ignoré. Nous ne vous le reproposerons pas cette semaine.",
+};
 
 function InsightCard({
   insight,
   status,
+  measurable,
   onChange,
 }: {
-  insight: Insight;
+  insight: Insight & { href?: string };
   status: InsightStatus | undefined;
+  measurable: boolean;
   onChange: (status: InsightStatus | null) => void;
 }) {
   return (
@@ -56,7 +63,9 @@ function InsightCard({
               <Icon icon={status === "done" ? Check : CircleSlash} anim="pop" />
             </span>
             <p className="font-serif text-lg font-semibold text-forest">{insight.title}</p>
-            <p className="text-sm text-slate">{DONE_MESSAGE[status]}</p>
+            <p className="text-sm text-slate">
+              {(measurable ? DONE_MESSAGE : REAL_DONE_MESSAGE)[status]}
+            </p>
             <Button variant="link" size="sm" onClick={() => onChange(null)}>
               Annuler
             </Button>
@@ -107,7 +116,16 @@ function InsightCard({
 }
 
 /** Les 3 insights de la semaine ; « Fait » et « Ignorer » répondent instantanément (interface optimiste). */
-export function InsightCards({ insights, feedback }: { insights: Insight[]; feedback: Feedback }) {
+export function InsightCards({
+  insights,
+  feedback,
+  measurable = true,
+}: {
+  insights: (Insight & { href?: string })[];
+  feedback: Feedback;
+  /** Démonstration : effet mesuré 14 jours après. Vraies données : pas encore de mesure. */
+  measurable?: boolean;
+}) {
   const [optimistic, applyOptimistic] = useOptimistic(
     feedback,
     (current: Feedback, change: { id: string; status: InsightStatus | null }) => {
@@ -123,7 +141,8 @@ export function InsightCards({ insights, feedback }: { insights: Insight[]; feed
       applyOptimistic({ id, status });
       const result = await setInsightStatus(id, status);
       if (!result.ok) toast.error(result.message);
-      else if (status === "done") toast.success("Bravo. On mesure l'effet pour vous.");
+      else if (status === "done")
+        toast.success(measurable ? "Bravo. On mesure l'effet pour vous." : "Bravo, c'est noté.");
     });
 
   if (insights.length === 0) {
@@ -145,6 +164,7 @@ export function InsightCards({ insights, feedback }: { insights: Insight[]; feed
           <InsightCard
             insight={insight}
             status={optimistic[insight.id]}
+            measurable={measurable}
             onChange={(status) => change(insight.id, status)}
           />
         </CascadeItem>

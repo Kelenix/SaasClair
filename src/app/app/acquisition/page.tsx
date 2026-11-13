@@ -7,7 +7,8 @@ import {
   ChannelTable,
   SourceTabs,
 } from "@/features/dashboard/acquisition/channel-views";
-import { getRealAcquisition } from "@/features/collect/queries";
+import { getCustomerLinks, getRealAcquisition } from "@/features/collect/queries";
+import { getRealRevenue } from "@/features/stripe/queries";
 import { RealAcquisitionView } from "@/features/collect/real-acquisition";
 import { COVERAGE, getAcquisitionData } from "@/features/dashboard/acquisition/data";
 import { getDashboardContext } from "@/features/dashboard/context";
@@ -27,6 +28,7 @@ async function Acquisition() {
   const real = await getRealAcquisition(period, new Date());
   if (real.visitors > 0) {
     const first = real.channels[0];
+    const links = await getCustomerLinks(await getRealRevenue(period, new Date()));
     return (
       <>
         <PageHeader
@@ -35,7 +37,7 @@ async function Acquisition() {
           period={period}
           liveLabel="Visites suivies en direct"
         />
-        <RealAcquisitionView data={real} />
+        <RealAcquisitionView data={real} links={links} />
       </>
     );
   }

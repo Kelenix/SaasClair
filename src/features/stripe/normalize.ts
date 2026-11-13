@@ -11,6 +11,8 @@ type Price = {
   recurring?: { interval?: string; interval_count?: number } | null;
 };
 type Item = { quantity?: number | null; price?: Price | null; current_period_end?: number | null };
+/** Moyen de paiement déplié (expand) : seul le mois d'expiration de la carte est lu. */
+type PaymentMethod = string | { card?: { exp_month?: number; exp_year?: number } | null } | null;
 
 export type StripeCustomer = {
   id: string;
@@ -18,6 +20,7 @@ export type StripeCustomer = {
   email?: string | null;
   created: number;
   deleted?: boolean;
+  invoice_settings?: { default_payment_method?: PaymentMethod } | null;
 };
 export type StripeSubscription = {
   id: string;
@@ -32,6 +35,7 @@ export type StripeSubscription = {
   trial_end?: number | null;
   current_period_end?: number | null;
   items?: { data?: Item[] };
+  default_payment_method?: PaymentMethod;
 };
 export type StripeInvoice = {
   id: string;
@@ -51,6 +55,25 @@ const iso = (seconds: number | null | undefined) =>
   seconds ? new Date(seconds * 1000).toISOString() : null;
 const idOf = (value: string | { id: string } | null | undefined) =>
   typeof value === "string" ? value : (value?.id ?? null);
+
+/**
+ * Fin du mois d'expiration d'une carte (une carte « 11/26 » marche jusqu'au 30 novembre 2026
+ * inclus), ou null si ce n'est pas une carte dépliée.
+ */
+export function cardExpiresAt(method: PaymentMethod | undefined) {
+  const card = typeof method === "object" ? method?.card : null;
+  if (!card?.exp_month || !card.exp_year) return null;
+  return new Date(Date.UTC(card.exp_year, card.exp_month, 1)).toISOString();
+}
+
+/** Carte de paiement par défaut de chaque client (expiration seulement). */
+export const customerCards = (customers: StripeCustomer[]) =>
+  new Map(
+    customers.flatMap((customer) => {
+      const expires = cardExpiresAt(customer.invoice_settings?.default_payment_method);
+      return expires ? [[customer.id, expires] as const] : [];
+    }),
+  );
 
 export const emailHash = (email: string) =>
   createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
@@ -90,15 +113,19 @@ export function toSubscriptionRow(
   projectId: string,
   subscription: StripeSubscription,
   productNames: Map<string, string> = new Map(),
+  /** Expiration de la carte par défaut de chaque client (customerCards). */
+  cards: Map<string, string> = new Map(),
 ) {
   const items = subscription.items?.data ?? [];
+  const interval = items[0]?.price?.recurring?.interval;
+  const customerId = idOf(subscription.customer)!;
   const product = items[0]?.price?.product;
   const productName =
     typeof product === "object" ? product?.name : product ? productNames.get(product) : null;
   return {
     project_id: projectId,
     id: subscription.id,
-    customer_id: idOf(subscription.customer)!,
+    customer_id: customerId,
     status: subscription.status,
     mrr_cents: Math.round(items.reduce((sum, item) => sum + monthlyCents(item), 0)),
     currency: subscription.currency ?? "eur",
@@ -111,6 +138,11 @@ export function toSubscriptionRow(
     trial_end: iso(subscription.trial_end),
     // Versions récentes de l'API : la fin de période est portée par les lignes.
     current_period_end: iso(subscription.current_period_end ?? items[0]?.current_period_end),
+    billing_interval:
+      interval && ["day", "week", "month", "year"].includes(interval) ? interval : null,
+    // Carte propre à l'abonnement, sinon celle du client.
+    card_expires_at:
+      cardExpiresAt(subscription.default_payment_method) ?? cards.get(customerId) ?? null,
   };
 }
 

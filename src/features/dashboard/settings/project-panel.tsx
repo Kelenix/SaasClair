@@ -16,7 +16,7 @@ import { CopyBlock } from "@/features/setup/step-script";
 import { scriptSnippet } from "@/features/setup/steps";
 import { displaySiteUrl } from "@/lib/site-url";
 import { COVERAGE } from "../acquisition/data";
-import { confirmCheckoutPage } from "../actions";
+import { confirmKeyPage } from "../actions";
 import { NADIA_CUSTOMERS } from "../demo-utils";
 
 export type ProjectInfo = {
@@ -25,6 +25,8 @@ export type ProjectInfo = {
   checkoutUrl: string | null;
   scriptDetected: boolean;
   stripeConnected: boolean;
+  /** Couverture réelle (clients payants reliés à leur canal), une fois Stripe connecté. */
+  coverage?: { share: number; line: string } | null;
 };
 
 function StatusRow({
@@ -58,7 +60,7 @@ function CheckoutForm({ siteUrl, current }: { siteUrl: string; current: string |
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     startTransition(async () => {
-      const result = await confirmCheckoutPage(value);
+      const result = await confirmKeyPage("checkout", value);
       if (result.ok) toast.success("Page de paiement enregistrée. Votre tunnel est à jour.");
       else toast.error(result.message);
     });
@@ -161,8 +163,30 @@ export function ProjectPanel({ project, demo }: { project: ProjectInfo; demo: bo
         <CheckoutForm siteUrl={project.siteUrl} current={project.checkoutUrl} />
       </Card>
 
-      {demo ? <CoverageCard /> : <NoCoverageYet />}
+      {demo ? (
+        <CoverageCard />
+      ) : project.coverage ? (
+        <RealCoverageCard coverage={project.coverage} />
+      ) : (
+        <NoCoverageYet />
+      )}
     </div>
+  );
+}
+
+/** Couverture réelle, affichée telle quelle (même à 0 %). */
+function RealCoverageCard({ coverage }: { coverage: { share: number; line: string } }) {
+  return (
+    <Card>
+      <CardEyebrow>Couverture</CardEyebrow>
+      <p className="mb-3 text-[15px] text-ink">{coverage.line}</p>
+      <GrowBar share={coverage.share} />
+      {coverage.share < 100 && (
+        <p className="mt-3 text-xs text-slate">
+          Pour relier plus de clients : la ligne « identify » est expliquée dans Acquisition.
+        </p>
+      )}
+    </Card>
   );
 }
 
