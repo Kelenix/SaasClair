@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { Suspense } from "react";
 import { LogOut } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
@@ -10,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { signOut } from "@/features/auth/actions";
 import { TrackingLoader } from "@/features/site-content/tracking-loader";
 import { FinishLater } from "@/features/setup/finish-later";
+import { refreshAuditIfStale } from "@/features/setup/refresh";
 import { SetupFlow } from "@/features/setup/setup-flow";
 import type { SiteAudit } from "@/features/setup/site-analysis";
 import { completedSteps, isActionStep, stepOf, type SetupState } from "@/features/setup/steps";
@@ -32,13 +34,28 @@ async function SetupLoader({ searchParams }: { searchParams: SearchParams }) {
   if (!user) redirect("/connexion?next=/configuration");
 
   const supabase = await createClient();
-  const { data: project } = await supabase
+  let { data: project } = await supabase
     .from("projects")
     .select("*")
     .eq("owner_id", user.id)
     .maybeSingle();
   const params = await searchParams;
   const siteFromLanding = normalizeSiteUrl(params.site ?? "");
+
+  // Adresse déjà saisie sur le site vitrine : pas besoin de la redemander. Le projet est créé
+  // tout de suite et l'analyse tourne en arrière-plan ; on commence directement par « Relier
+  // votre site » (le bon onglet de plateforme s'ouvre dès que l'analyse est prête).
+  if (siteFromLanding && !project?.site_url) {
+    const { data: created } = await supabase
+      .from("projects")
+      .upsert({ owner_id: user.id, site_url: siteFromLanding }, { onConflict: "owner_id" })
+      .select("*")
+      .single();
+    if (created) {
+      project = created;
+      after(() => refreshAuditIfStale(created.id, siteFromLanding));
+    }
+  }
   const step = stepOf(project);
   const requested = isActionStep(params.etape) ? params.etape : null;
   // Configuration terminée, ou remise à plus tard (connexion suivante) : direction le tableau de

@@ -60,7 +60,11 @@ async function Home() {
     return (
       <>
         {!context.isSetupComplete && (
-          <SetupBanner remaining={context.setupRemaining} demo={false} />
+          <SetupBanner
+            remaining={context.setupRemaining}
+            demo={false}
+            stripeImporting={context.stripeImporting}
+          />
         )}
         <PageHeader
           title={greeting}
@@ -83,6 +87,7 @@ async function Home() {
           </section>
         )}
         <RealHome
+          hasSetupList={!context.isSetupComplete}
           siteUrl={context.siteUrl}
           audit={context.audit}
           auditedAt={context.auditedAt}

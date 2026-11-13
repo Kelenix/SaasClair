@@ -5,7 +5,9 @@ import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
 import {
   ArrowRight,
+  Check,
   CircleHelp,
+  LoaderCircle,
   Code,
   CreditCard,
   Globe,
@@ -17,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 import { displaySiteUrl } from "@/lib/site-url";
-import type { ActionStep } from "@/features/setup/steps";
+import { ACTION_STEPS, type ActionStep } from "@/features/setup/steps";
 import { confirmKeyPage, type KeyPageKind } from "../actions";
 
 const BANNER_MOTION = {
@@ -135,7 +137,7 @@ export function KeyPageBanner({
 
 const SETUP_LINKS: Record<ActionStep, { label: string; duration: string; icon: LucideIcon }> = {
   site: { label: "Adresse de votre SaaS", duration: "30 secondes", icon: Globe },
-  script: { label: "Installer le script", duration: "2 minutes", icon: Code },
+  script: { label: "Relier votre site", duration: "2 minutes", icon: Code },
   stripe: { label: "Connecter Stripe", duration: "1 minute", icon: CreditCard },
 };
 
@@ -145,7 +147,16 @@ const SETUP_LINKS: Record<ActionStep, { label: string; duration: string; icon: L
  * Liens <a> (vrai chargement) : Next.js garde sinon le parcours de la visite précédente, figé
  * à l'étape où on l'avait quitté, au lieu d'ouvrir l'étape demandée.
  */
-export function SetupBanner({ remaining, demo }: { remaining: ActionStep[]; demo: boolean }) {
+export function SetupBanner({
+  remaining,
+  demo,
+  stripeImporting = false,
+}: {
+  remaining: ActionStep[];
+  demo: boolean;
+  /** Stripe connecté, import en cours : l'étape n'est plus « à faire ». */
+  stripeImporting?: boolean;
+}) {
   const count = remaining.length;
   return (
     <m.section
@@ -156,6 +167,9 @@ export function SetupBanner({ remaining, demo }: { remaining: ActionStep[]; demo
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Icon icon={Wrench} anim="tilt" className="size-5 shrink-0 text-gold" />
         <p className="flex-1 text-[15px]">
+          <span className="mr-2 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-[13px] font-semibold tabular-nums">
+            {ACTION_STEPS.length - count} sur {ACTION_STEPS.length}
+          </span>
           <strong className="font-semibold">
             Plus {count > 1 ? `que ${count} étapes` : "qu'une étape"} pour voir vos propres
             chiffres.
@@ -168,9 +182,36 @@ export function SetupBanner({ remaining, demo }: { remaining: ActionStep[]; demo
           </a>
         </Button>
       </div>
+      {/* Liste de démarrage : les 3 étapes, celles faites cochées, les autres à un clic. */}
       <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-        {remaining.map((step) => {
+        {ACTION_STEPS.map((step) => {
           const { label, duration, icon } = SETUP_LINKS[step];
+          if (!remaining.includes(step)) {
+            return (
+              <li
+                key={step}
+                className="flex min-h-11 items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-cream/80"
+              >
+                <span className="grid size-5 shrink-0 place-items-center rounded-full bg-emerald text-forest-deep">
+                  <Check className="size-3" strokeWidth={3} aria-hidden />
+                </span>
+                <span className="flex-1 line-through decoration-cream/40">{label}</span>
+                <span className="sr-only">fait</span>
+              </li>
+            );
+          }
+          if (step === "stripe" && stripeImporting) {
+            return (
+              <li
+                key={step}
+                role="status"
+                className="flex min-h-11 items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 text-sm"
+              >
+                <LoaderCircle className="size-4 shrink-0 animate-spin text-emerald" aria-hidden />
+                <span className="flex-1 font-semibold">Import Stripe en cours…</span>
+              </li>
+            );
+          }
           return (
             <li key={step}>
               <a

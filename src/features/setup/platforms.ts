@@ -126,7 +126,7 @@ export function platformFor(technologies: string[]): Platform {
 
 /** Corps de l'email envoyé au développeur (via le logiciel de messagerie de l'utilisateur). */
 export const developerEmail = (siteUrl: string, snippet: string) => ({
-  subject: "Installer le script SaasClair (2 minutes)",
+  subject: "Ajouter la ligne SaasClair à notre site (2 minutes)",
   body: [
     "Bonjour,",
     "",

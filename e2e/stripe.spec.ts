@@ -7,14 +7,13 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test("Stripe se connecte, ses données sont importées et l'étape est validée", async ({ page }) => {
   test.setTimeout(120_000);
   await page.goto("/inscription", { waitUntil: "networkidle" });
-  await page.getByLabel("Prénom").fill("Camille");
-  await page.getByLabel("Email professionnel").fill(`stripe-${Date.now()}@test.saasclair.fr`);
+  await page.getByLabel("Email", { exact: true }).fill(`stripe-${Date.now()}@test.saasclair.fr`);
   await page.getByLabel("Mot de passe").fill("Stripe-2026!");
   await page.getByRole("button", { name: /Créer mon compte/ }).click();
   await expect(page).toHaveURL(/\/configuration/, { timeout: 30_000 });
 
   // Adresse et script passés : on va droit à Stripe.
-  for (const title of ["Installez le script.", "Connectez Stripe."]) {
+  for (const title of ["Reliez votre site.", "Connectez Stripe."]) {
     await page.getByRole("button", { name: "Passer cette étape" }).click();
     await expect(page.locator("h1").filter({ visible: true }).first()).toHaveText(title);
   }
@@ -31,7 +30,9 @@ test("Stripe se connecte, ses données sont importées et l'étape est validée"
   await expect(page).toHaveURL(/\/app$/, { timeout: 30_000 });
   const banner = page.getByRole("region", { name: "Configuration à terminer" });
   await expect(banner).toContainText("Plus que 2 étapes");
-  await expect(banner).not.toContainText("Connecter Stripe");
+  // Liste de démarrage : Stripe y reste, coché comme fait, et n'est plus un lien à suivre.
+  await expect(banner).toContainText("1 sur 3");
+  await expect(banner.getByRole("link", { name: /Connecter Stripe/ })).toHaveCount(0);
 
   // Les écrans affichent les vraies données importées (Stripe simulé : 79 € + 758,40 € / an).
   // Next.js garde la page précédente cachée : seule la zone visible compte.

@@ -8,7 +8,7 @@ import type { ActionStep, SetupStep } from "./steps";
 
 const MILESTONES: { step: ActionStep; label: string }[] = [
   { step: "site", label: "Votre SaaS" },
-  { step: "script", label: "Installer le script" },
+  { step: "script", label: "Relier votre site" },
   { step: "stripe", label: "Connecter Stripe" },
 ];
 

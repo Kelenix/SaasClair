@@ -125,8 +125,10 @@ services:
       # Modèles d'emails de la marque, servis par Nginx depuis supabase/templates.
       GOTRUE_MAILER_SUBJECTS_CONFIRMATION: Confirmez votre compte SaasClair
       GOTRUE_MAILER_SUBJECTS_RECOVERY: Choisissez un nouveau mot de passe
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: Votre lien de connexion SaasClair
       GOTRUE_MAILER_TEMPLATES_CONFIRMATION: ${API_EXTERNAL_URL}/modeles-email/confirmation.html
       GOTRUE_MAILER_TEMPLATES_RECOVERY: ${API_EXTERNAL_URL}/modeles-email/recovery.html
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: ${API_EXTERNAL_URL}/modeles-email/magic_link.html
       GOTRUE_SMTP_HOST: ${SMTP_HOST:-}
       GOTRUE_SMTP_PORT: ${SMTP_PORT:-587}
       GOTRUE_SMTP_USER: ${SMTP_USER:-}

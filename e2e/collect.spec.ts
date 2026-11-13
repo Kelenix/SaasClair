@@ -18,8 +18,7 @@ test("une vraie visite est détectée puis affichée dans l'acquisition", async 
 }) => {
   test.setTimeout(120_000);
   await page.goto("/inscription", { waitUntil: "networkidle" });
-  await page.getByLabel("Prénom").fill("Camille");
-  await page.getByLabel("Email professionnel").fill(`collecte-${Date.now()}@test.saasclair.fr`);
+  await page.getByLabel("Email", { exact: true }).fill(`collecte-${Date.now()}@test.saasclair.fr`);
   await page.getByLabel("Mot de passe").fill("Collecte-2026!");
   await page.getByRole("button", { name: /Créer mon compte/ }).click();
   await expect(page).toHaveURL(/\/configuration/, { timeout: 30_000 });
@@ -51,7 +50,7 @@ test("une vraie visite est détectée puis affichée dans l'acquisition", async 
   await visitor.close();
 
   // Détection réelle : l'étape passe d'elle-même au vert.
-  await expect(page.getByText("Script détecté. Première visite reçue.")).toBeVisible({
+  await expect(page.getByText("Votre site est relié.")).toBeVisible({
     timeout: 20_000,
   });
 

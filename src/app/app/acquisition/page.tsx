@@ -49,7 +49,7 @@ async function Acquisition() {
         needs="script"
         remaining={context.setupRemaining}
         description="Vos canaux d'acquisition, classés par revenu, apparaîtront ici dès que le script sera installé sur votre site."
-        waiting="Le script est installé. Vos canaux d'acquisition apparaîtront ici dès les premières visites."
+        waiting="Votre site est relié. Vos canaux d'acquisition apparaîtront ici dès les premières visites."
       />
     );
   }

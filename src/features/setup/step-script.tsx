@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useEffectEvent, useId, useState } from "react";
+import { useEffect, useEffectEvent, useId, useState, useTransition } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Copy, Mail, Radio } from "lucide-react";
+import { ArrowLeft, Check, Copy, LoaderCircle, Mail, Radio, SearchCheck } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DURATION, EASE_OUT, SPRING } from "@/lib/motion";
 import { displaySiteUrl } from "@/lib/site-url";
 import { cn } from "@/lib/utils";
-import { markScriptDetected } from "./actions";
+import { markScriptDetected, verifyScriptInstall } from "./actions";
 import { developerEmail, PLATFORMS, platformFor } from "./platforms";
 import { scriptSnippet } from "./steps";
 
@@ -31,6 +31,8 @@ const ADVANCE_AFTER_SUCCESS_MS = 1800;
 /** Détection réelle : la configuration demande au serveur si la première visite est arrivée. */
 const STATUS_POLL_MS = 4000;
 const COPIED_FEEDBACK_MS = 2500;
+/** Rien après 2 minutes : on aide au lieu de laisser attendre. */
+const HELP_AFTER_MS = 2 * 60 * 1000;
 
 export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied?: () => void }) {
   const [isCopied, setIsCopied] = useState(false);
@@ -53,7 +55,9 @@ export function CopyBlock({ snippet, onCopied }: { snippet: string; onCopied?: (
         {snippet}
       </code>
       <div className="flex items-center justify-between gap-3 px-3 pb-3">
-        <span className="pl-2 text-xs text-cream/75">Moins de 3 Ko · chargé en différé</span>
+        <span className="pl-2 text-xs text-cream/75">
+          Ultra-légère : votre site reste aussi rapide
+        </span>
         <Button
           variant={isCopied ? "positive" : "inverse"}
           size="sm"
@@ -169,16 +173,66 @@ function LiveCheck({ isDetected }: { isDetected: boolean }) {
       </AnimatePresence>
       <div>
         <p className="font-semibold text-ink">
-          {isDetected
-            ? "Script détecté. Première visite reçue."
-            : "En attente des premières visites…"}
+          {isDetected ? "Votre site est relié." : "En attente de votre site…"}
         </p>
         <p className="text-[13px] text-slate">
           {isDetected
             ? "Tout fonctionne. On passe à Stripe."
-            : "Cette page se met à jour toute seule dès que le script est installé."}
+            : "Cette page se met à jour toute seule dès que la ligne est en place."}
         </p>
       </div>
+    </div>
+  );
+}
+
+/**
+ * « C'est fait, vérifier mon site » : SaasClair lit la page d'accueil et y cherche la ligne,
+ * puis dit ce qui manque (ligne absente, autre clé, site injoignable). Trouvée : étape validée.
+ */
+function VerifyInstall({ onFound, showHelp }: { onFound: () => void; showHelp: boolean }) {
+  const [message, setMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const verify = () =>
+    startTransition(async () => {
+      const result = await verifyScriptInstall();
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+      if (result.data.status === "ok") {
+        setMessage(null);
+        toast.success(result.data.message);
+        onFound();
+      } else {
+        setMessage(result.data.message);
+      }
+    });
+
+  return (
+    <div className="mt-4 flex flex-col items-start gap-3">
+      <Button variant="secondary" onClick={verify} disabled={isPending} data-icon-trigger>
+        {isPending ? (
+          <LoaderCircle className="size-4 animate-spin" aria-hidden />
+        ) : (
+          <Icon icon={SearchCheck} anim="pop" />
+        )}
+        {isPending ? "Vérification…" : "C'est fait, vérifier mon site"}
+      </Button>
+      <AnimatePresence>
+        {(message || showHelp) && (
+          <m.p
+            role="status"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="rounded-2xl border border-gold/40 bg-gold-tint px-4 py-3 text-sm text-ink"
+          >
+            {message ??
+              "Toujours rien ? Cliquez sur « C'est fait, vérifier mon site » : nous vous dirons ce qui manque. Vous pouvez aussi passer cette étape, la détection continue en arrière-plan."}
+          </m.p>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -202,11 +256,23 @@ export function StepScript({
   onDone,
 }: StepScriptProps) {
   const snippet = scriptSnippet(siteKey);
-  const detected = platformFor(technologies);
+  // Technologies : celles de l'analyse, ou celles qui arrivent pendant l'étape (analyse lancée en
+  // arrière-plan quand l'adresse vient du site vitrine).
+  const [techs, setTechs] = useState(technologies);
+  const detected = platformFor(techs);
   const isDetectedPlatform = detected.detects.length > 0;
+  // Onglet suivi par la détection tant que l'utilisateur n'en a pas choisi un lui-même.
+  const [pickedTab, setPickedTab] = useState<string | null>(null);
   const [hasCopied, setHasCopied] = useState(false);
   const [isDetected, setIsDetected] = useState(false);
+  const [needsHelp, setNeedsHelp] = useState(false);
   const advance = useEffectEvent(onDone);
+
+  useEffect(() => {
+    if (isDetected) return;
+    const timer = setTimeout(() => setNeedsHelp(true), HELP_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [isDetected]);
 
   // Hors données d'exemple, rien n'est simulé : l'étape attend une vraie première visite.
   useEffect(() => {
@@ -223,8 +289,14 @@ export function StepScript({
     if (isDetected) return;
     const timer = setInterval(async () => {
       const response = await fetch("/api/script-status", { cache: "no-store" }).catch(() => null);
-      const status = (await response?.json().catch(() => null)) as { detected?: boolean } | null;
+      const status = (await response?.json().catch(() => null)) as {
+        detected?: boolean;
+        technologies?: string[];
+      } | null;
       if (status?.detected) setIsDetected(true);
+      if (status?.technologies?.length) {
+        setTechs((current) => (current.length ? current : status.technologies!));
+      }
     }, STATUS_POLL_MS);
     return () => clearInterval(timer);
   }, [isDetected]);
@@ -245,7 +317,7 @@ export function StepScript({
         <Icon icon={ArrowLeft} anim="nudge" className="size-4" /> {displaySiteUrl(siteUrl)}
       </button>
       <p className="eyebrow">Action 1 · environ 2 minutes</p>
-      <h1 className="mb-2 text-[30px] sm:text-[38px]">Installez le script.</h1>
+      <h1 className="mb-2 text-[30px] sm:text-[38px]">Reliez votre site.</h1>
       <p className="mb-5 text-[15px] text-slate">
         Une seule ligne, collée <strong className="font-semibold text-ink">une seule fois</strong>{" "}
         dans l&apos;en-tête commun de votre site : elle suit toutes vos pages, même s&apos;il en a
@@ -267,7 +339,7 @@ export function StepScript({
           la ligne.
         </p>
       )}
-      <Tabs defaultValue={detected.id}>
+      <Tabs value={pickedTab ?? detected.id} onValueChange={setPickedTab}>
         <TabsList
           // Mobile : l'onglet ouvert d'office est centré dans la barre, sans faire défiler la page.
           ref={(list) => {
@@ -314,6 +386,9 @@ export function StepScript({
 
       <div className="mt-5">
         <LiveCheck isDetected={isDetected} />
+        {!isDetected && !demo && (
+          <VerifyInstall onFound={() => setIsDetected(true)} showHelp={needsHelp} />
+        )}
         <p className="mt-3 text-xs text-slate">
           {demo
             ? "Démonstration : la première visite est simulée quelques secondes après la copie."

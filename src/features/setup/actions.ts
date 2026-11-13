@@ -5,7 +5,8 @@ import { isDemoMode } from "@/lib/demo-mode";
 import { AUDIT_MIN_INTERVAL_MS } from "./audit-age";
 import { normalizeSiteUrl } from "@/lib/site-url";
 import { createClient, getUser } from "@/lib/supabase/server";
-import { auditSite } from "./fetch-site";
+import { auditSite, fetchHomepage } from "./fetch-site";
+import { checkInstall, INSTALL_MESSAGES, type InstallStatus } from "./install-check";
 import type { SiteAudit } from "./site-analysis";
 
 type Result<T> = { ok: true; data: T } | { ok: false; message: string };
@@ -125,4 +126,77 @@ export async function connectStripe(): Promise<Result<null>> {
       { onConflict: "owner_id" },
     );
   return error ? { ok: false, message: SAVE_ERROR } : { ok: true, data: null };
+}
+
+/** Une vérification toutes les 10 secondes au plus, par compte (mémoire du serveur). */
+const VERIFY_INTERVAL_MS = 10_000;
+const lastVerify = new Map<string, number>();
+
+/**
+ * « C'est fait, vérifier mon site » : lit la page d'accueil et y cherche la ligne SaasClair avec
+ * la bonne clé. Trouvée : l'étape est validée tout de suite, sans attendre une visite.
+ */
+export async function verifyScriptInstall(): Promise<
+  Result<{ status: InstallStatus; message: string }>
+> {
+  const user = await getUser();
+  if (!user) return { ok: false, message: "Votre session a expiré. Reconnectez-vous." };
+  const now = Date.now();
+  if (now - (lastVerify.get(user.id) ?? 0) < VERIFY_INTERVAL_MS) {
+    return { ok: false, message: "Vérification en cours. Réessayez dans quelques secondes." };
+  }
+  lastVerify.set(user.id, now);
+
+  const supabase = await createClient();
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, site_url, script_detected_at")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!project?.site_url) {
+    return { ok: false, message: "Ajoutez d'abord l'adresse de votre site." };
+  }
+  const page = await fetchHomepage(project.site_url);
+  const { status } = checkInstall(page?.html ?? null, project.id.slice(0, 8));
+  if (status === "ok" && !project.script_detected_at) {
+    await supabase
+      .from("projects")
+      .update({ script_detected_at: new Date().toISOString() })
+      .eq("owner_id", user.id);
+  }
+  return { ok: true, data: { status, message: INSTALL_MESSAGES[status] } };
+}
+
+export type BillingProvider = "paddle" | "lemonsqueezy" | "none";
+const PROVIDER_MESSAGES: Record<BillingProvider, string> = {
+  paddle:
+    "C'est noté : nous vous écrirons dès que Paddle sera disponible. Vos visites et votre tunnel fonctionnent déjà.",
+  lemonsqueezy:
+    "C'est noté : nous vous écrirons dès que Lemon Squeezy sera disponible. Vos visites et votre tunnel fonctionnent déjà.",
+  none: "Pas de souci : vos visites et votre tunnel fonctionnent déjà. Connectez Stripe le jour de votre premier client, depuis votre tableau de bord.",
+};
+
+/**
+ * « Je n'utilise pas Stripe » : la réponse est enregistrée (liste d'attente Paddle et
+ * Lemon Squeezy), l'étape est passée, et le tableau de bord la rappellera plus tard.
+ */
+export async function setBillingProvider(
+  provider: BillingProvider,
+): Promise<Result<{ message: string; siteKey: string }>> {
+  if (!Object.hasOwn(PROVIDER_MESSAGES, provider)) return { ok: false, message: SAVE_ERROR };
+  const { supabase, user } = await authenticatedClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .upsert(
+      {
+        owner_id: user.id,
+        billing_provider: provider,
+        setup_skipped_at: new Date().toISOString(),
+      },
+      { onConflict: "owner_id" },
+    )
+    .select("id")
+    .single();
+  if (error) return { ok: false, message: SAVE_ERROR };
+  return { ok: true, data: { message: PROVIDER_MESSAGES[provider], siteKey: data.id.slice(0, 8) } };
 }

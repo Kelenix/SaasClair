@@ -11,11 +11,15 @@ export async function GET() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("projects")
-    .select("script_detected_at")
+    .select("script_detected_at, audit")
     .eq("owner_id", user.id)
     .maybeSingle();
   return NextResponse.json(
-    { detected: Boolean(data?.script_detected_at) },
+    {
+      detected: Boolean(data?.script_detected_at),
+      // Analyse du site faite en arrière-plan : la configuration ouvre l'onglet de la plateforme.
+      technologies: (data?.audit as { technologies?: string[] } | null)?.technologies ?? [],
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

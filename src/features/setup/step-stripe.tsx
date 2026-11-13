@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useState, useTransition } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
 import {
@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DURATION, EASE_OUT, SPRING } from "@/lib/motion";
 import type { StripeResult } from "@/features/stripe/oauth-state";
-import { connectStripe } from "./actions";
+import { connectStripe, setBillingProvider, type BillingProvider } from "./actions";
 
 type Phase = "idle" | "connecting" | "importing" | "linking" | "linked";
 
@@ -59,9 +59,17 @@ type StepStripeProps = {
   /** Retour de la page d'autorisation de Stripe (null : première visite de l'étape). */
   result: StripeResult | null;
   onDone: () => void;
+  /** Étape passée (pas de Stripe) : suite du parcours sans la marquer faite. */
+  onSkip: () => void;
 };
 
-export function StepStripe({ available, readOnly, demo, result, onDone }: StepStripeProps) {
+const OTHER_PROVIDERS: { value: BillingProvider; label: string }[] = [
+  { value: "paddle", label: "Paddle" },
+  { value: "lemonsqueezy", label: "Lemon Squeezy" },
+  { value: "none", label: "Pas encore de paiements" },
+];
+
+export function StepStripe({ available, readOnly, demo, result, onDone, onSkip }: StepStripeProps) {
   const real = available;
   // Retour de Stripe réussi : l'import réel a commencé côté serveur, on suit son avancement.
   const [phase, setPhase] = useState<Phase>(real && result === "ok" ? "importing" : "idle");
@@ -72,6 +80,19 @@ export function StepStripe({ available, readOnly, demo, result, onDone }: StepSt
     result && result !== "ok" ? NOTICES[result] : null,
   );
   const [isOtherProviderOpen, setIsOtherProviderOpen] = useState(false);
+  const [isSaving, startSaving] = useTransition();
+
+  // « Je n'utilise pas Stripe » : réponse enregistrée, étape passée, rappel sur le tableau de bord.
+  const chooseProvider = (provider: BillingProvider) =>
+    startSaving(async () => {
+      const response = await setBillingProvider(provider);
+      if (!response.ok) {
+        toast.error(response.message);
+        return;
+      }
+      toast.success(response.data.message);
+      onSkip();
+    });
   const finish = useEffectEvent(onDone);
 
   // Import réel : les nombres arrivent au fil de l'import, jusqu'à « terminé » (ou l'échec).
@@ -187,19 +208,31 @@ export function StepStripe({ available, readOnly, demo, result, onDone }: StepSt
               aria-expanded={isOtherProviderOpen}
               className="min-h-11 cursor-pointer rounded-md text-[13px] text-slate underline-offset-4 hover:text-forest hover:underline"
             >
-              J&apos;utilise Paddle ou Lemon Squeezy
+              Je n&apos;utilise pas Stripe
             </button>
             <AnimatePresence>
               {isOtherProviderOpen && (
-                <m.p
+                <m.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="max-w-sm rounded-xl bg-cream px-4 py-3 text-[13px] text-ink"
+                  role="group"
+                  aria-label="Votre moyen de paiement"
+                  className="flex max-w-sm flex-wrap justify-center gap-2 rounded-xl bg-cream px-4 py-3"
                 >
-                  La connexion Paddle et Lemon Squeezy arrive très bientôt, en un clic elle aussi.
-                  Nous vous écrivons dès qu&apos;elle est prête.
-                </m.p>
+                  <p className="w-full text-[13px] text-ink">Vous encaissez avec…</p>
+                  {OTHER_PROVIDERS.map(({ value, label }) => (
+                    <Button
+                      key={value}
+                      size="sm"
+                      variant="secondary"
+                      disabled={isSaving}
+                      onClick={() => chooseProvider(value)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </m.div>
               )}
             </AnimatePresence>
           </m.div>
@@ -235,6 +268,18 @@ export function StepStripe({ available, readOnly, demo, result, onDone }: StepSt
               ))}
             </div>
 
+            {/* L'import continue sur le serveur : inutile d'attendre devant cet écran. */}
+            {real && phase === "importing" && (
+              <p className="mb-4 text-sm text-slate">
+                L&apos;import continue même si vous quittez cette page.{" "}
+                <a
+                  href="/app"
+                  className="inline-flex min-h-11 items-center font-semibold text-forest underline-offset-4 hover:underline"
+                >
+                  Voir mon tableau de bord pendant l&apos;import
+                </a>
+              </p>
+            )}
             {real && phase === "linked" && (
               <p
                 role="status"

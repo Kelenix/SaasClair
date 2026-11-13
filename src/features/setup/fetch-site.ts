@@ -31,8 +31,13 @@ async function readLimited(response: Response) {
   return new TextDecoder().decode(Buffer.concat(chunks));
 }
 
-/** Télécharge la page d'accueil (redirections vérifiées une à une) et l'analyse. */
-export async function auditSite(siteUrl: string): Promise<SiteAudit> {
+export type Homepage = { html: string; url: string; headers: Record<string, string>; ms: number };
+
+/**
+ * Télécharge la page d'accueil (redirections vérifiées une à une, adresses internes refusées),
+ * ou null si le site est injoignable, trop lent ou n'est pas une page HTML.
+ */
+export async function fetchHomepage(siteUrl: string): Promise<Homepage | null> {
   const startedAt = performance.now();
   let url = new URL(siteUrl);
   try {
@@ -56,19 +61,24 @@ export async function auditSite(siteUrl: string): Promise<SiteAudit> {
         continue;
       }
       if (!response.ok || !response.headers.get("content-type")?.includes("text/html")) {
-        return UNREACHABLE_AUDIT;
+        return null;
       }
       const html = await readLimited(response);
-      const headers = Object.fromEntries(response.headers.entries());
-      return analyzeHomepage(
+      return {
         html,
-        url.toString(),
-        headers,
-        Math.round(performance.now() - startedAt),
-      );
+        url: url.toString(),
+        headers: Object.fromEntries(response.headers.entries()),
+        ms: Math.round(performance.now() - startedAt),
+      };
     }
   } catch {
-    // Site injoignable, trop lent ou adresse interdite : l'utilisateur peut quand même continuer.
+    // Site injoignable, trop lent ou adresse interdite.
   }
-  return UNREACHABLE_AUDIT;
+  return null;
+}
+
+/** Télécharge la page d'accueil et l'analyse (l'utilisateur peut continuer même sans réponse). */
+export async function auditSite(siteUrl: string): Promise<SiteAudit> {
+  const page = await fetchHomepage(siteUrl);
+  return page ? analyzeHomepage(page.html, page.url, page.headers, page.ms) : UNREACHABLE_AUDIT;
 }

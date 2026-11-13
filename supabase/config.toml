@@ -253,6 +253,10 @@ content_path = "./supabase/templates/confirmation.html"
 subject = "Choisissez un nouveau mot de passe"
 content_path = "./supabase/templates/recovery.html"
 
+[auth.email.template.magic_link]
+subject = "Votre lien de connexion SaasClair"
+content_path = "./supabase/templates/magic_link.html"
+
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"

@@ -140,7 +140,7 @@ export function BillingPanel({
 
       {!isPaid && (
         <div className="@container">
-          <PlanChooser />
+          <PlanChooser preferred={billing.planIntent} />
         </div>
       )}
     </div>
