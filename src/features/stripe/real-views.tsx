@@ -253,10 +253,10 @@ export function RealChurnView({ data }: { data: RealRevenue }) {
           revenueKpis(data)[2],
           {
             id: "involuntary",
-            label: "Churn involontaire",
+            label: "Paiements à récupérer",
             value: data.failedAmount,
             format: "euro",
-            delta: "en paiements échoués",
+            delta: "factures échouées encore ouvertes",
             isGood: data.failedInvoices.length ? false : true,
             trend: trend(data),
           },

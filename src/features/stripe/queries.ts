@@ -1,8 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import type { Period } from "@/features/dashboard/period";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { computeRevenue, type RealRevenue } from "./metrics";
+
+const MAX_SUBSCRIPTIONS = 20_000;
+const MAX_INVOICES = 5_000;
 
 /**
  * Revenus et churn calculés sur les données Stripe importées du compte connecté (la RLS ne laisse
@@ -16,32 +20,50 @@ export const getRealRevenue = cache(
     // Filtre explicite : le super administrateur voit aussi les projets des autres (RLS).
     const { data: project } = await supabase
       .from("projects")
-      .select("stripe_account_id, stripe_connected_at")
+      .select("id, stripe_account_id, stripe_connected_at")
       .eq("owner_id", user.id)
       .maybeSingle();
     // Première importation réussie : ensuite, les resynchronisations n'effacent pas l'écran.
     if (!project?.stripe_account_id || !project.stripe_connected_at) return null;
 
+    // Lecture par pages : le serveur coupe chaque réponse à 1 000 lignes (fetch-all.ts).
     const [subscriptions, invoices, customers] = await Promise.all([
-      supabase
-        .from("stripe_subscriptions")
-        .select(
-          "id, customer_id, status, mrr_cents, plan_name, created_at, ended_at, cancel_at_period_end, current_period_end",
-        )
-        .limit(20_000),
-      supabase
-        .from("stripe_invoices")
-        .select("id, customer_id, status, amount_due_cents, attempt_count, next_payment_attempt")
-        .in("status", ["open", "uncollectible"])
-        .limit(5_000),
-      supabase.from("stripe_customers").select("id, name, email").limit(20_000),
+      fetchAll(
+        (from, to) =>
+          supabase
+            .from("stripe_subscriptions")
+            .select(
+              "id, customer_id, status, mrr_cents, plan_name, created_at, ended_at, cancel_at_period_end, current_period_end",
+            )
+            .eq("project_id", project.id)
+            .order("id")
+            .range(from, to),
+        MAX_SUBSCRIPTIONS,
+      ),
+      fetchAll(
+        (from, to) =>
+          supabase
+            .from("stripe_invoices")
+            .select(
+              "id, customer_id, status, amount_due_cents, attempt_count, next_payment_attempt",
+            )
+            .eq("project_id", project.id)
+            .in("status", ["open", "uncollectible"])
+            .order("id")
+            .range(from, to),
+        MAX_INVOICES,
+      ),
+      fetchAll(
+        (from, to) =>
+          supabase
+            .from("stripe_customers")
+            .select("id, name, email")
+            .eq("project_id", project.id)
+            .order("id")
+            .range(from, to),
+        MAX_SUBSCRIPTIONS,
+      ),
     ]);
-    return computeRevenue(
-      subscriptions.data ?? [],
-      invoices.data ?? [],
-      customers.data ?? [],
-      period,
-      now,
-    );
+    return computeRevenue(subscriptions, invoices, customers, period, now);
   },
 );

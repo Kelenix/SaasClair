@@ -84,6 +84,74 @@ describe("computeRevenue", () => {
     expect(result.failedAmount).toBe(758.4);
   });
 
+  it("un essai annulé n'est ni du nouveau revenu, ni un départ", () => {
+    const trials = [
+      sub("p", {}),
+      sub("t", {
+        status: "canceled",
+        created_at: daysAgo(10),
+        trial_end: daysAgo(3),
+        ended_at: daysAgo(3),
+      }),
+    ];
+    const r = computeRevenue(trials, [], [], "30j", now);
+    expect(r.newMrr).toBe(0);
+    expect(r.churnedMrr).toBe(0);
+    expect(r.customerChurn).toBe(0);
+  });
+
+  it("un essai converti compte en nouveau revenu à la fin de l'essai", () => {
+    const converted = sub("c", { created_at: daysAgo(35), trial_end: daysAgo(21) });
+    const r = computeRevenue([converted], [], [], "30j", now);
+    expect(r.startMrr).toBe(0);
+    expect(r.newMrr).toBe(79);
+  });
+
+  it("le churn ne compte que les clients payants au début : jamais plus de 100 %", () => {
+    const subs = [
+      sub("a", {}),
+      sub("b", { status: "canceled", ended_at: daysAgo(5) }),
+      ...["x", "y", "z"].map((id) =>
+        sub(id, { status: "canceled", created_at: daysAgo(20), ended_at: daysAgo(2) }),
+      ),
+    ];
+    const r = computeRevenue(subs, [], [], "30j", now);
+    expect(r.customerChurn).toBe(50);
+    expect(r.revenueChurn).toBe(50);
+  });
+
+  it("un changement d'offre (résiliation puis nouvel abonnement) n'est pas un départ", () => {
+    const subs = [
+      sub("old", { customer_id: "cus_n", status: "canceled", ended_at: daysAgo(4) }),
+      sub("new", { customer_id: "cus_n", created_at: daysAgo(4) }),
+    ];
+    expect(computeRevenue(subs, [], [], "30j", now).customerChurn).toBe(0);
+  });
+
+  it("raisons sans doublon pour un client à plusieurs abonnements", () => {
+    const subs = [
+      sub("m1", { customer_id: "cus_m", status: "past_due" }),
+      sub("m2", { customer_id: "cus_m", status: "past_due" }),
+    ];
+    const failed = [{ ...invoices[0], customer_id: "cus_m" }];
+    const [risk] = computeRevenue(subs, failed, [], "30j", now).atRisk;
+    expect(risk.reasons.map((r) => r.kind)).toEqual(["past_due", "failed_payment"]);
+    expect(risk.mrr).toBe(158);
+  });
+
+  it("résiliation programmée à une date précise : client à risque", () => {
+    const subs = [sub("k", { cancel_at: daysAgo(-12) })];
+    const [risk] = computeRevenue(subs, [], [], "30j", now).atRisk;
+    expect(risk.reasons[0].kind).toBe("cancel_scheduled");
+    expect(risk.periodEnd).toBe(daysAgo(-12));
+  });
+
+  it("le dernier point du graphique est le revenu affiché, impayés exclus", () => {
+    const subs = [sub("a", {}), sub("u", { status: "unpaid", mrr_cents: 5000 })];
+    const r = computeRevenue(subs, [], [], "30j", now);
+    expect(r.history.at(-1)?.mrr).toBe(r.mrr);
+  });
+
   it("historique sur 12 mois, sans rien inventer pour un compte vide", () => {
     expect(result.history).toHaveLength(12);
     expect(result.history.at(-1)?.mrr).toBe(result.mrr);
