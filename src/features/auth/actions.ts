@@ -178,8 +178,9 @@ export async function updatePassword(_: AuthState, formData: FormData): Promise<
   redirect("/configuration");
 }
 
+/** Déconnexion : retour à la page d'accueil du site. */
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/connexion");
+  redirect("/");
 }
