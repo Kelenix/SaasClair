@@ -29,6 +29,7 @@ test("un utilisateur supprime son compte, puis ne peut plus se connecter", async
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Mot de passe").fill(password);
   await page.getByRole("button", { name: "Se connecter" }).click();
-  await expect(page.getByRole("alert")).toBeVisible({ timeout: 15_000 });
+  // Message du formulaire (l'annonce de changement de page de Next.js est aussi une « alerte »).
+  await expect(page.getByText("Email ou mot de passe incorrect")).toBeVisible({ timeout: 15_000 });
   await expect(page).toHaveURL(/\/connexion/);
 });
