@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { after, NextResponse, type NextRequest } from "next/server";
 import { stripeConfig } from "@/features/stripe/client";
 import { refreshStaleAudits } from "@/features/setup/refresh";
+import { isDemoMode } from "@/lib/demo-mode";
 import { syncAllStripeAccounts } from "@/features/stripe/sync";
 
 /** Le secret de la tâche programmée, comparé à durée constante. */
@@ -22,7 +23,9 @@ export async function POST(request: NextRequest) {
   const config = stripeConfig();
   after(async () => {
     if (config) await syncAllStripeAccounts(config);
-    await refreshStaleAudits();
+    // En démonstration (poste local, CI), les analyses automatiques sont coupées, comme sur
+    // l'accueil : elles remplaceraient l'exemple du compte de démonstration.
+    if (!isDemoMode()) await refreshStaleAudits();
   });
   if (!config) return NextResponse.json({ error: "stripe_not_configured" }, { status: 503 });
   return NextResponse.json({ status: "started" }, { status: 202 });
