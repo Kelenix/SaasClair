@@ -46,6 +46,16 @@ test("Stripe se connecte, ses données sont importées et l'étape est validée"
   await expect(main).toContainText("Client test Beta");
   await expect(main).toContainText("Résiliation programmée");
   await expect(main).toContainText("Paiement en retard");
+  // Raisons de départ tirées de Stripe : la réponse du client parti (Gamma, « trop cher »).
+  await expect(main).toContainText("Pourquoi ils partent");
+  await expect(main).toContainText("Trop cher");
+  // Fiche du client : chronologie Stripe, puis brouillon de relance.
+  await main.getByRole("button", { name: "Ouvrir la fiche de Client test Beta" }).click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet).toContainText("Chronologie");
+  await sheet.getByRole("button", { name: "Préparer un email de relance" }).click();
+  await expect(sheet.getByLabel("Message")).toHaveValue(/n'a pas pu passer|doit s'arrêter/);
+  await page.keyboard.press("Escape");
 
   // Resynchronisation horaire : refusée sans le secret, acceptée avec, puis terminée ; l'écran
   // garde ses chiffres pendant l'import.

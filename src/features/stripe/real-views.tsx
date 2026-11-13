@@ -1,17 +1,18 @@
-import { CreditCard, HeartPulse, Info, Wallet } from "lucide-react";
+import { CreditCard, Info, Wallet } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
-import { GrowBar } from "@/components/data/grow-bar";
 import { StateMessage } from "@/components/states/state-message";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { Kpi } from "@/features/dashboard/demo-data";
 import { CohortHeatmap } from "@/features/dashboard/churn/cohort-heatmap";
+import { DepartureReasons } from "@/features/dashboard/churn/departure-reasons";
 import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { SectionTitle } from "@/features/dashboard/page-header";
 import { MrrChart, RevenueFlows } from "@/features/dashboard/revenue/revenue-views";
 import { formatEuro, formatNumber, formatPercent } from "@/lib/format";
-import { STAGGER } from "@/lib/motion";
-import type { AtRisk, FailedInvoice, RealRevenue } from "./metrics";
+import type { FailedInvoice, RealRevenue } from "./metrics";
+import { RiskList } from "./risk-list";
+
+export { RiskList };
 
 const dayMonth = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) : null;
@@ -28,69 +29,6 @@ export function EmptyStripe({ what }: { what: string }) {
         title="Stripe est connecté."
         description={`Aucun abonnement n'y figure pour l'instant. ${what} apparaîtront ici dès votre premier abonnement.`}
       />
-    </Card>
-  );
-}
-
-/**
- * Clients à risque : vraies raisons tirées de Stripe (résiliation, impayé, paiement échoué, carte
- * qui expire, renouvellement annuel proche, client récent). Le score additionne les points de
- * chaque raison : c'est une priorité, pas une probabilité.
- */
-export function RiskList({ customers, limit }: { customers: AtRisk[]; limit?: number }) {
-  const shown = limit ? customers.slice(0, limit) : customers;
-  if (!shown.length) {
-    return (
-      <Card>
-        <StateMessage
-          icon={HeartPulse}
-          title="Aucun client à risque."
-          description="Aucune résiliation programmée, aucun impayé, aucun paiement échoué, aucune carte sur le point d'expirer. Nous vous prévenons dès qu'un signal apparaît."
-        />
-      </Card>
-    );
-  }
-  return (
-    <Card className="p-0">
-      <ol className="divide-y divide-line">
-        {shown.map((customer, index) => (
-          <li
-            key={customer.customerId}
-            className="grid grid-cols-1 gap-3 px-6 py-4 @3xl:grid-cols-[1.4fr_0.6fr_1fr] @3xl:items-center"
-          >
-            <div className="min-w-0">
-              <p className="truncate font-semibold text-ink">{customer.name}</p>
-              <ul className="mt-1.5 flex flex-wrap gap-1.5">
-                {customer.reasons.map((reason) => (
-                  <li key={reason.kind}>
-                    <Badge tone="attention">{reason.label}</Badge>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <p className="text-sm text-ink tabular-nums">
-              <span className="font-semibold text-forest">{formatEuro(customer.mrr)}</span> / mois
-              {customer.periodEnd && (
-                <span className="block text-xs text-slate">
-                  Échéance le {dayMonth(customer.periodEnd)}
-                </span>
-              )}
-            </p>
-            <div>
-              <p className="mb-1.5 flex justify-between text-xs text-slate">
-                <span className="font-semibold text-ink">
-                  {customer.level === "retain" ? "À retenir" : "À surveiller"}
-                </span>
-                <span className="text-gold-ink tabular-nums">
-                  <span className="sr-only">Score de risque : </span>
-                  {customer.score} / 100
-                </span>
-              </p>
-              <GrowBar share={customer.score} tone="gold" delay={index * STAGGER} />
-            </div>
-          </li>
-        ))}
-      </ol>
     </Card>
   );
 }
@@ -327,7 +265,15 @@ export function RealRevenueView({ data }: { data: RealRevenue }) {
   );
 }
 
-export function RealChurnView({ data }: { data: RealRevenue }) {
+export function RealChurnView({
+  data,
+  sender,
+  initialOpenId,
+}: {
+  data: RealRevenue;
+  sender: string;
+  initialOpenId?: string;
+}) {
   if (!hasRevenueData(data)) return <EmptyStripe what="Votre churn et vos clients à risque" />;
   return (
     <>
@@ -359,11 +305,35 @@ export function RealChurnView({ data }: { data: RealRevenue }) {
         title="Qui risque de partir"
         detail={
           <p className="text-sm text-slate">
-            Signaux réels de Stripe : résiliation, impayé, paiement échoué.
+            Signaux réels de Stripe. Cliquez sur un client pour voir sa fiche.
           </p>
         }
       />
-      <RiskList customers={data.atRisk} />
+      <RiskList customers={data.atRisk} sender={sender} initialOpenId={initialOpenId} />
+      {data.departures.total > 0 && (
+        <>
+          <SectionTitle
+            title="Pourquoi ils partent"
+            detail={
+              <p className="text-sm text-slate">
+                {data.departures.total} client{data.departures.total > 1 ? "s" : ""} parti
+                {data.departures.total > 1 ? "s" : ""} sur la période.
+              </p>
+            }
+          />
+          <DepartureReasons
+            reasons={{
+              declared: data.departures.declared,
+              declaredBasis: data.departures.answered
+                ? `${data.departures.answered} réponse${data.departures.answered > 1 ? "s" : ""} au portail de résiliation Stripe`
+                : "Aucune réponse au portail de résiliation Stripe",
+              observed: data.departures.observed,
+              observedBasis: "D'après Stripe : paiements et dates de chaque départ",
+            }}
+            tip={data.departures.tip}
+          />
+        </>
+      )}
       {data.cohorts.some((cohort) => cohort.retention.length > 1) && (
         <>
           <SectionTitle

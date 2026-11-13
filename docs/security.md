@@ -116,4 +116,4 @@
 - Clé SSH de déploiement : la restreindre à `deploy.sh` dans `authorized_keys` sur le serveur (action manuelle).
 - `/api/health?complet=1` reste public (test de mise en ligne du déploiement), limité en débit par Nginx.
 - Double authentification pour les clients (facultative) : possible avec la même mécanique, pas encore proposée.
-- Envoi réel des alertes (email, Slack) : pas encore de moteur d'alertes ; les réglages sont enregistrés et seront lus par lui.
+- Alertes (lot E) : envoyées par le serveur seulement (clé de service, tâche horaire), au propriétaire du compte ; journal `alert_deliveries` en lecture seule pour son propriétaire, sans écriture possible par l'API. Tout texte venu des données (nom d'un client) est échappé dans le HTML des emails ; Slack : uniquement `hooks.slack.com`, revérifié à l'envoi, 8 s au plus.

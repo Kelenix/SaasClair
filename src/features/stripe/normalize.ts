@@ -51,6 +51,12 @@ export type StripeSubscription = {
   ended_at?: number | null;
   cancel_at_period_end?: boolean;
   cancel_at?: number | null;
+  /** Pourquoi l'abonnement s'arrête : demande, paiement échoué, litige ; et ce que le client a dit. */
+  cancellation_details?: {
+    reason?: string | null;
+    feedback?: string | null;
+    comment?: string | null;
+  } | null;
   trial_end?: number | null;
   current_period_end?: number | null;
   items?: { data?: Item[] };
@@ -292,6 +298,10 @@ export function toSubscriptionRow(
     cancel_at_period_end: Boolean(subscription.cancel_at_period_end),
     cancel_at: iso(subscription.cancel_at),
     trial_end: iso(subscription.trial_end),
+    // Raison de départ : observée par Stripe, et déclarée par le client (portail de résiliation).
+    cancel_reason: subscription.cancellation_details?.reason ?? null,
+    cancel_feedback: subscription.cancellation_details?.feedback ?? null,
+    cancel_comment: subscription.cancellation_details?.comment?.trim().slice(0, 500) || null,
     // Versions récentes de l'API : la fin de période est portée par les lignes.
     current_period_end: iso(subscription.current_period_end ?? items[0]?.current_period_end),
     billing_interval:

@@ -207,7 +207,7 @@ export function RealHome({
               </>
             )}
             <SectionTitle title="Clients à risque" />
-            <RiskList customers={revenue.atRisk} limit={3} />
+            <RiskList customers={revenue.atRisk} limit={3} linkToChurn />
           </>
         ) : revenue ? (
           <SourceHint

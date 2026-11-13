@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeFunnel, pathOf, type FunnelRow } from "./funnel";
+import { computeFunnel, funnelFromSummary, pathOf, type FunnelRow } from "./funnel";
 
 const row = (visitor: string, path: string, extra: Partial<FunnelRow> = {}): FunnelRow => ({
   visitor_id: visitor,
@@ -69,5 +69,42 @@ describe("computeFunnel", () => {
     const funnel = computeFunnel([row("a", "/")], { pricing: null, signup: null });
     expect(funnel.steps).toHaveLength(1);
     expect(funnel.weakest).toBe(-1);
+  });
+});
+
+describe("tunnel jusqu'au paiement (Stripe connecté)", () => {
+  it("essai démarré et clients payants, comptés parmi les inscrits reliés à Stripe", () => {
+    const group = (extra: object, visitors: number) => ({
+      device: "desktop",
+      channel: "seo",
+      pricing: true,
+      signup: true,
+      identified: true,
+      trial: false,
+      paid: false,
+      visitors,
+      ...extra,
+    });
+    const summary = {
+      groups: [
+        group({ identified: false }, 60),
+        group({}, 20),
+        group({ trial: true }, 12),
+        group({ trial: true, paid: true }, 8),
+      ],
+      paths: [],
+    };
+    const paths = { pricing: "/tarifs", signup: "/essai" };
+    const funnel = funnelFromSummary(summary, paths, (id) => id, { stripe: true });
+    expect(funnel.steps.map((step) => [step.id, step.count])).toEqual([
+      ["visit", 100],
+      ["pricing", 100],
+      ["signup", 100],
+      ["identified", 40],
+      ["trial", 20],
+      ["paid", 8],
+    ]);
+    // Sans Stripe : le tunnel s'arrête aux inscrits.
+    expect(funnelFromSummary(summary, paths).steps.at(-1)?.id).toBe("identified");
   });
 });

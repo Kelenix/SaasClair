@@ -41,7 +41,14 @@ function ReasonList({
 }
 
 /** Raisons de départ : ce que les clients disent, et ce que leur usage montre. */
-export function DepartureReasons({ reasons }: { reasons: ChurnData["reasons"] }) {
+export function DepartureReasons({
+  reasons,
+  tip = "Ils parlent de prix, mais la plupart n'utilisaient presque plus l'outil. Relancez l'usage avant de baisser vos tarifs.",
+}: {
+  reasons: ChurnData["reasons"];
+  /** Constat tiré des chiffres ; rien n'est affiché sans constat clair. */
+  tip?: string | null;
+}) {
   return (
     <Card className="flex h-full flex-col">
       <CardEyebrow>Raisons de départ</CardEyebrow>
@@ -62,16 +69,15 @@ export function DepartureReasons({ reasons }: { reasons: ChurnData["reasons"] })
           tone="gold"
         />
       </div>
-      <p
-        className="mt-6 flex gap-2.5 rounded-xl border-l-4 border-gold bg-cream px-3.5 py-3 text-[14px] text-ink"
-        data-icon-trigger
-      >
-        <Icon icon={Lightbulb} anim="wiggle" className="mt-0.5 size-4 shrink-0 text-gold-ink" />
-        <span>
-          Ils parlent de prix, mais la plupart n&apos;utilisaient presque plus l&apos;outil.
-          Relancez l&apos;usage avant de baisser vos tarifs.
-        </span>
-      </p>
+      {tip && (
+        <p
+          className="mt-6 flex gap-2.5 rounded-xl border-l-4 border-gold bg-cream px-3.5 py-3 text-[14px] text-ink"
+          data-icon-trigger
+        >
+          <Icon icon={Lightbulb} anim="wiggle" className="mt-0.5 size-4 shrink-0 text-gold-ink" />
+          <span>{tip}</span>
+        </p>
+      )}
     </Card>
   );
 }

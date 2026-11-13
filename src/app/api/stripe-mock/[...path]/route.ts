@@ -82,6 +82,8 @@ function lists(path: string) {
           created: t - 40 * DAY,
           canceled_at: t - 3 * DAY,
           ended_at: t - 3 * DAY,
+          // Réponse du client au portail de résiliation de Stripe.
+          cancellation_details: { reason: "cancellation_requested", feedback: "too_expensive" },
           items: { data: [{ quantity: 1, price: price(2900, "month", "prod_starter") }] },
         },
       ];

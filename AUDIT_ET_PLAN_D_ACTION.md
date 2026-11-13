@@ -232,6 +232,28 @@ horaire dans l'heure qui suit la mise en ligne. D'ici là, l'expansion et la con
 
 ---
 
+### Lot E — Rendre réel ce qui manquait encore
+
+**✅ Fait le 17 novembre (PR n° 11)** :
+- **Raisons de départ** (écran Churn) : déclarées par vos clients au portail de résiliation de
+  Stripe (« trop cher », « ne s'en sert plus »…), et observées (paiement échoué, résiliation
+  dans les 3 premiers mois ou après). Un constat s'affiche seulement quand les chiffres le disent.
+- **Fiche client** : clic sur un client à risque → ses signaux, son échéance, sa chronologie
+  Stripe (essai, paiements reçus et refusés, résiliation) et un **email de relance** rédigé selon
+  sa situation, à relire puis envoyer depuis votre messagerie.
+- **Tunnel jusqu'au paiement** : quand Stripe est connecté, les inscrits reliés à leur client
+  Stripe donnent deux étapes de plus, « Essai démarré » et « Clients payants ».
+- **Alertes envoyées pour de vrai**, par email (votre Resend) et par Slack, chaque heure :
+  client qui passe « à retenir », paiement refusé, site qui n'envoie plus de visites, chute des
+  visites, baisse de conversion, et résumé du lundi matin. Chaque fait n'est envoyé qu'une fois.
+
+Toujours pas réel, faute de donnée : l'étape « activation » du tunnel (il faudrait savoir ce que
+l'inscrit fait dans votre produit) et les inscrits par canal (décision 5).
+
+**Une action pour vos clients, pas pour vous** : pour que les raisons déclarées remontent, chaque
+utilisateur de SaasClair active la question de départ dans son portail client Stripe. L'écran
+Churn le lui explique quand aucune réponse n'arrive.
+
 ## 5. Détail des analyses
 
 ### 5.1 État réel de chaque écran en production
@@ -242,12 +264,12 @@ horaire dans l'heure qui suit la mise en ligne. D'ici là, l'expansion et la con
 |---|---|---|
 | Accueil | Revenu mensuel récurrent, churn mensuel, revenu à risque, conversion essai → payant (sinon nouveau revenu), graphique nouveau / expansion / perdu, 3 clients à risque, 3 insights de la semaine, visiteurs, canaux, pages d'entrée, analyse du site | — |
 | Acquisition | Visiteurs, canaux (dont Assistants IA et réseaux sociaux), pages d'entrée, campagnes, sites d'origine, clients et revenu par canal, part des clients reliés à leur provenance | Inscrits par canal (demande l'identification automatique à l'inscription, décision 5) |
-| Tunnel | Visiteurs → tarifs → inscription → inscrits, l'étape qui perd le plus (en or) avec sa cause et son action, comparaison par appareil et par canal, page clé confirmée en un clic | Étapes « activation » et « essai » (demandent de savoir ce que l'inscrit fait dans votre produit) |
-| Churn | Churn mensuel clients et revenu, revenu à risque, paiements à récupérer, clients à risque (7 signaux expliqués), cohortes de rétention | Raisons de départ, fiche client avec chronologie, email de relance préparé |
+| Tunnel | Visiteurs → tarifs → inscription → inscrits → essai → payant (avec Stripe), l'étape qui perd le plus (en or) avec sa cause et son action, comparaison par appareil et par canal, page clé confirmée en un clic | Étape « activation » (demande de savoir ce que l'inscrit fait dans votre produit) |
+| Churn | Churn mensuel clients et revenu, revenu à risque, paiements à récupérer, clients à risque (7 signaux expliqués), fiche client avec chronologie et email de relance, raisons de départ déclarées et observées, cohortes de rétention (lot E) | — |
 | Revenus | Revenu mensuel récurrent sur 12 mois (montants facturés), nouveau, expansion, contraction, départs, valeur vie client, paiements échoués, devises et prix à l'usage signalés | — |
 | Insights | Moteur d'insights sur vos chiffres, suivi « fait / ignoré », réglages d'alertes | Mesure de l'impact après action |
 | Barre de question | Réponses rédigées à partir de vos vrais chiffres (churn, revenu, canaux, conversion) | Questions libres plus fines (un client précis, deux périodes comparées) |
-| Notifications | Alertes tirées des insights réels, dans l'application | Envoi par email ou Slack (aucun moteur d'envoi encore) |
+| Notifications | Alertes tirées des insights réels, dans l'application, et envoyées par email et Slack chaque heure (lot E) | — |
 
 ### 5.2 Sécurité : où en sont les constats
 
