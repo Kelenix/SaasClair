@@ -18,8 +18,8 @@
 | 16 | Sauvegardes hors serveur | Chaque nuit sur le VPS, 14 jours (ADR-021) | Copie chiffrée hors du VPS (stockage objet, ou sauvegardes Hostinger activées) | P1 |
 | 17 | Mises à jour de Supabase auto-hébergé | Versions figées dans `deploy/compose.prod.yaml` | Revue trimestrielle des versions, répétition (`deploy/rehearsal.sh`) puis livraison | P2 |
 | 18 | Surveillance externe | Sonde `/api/health?complet=1`, pas d'alerte automatique | Sonde externe gratuite (UptimeRobot, Better Stack) toutes les 5 minutes, alerte par email | P1 |
-| 10 | CSP | `'unsafe-inline'` pour les scripts (scripts en ligne de Next.js) | Nonce par requête | P2 |
-| 11 | Double authentification | Non exposée | TOTP Supabase pour les super administrateurs en priorité | P2 |
+| 10 | CSP | `'unsafe-inline'` pour les scripts (nonce incompatible avec le pré-rendu partiel) ; attributs d'événement interdits, espace connecté sans domaine tiers, session `httpOnly` (lot A7) | Nonce si Next.js le permet avec le pré-rendu | P3 |
+| 11 | Double authentification | Obligatoire pour le super administrateur (lot A7) | Facultative pour les clients, depuis Paramètres | P3 |
 | 12 | Mises à jour majeures | TypeScript 5.9, ESLint 9, @types/node 24 | TypeScript 7, ESLint 10 (corrige les alertes des outils de développement), @types/node 26, une à la fois | P2 |
 | 13 | Anglais | Interface en français uniquement (ADR-005) | Extraction des textes et traduction si le marché l'exige | P3 |
 | 14 | Paddle et Lemon Squeezy | Annoncés « bientôt » | Connecteurs | P3 |

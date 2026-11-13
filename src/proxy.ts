@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PRIVATE_PREFIXES = ["/configuration", "/app", "/admin"];
+const PRIVATE_PREFIXES = ["/configuration", "/app", "/admin", "/double-authentification"];
 const GUEST_ONLY = ["/connexion", "/inscription"];
 
 /**
@@ -16,6 +16,8 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Comme lib/supabase/server.ts : session illisible par le JavaScript de la page.
+      cookieOptions: { httpOnly: true },
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cookiesToSet) => {
@@ -60,6 +62,7 @@ export const config = {
     "/configuration/:path*",
     "/app/:path*",
     "/admin/:path*",
+    "/double-authentification",
     "/connexion",
     "/inscription",
     "/nouveau-mot-de-passe",

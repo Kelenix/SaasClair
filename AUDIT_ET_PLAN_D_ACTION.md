@@ -159,9 +159,26 @@ d'emails par l'application elle-même.
 ### Lot A — Sécurité (code)
 
 **✅ Fait le 14 novembre (PR n° 5)** : A1, A2, A3, A4 (révocation à la suppression), A5, A6, A8.
-Reportés : A7 (CSP à nonce, double authentification de l'administrateur) ; notification Stripe
-« application déconnectée » (demande un point de terminaison Connect créé dans Stripe, action
-manuelle) ; sonde de santé détaillée laissée publique (test de mise en ligne).
+Notification « application déconnectée » : faite avec le lot B. Sonde de santé détaillée laissée
+publique (test de mise en ligne).
+
+**✅ A7 fait le 16 novembre (PR n° 8)** :
+- **Double authentification du super administrateur** : à la première visite de
+  `/admin`, il relie une application (Google Authenticator, 1Password…) par QR code ; ensuite,
+  un code à 6 chiffres à chaque connexion. Exigée **par la base elle-même** : avec le seul mot de
+  passe, aucune donnée des autres comptes n'est lisible, même par l'API (vérifié : 1 profil
+  visible sans code, 154 avec). Téléphone perdu : `deploy/scripts/reset-admin-2fa.sh <email>`
+  sur le serveur.
+- **CSP** : le nonce demandé est **incompatible** avec le pré-rendu partiel qui rend SaasClair
+  rapide (Next.js le documente : les pages préparées à l'avance ne peuvent pas porter un nonce
+  par requête). L'obtenir imposerait de rendre chaque page à chaque visite (site plus lent,
+  serveur plus chargé). J'ai donc gardé la vitesse et ajouté ce qui protège sans nonce :
+  - **session illisible par le JavaScript** (cookie `httpOnly`) : même un script injecté ne
+    peut plus emporter une session ;
+  - aucun attribut d'événement (`onclick=`, `onerror=`…), la forme d'injection la plus courante ;
+  - aucun plugin, et aucun outil publicitaire autorisé dans l'espace connecté.
+  Vérifié dans le navigateur : aucune violation sur l'accueil, la connexion, le tableau de bord
+  et l'administration.
 
 | Étape | Effort | Risque traité |
 |---|---|---|
@@ -171,7 +188,7 @@ manuelle) ; sonde de santé détaillée laissée publique (test de mise en ligne
 | A4. Révocation de l'accès Stripe à la suppression d'un projet ou d'un compte, et prise en compte de « application déconnectée » | S | L'autorisation Stripe survit aujourd'hui à la suppression. |
 | A5. Limite de tentatives de connexion par email et adresse IP réelle | M | Force brute, ou blocage de tout le monde (la limite actuelle voit l'adresse du conteneur). |
 | A6. RGPD : purge automatique (visites, données Stripe des projets supprimés), durée de vie de l'identifiant visiteur, interrupteur « Anonymisation » réellement appliqué (il ne fait rien aujourd'hui), textes « emails chiffrés » corrigés (c'est une empreinte, pas un chiffrement) | M | Conformité, et interface aujourd'hui trompeuse. |
-| A7. CSP avec nonce (sans `unsafe-inline`), double authentification pour le super administrateur | M | Vol de session en cas de faille XSS future. |
+| ✅ A7. Double authentification du super administrateur ; CSP durcie sans nonce (incompatible avec le pré-rendu), session `httpOnly` | M | Vol de session en cas de faille XSS future. |
 | A8. Actions GitHub épinglées par empreinte, second verrou sur le Stripe simulé, newsletter (double confirmation), sonde de santé moins bavarde, `docs/security.md` mis à jour | S | Chaîne de déploiement, petites fuites d'information. |
 
 ### Lot B — Exactitude et performance des chiffres

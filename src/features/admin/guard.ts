@@ -4,9 +4,10 @@ import { cache } from "react";
 import { createClient, getUser } from "@/lib/supabase/server";
 
 /**
- * Accès réservé au super administrateur : vérifié côté serveur à chaque page et action, en plus
- * des politiques RLS de la base. Un autre compte est renvoyé vers son tableau de bord. Mémorisé
- * le temps d'une requête : la mise en page et la page ne vérifient qu'une fois.
+ * Accès réservé au super administrateur, dans une session confirmée par la double
+ * authentification : vérifié côté serveur à chaque page et action, en plus des politiques RLS de
+ * la base. Un autre compte est renvoyé vers son tableau de bord. Mémorisé le temps d'une
+ * requête : la mise en page et la page ne vérifient qu'une fois.
  */
 export const requireSuperAdmin = cache(async () => {
   const user = await getUser();
@@ -18,6 +19,10 @@ export const requireSuperAdmin = cache(async () => {
     .eq("id", user.id)
     .maybeSingle();
   if (profile?.role !== "super_admin") redirect("/app");
+  // Double authentification (lot A7) : sans le code du jour, la base refuse de toute façon
+  // l'accès (is_super_admin exige aal2) ; ici, on envoie directement vers la saisie du code.
+  const { data: level } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (level?.currentLevel !== "aal2") redirect("/double-authentification");
   return { user, supabase, profile };
 });
 

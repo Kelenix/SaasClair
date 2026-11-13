@@ -103,7 +103,7 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
     return { status: "error", message: TOO_MANY_ATTEMPTS };
   }
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     // Seuls les échecs comptent : une connexion réussie remet le compteur de l'email à zéro.
     failedByEmail.hit(email);
@@ -112,10 +112,16 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
   }
   failedByEmail.reset(email);
   const next = read(formData, "next");
-  // Sans page demandée, le super administrateur arrive dans son espace, pas dans la configuration.
+  // Sans page demandée, le super administrateur arrive dans son espace (après le code de sa
+  // double authentification), pas dans la configuration. Rôle lu dans son propre profil : la
+  // session n'est pas encore confirmée, is_super_admin dirait non.
   if (!next) {
-    const { data: isSuperAdmin } = await supabase.rpc("is_super_admin");
-    if (isSuperAdmin) redirect("/admin");
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if (profile?.role === "super_admin") redirect("/admin");
   }
   redirect(safeRedirectPath(next));
 }
