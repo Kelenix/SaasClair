@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { isDemoMode } from "@/lib/demo-mode";
+import { AUDIT_MIN_INTERVAL_MS } from "./audit-age";
 import { normalizeSiteUrl } from "@/lib/site-url";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { auditSite } from "./fetch-site";
@@ -29,11 +31,49 @@ export async function analyzeSite(
   const audit = await auditSite(siteUrl);
   const { data, error } = await supabase
     .from("projects")
-    .upsert({ owner_id: user.id, site_url: siteUrl, audit }, { onConflict: "owner_id" })
+    .upsert(
+      { owner_id: user.id, site_url: siteUrl, audit, audited_at: new Date().toISOString() },
+      { onConflict: "owner_id" },
+    )
     .select("id")
     .single();
   if (error) return { ok: false, message: SAVE_ERROR };
   return { ok: true, data: { siteUrl, siteKey: data.id.slice(0, 8), audit } };
+}
+
+/**
+ * Tableau de bord, « Analyser maintenant » : relance l'analyse de la page d'accueil pour voir
+ * tout de suite l'effet d'une correction. Au plus une analyse toutes les 30 secondes.
+ */
+export async function refreshSiteAudit(): Promise<Result<{ score: number; tooSoon: boolean }>> {
+  const user = await getUser();
+  if (!user) return { ok: false, message: "Votre session a expiré. Reconnectez-vous." };
+  const supabase = await createClient();
+  const { data: project } = await supabase
+    .from("projects")
+    .select("site_url, audit, audited_at")
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!project?.site_url) {
+    return { ok: false, message: "Ajoutez d'abord l'adresse de votre site." };
+  }
+  const last = project.audited_at ? Date.parse(project.audited_at) : 0;
+  if (Date.now() - last < AUDIT_MIN_INTERVAL_MS) {
+    const score = (project.audit as SiteAudit | null)?.seo.score ?? 0;
+    return { ok: true, data: { score, tooSoon: true } };
+  }
+
+  const audit = await auditSite(project.site_url);
+  const { error } = await supabase
+    .from("projects")
+    .update({ audit, audited_at: new Date().toISOString() })
+    .eq("owner_id", user.id);
+  if (error) return { ok: false, message: "L'analyse n'a pas pu être enregistrée. Réessayez." };
+  revalidatePath("/app", "layout");
+  if (!audit.reachable) {
+    return { ok: false, message: "Votre site n'a pas répondu. Vérifiez qu'il est en ligne." };
+  }
+  return { ok: true, data: { score: audit.seo.score, tooSoon: false } };
 }
 
 /**

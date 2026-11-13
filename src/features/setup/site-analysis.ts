@@ -6,9 +6,12 @@ export type SiteAudit = {
   speed: "rapide" | "correct" | "lent" | null;
   pageCount: number;
   pages: { signup: string | null; pricing: string | null; checkout: string | null };
-  seo: { score: number; title: string | null; checks: { label: string; ok: boolean }[] };
+  seo: { score: number; title: string | null; checks: SeoCheck[] };
   technologies: string[];
 };
+
+/** Un point de référencement ; `detail` dit ce qui a été trouvé et ce qu'il faut viser. */
+export type SeoCheck = { label: string; ok: boolean; detail?: string };
 
 export const PAGE_PATTERNS = {
   signup:
@@ -91,26 +94,56 @@ function detectTechnologies(html: string, headers: Record<string, string>) {
   return [...new Set(found)].slice(0, 6);
 }
 
-function seoChecks(html: string, url: string) {
-  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
-  const description = metaContent(html, "description");
+export const TITLE_LENGTH = { min: 10, max: 70 } as const;
+export const DESCRIPTION_LENGTH = { min: 50, max: 170 } as const;
+
+const chars = (count: number) => `${count} caractère${count > 1 ? "s" : ""}`;
+
+/** « 82 caractères : trop long (idéal : 10 à 70) ». */
+function lengthDetail(length: number, range: { min: number; max: number }, missing: string) {
+  if (!length) return missing;
+  const ideal = `idéal : ${range.min} à ${range.max}`;
+  if (length < range.min) return `${chars(length)} : trop court (${ideal})`;
+  if (length > range.max) return `${chars(length)} : trop long (${ideal})`;
+  return chars(length);
+}
+
+function seoChecks(html: string, url: string): SiteAudit["seo"] {
+  const rawTitle = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const title = rawTitle ? decode(rawTitle) : "";
+  const description = decode(metaContent(html, "description") ?? "");
   const h1Count = (html.match(/<h1[\s>]/gi) ?? []).length;
-  const checks = [
+  const inRange = (length: number, range: { min: number; max: number }) =>
+    length >= range.min && length <= range.max;
+  const checks: SeoCheck[] = [
     {
       label: "Titre de page",
-      ok: Boolean(title && title.trim().length >= 10 && title.trim().length <= 70),
+      ok: inRange(title.length, TITLE_LENGTH),
+      detail: lengthDetail(title.length, TITLE_LENGTH, "Aucun titre trouvé"),
     },
     {
       label: "Description",
-      ok: Boolean(description && description.length >= 50 && description.length <= 170),
+      ok: inRange(description.length, DESCRIPTION_LENGTH),
+      detail: lengthDetail(description.length, DESCRIPTION_LENGTH, "Aucune description trouvée"),
     },
-    { label: "Un seul titre principal", ok: h1Count === 1 },
-    { label: "Adapté au mobile", ok: Boolean(metaContent(html, "viewport")) },
+    {
+      label: "Un seul titre principal",
+      ok: h1Count === 1,
+      detail:
+        h1Count === 1
+          ? undefined
+          : `${h1Count} titre${h1Count > 1 ? "s" : ""} principal (h1) : il en faut un seul`,
+    },
+    {
+      label: "Adapté au mobile",
+      ok: Boolean(metaContent(html, "viewport")),
+      detail: metaContent(html, "viewport") ? undefined : "Balise « viewport » absente",
+    },
     { label: "Connexion sécurisée", ok: url.startsWith("https://") },
     { label: "Langue déclarée", ok: /<html[^>]+lang=/i.test(html) },
   ];
   const score = Math.round((checks.filter((check) => check.ok).length / checks.length) * 100);
-  return { score, title: title ? decode(title) : null, checks };
+  return { score, title: title || null, checks };
 }
 
 /** Audit complet à partir du HTML de la page d'accueil. */
