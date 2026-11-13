@@ -1,4 +1,7 @@
+import { after } from "next/server";
 import { Suspense } from "react";
+import { auditIsStale } from "@/features/setup/audit-age";
+import { refreshAuditIfStale } from "@/features/setup/refresh";
 import { getDashboardContext } from "@/features/dashboard/context";
 import { getHomeData } from "@/features/dashboard/demo-data";
 import { getPeriod } from "@/features/dashboard/get-period";
@@ -28,6 +31,18 @@ async function Home() {
     getRealAcquisition(period, now),
   ]);
   const hasRealSource = Boolean(revenue || visits.visitors > 0 || context.audit);
+
+  // Analyse du site de plus de 6 heures : relancée après l'affichage (la page n'attend pas).
+  // La prochaine visite montre le résultat à jour ; « Analyser maintenant » le fait tout de suite.
+  if (
+    !context.demo &&
+    context.projectId &&
+    context.siteUrl &&
+    auditIsStale(context.auditedAt, now)
+  ) {
+    const { projectId, siteUrl } = context;
+    after(() => refreshAuditIfStale(projectId, siteUrl));
+  }
 
   // Vraies données (Stripe, visites, analyse du site) dès qu'une source existe, et toujours en
   // production ; l'exemple seulement en local, pour un compte sans aucune donnée réelle.
@@ -70,6 +85,7 @@ async function Home() {
         <RealHome
           siteUrl={context.siteUrl}
           audit={context.audit}
+          auditedAt={context.auditedAt}
           scriptDetected={context.scriptDetected}
           revenue={revenue}
           visits={visits}

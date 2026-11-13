@@ -40,8 +40,15 @@ export async function auditSite(siteUrl: string): Promise<SiteAudit> {
       await assertPublicHost(url);
       const response = await fetch(url, {
         redirect: "manual",
+        // Toujours la version en ligne : une correction du titre doit se voir à la réanalyse.
+        cache: "no-store",
         signal: AbortSignal.timeout(TIMEOUT_MS),
-        headers: { "User-Agent": "SaasClairBot/1.0 (+https://saasclair.fr)", Accept: "text/html" },
+        headers: {
+          "User-Agent": "SaasClairBot/1.0 (+https://saasclair.com)",
+          Accept: "text/html",
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
       const location = response.headers.get("location");
       if (response.status >= 300 && response.status < 400 && location) {

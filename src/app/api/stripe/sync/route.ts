@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { after, NextResponse, type NextRequest } from "next/server";
 import { stripeConfig } from "@/features/stripe/client";
+import { refreshStaleAudits } from "@/features/setup/refresh";
 import { syncAllStripeAccounts } from "@/features/stripe/sync";
 
 /** Le secret de la tâche programmée, comparé à durée constante. */
@@ -12,13 +13,17 @@ function authorized(request: NextRequest) {
 }
 
 /**
- * Resynchronisation de tous les comptes Stripe, appelée chaque heure par le serveur
- * (deploy/scripts/stripe-sync.sh, secret CRON_SECRET). Répond aussitôt ; l'import tourne après.
+ * Tâche horaire (deploy/scripts/stripe-sync.sh, secret CRON_SECRET) : resynchronise tous les
+ * comptes Stripe, puis réanalyse les sites dont l'analyse a plus de 6 heures. Répond aussitôt ;
+ * le travail tourne après.
  */
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const config = stripeConfig();
+  after(async () => {
+    if (config) await syncAllStripeAccounts(config);
+    await refreshStaleAudits();
+  });
   if (!config) return NextResponse.json({ error: "stripe_not_configured" }, { status: 503 });
-  after(() => syncAllStripeAccounts(config));
   return NextResponse.json({ status: "started" }, { status: 202 });
 }

@@ -4,6 +4,15 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Modifié (analyse du site toujours à jour)
+- L'analyse du site n'était faite qu'une fois, à la configuration : une correction (titre,
+  description…) ne se voyait jamais. Elle est maintenant relancée seule au-delà de 6 heures (à
+  l'ouverture du tableau de bord et par la tâche horaire), et à la demande avec « Analyser
+  maintenant » (au plus une fois toutes les 30 secondes). La date de l'analyse est affichée.
+- Chaque point de référencement faux dit pourquoi : « 82 caractères : trop long (idéal : 10 à
+  70) », « Aucune description trouvée »… Les 6 points sont affichés (le score les compte tous).
+- La page est demandée sans cache, pour lire la version en ligne. Migration `audit_refresh`.
+
 ### Ajouté (lot C : les 3 promesses tenues sur les vraies données)
 - **Moteur d'insights** (`src/features/insights/`) : paiements échoués à récupérer, départs
   programmés, cartes qui expirent avant le prochain paiement, essais qui finissent dans 7 jours,

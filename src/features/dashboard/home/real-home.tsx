@@ -20,6 +20,8 @@ import type { SiteAudit } from "@/features/setup/site-analysis";
 import type { RealRevenue } from "@/features/stripe/metrics";
 import { hasRevenueData, revenueKpis, RiskList } from "@/features/stripe/real-views";
 import { displaySiteUrl } from "@/lib/site-url";
+import { auditAgeLabel } from "@/features/setup/audit-age";
+import { RefreshAuditButton } from "@/features/setup/refresh-audit-button";
 import { KpiCards } from "./kpi-cards";
 import { SectionTitle } from "../page-header";
 
@@ -114,14 +116,22 @@ function SiteSummary({ siteUrl, audit }: { siteUrl: string; audit: SiteAudit }) 
         </p>
         <GrowBar share={audit.seo.score} />
         <ul className="mt-4 flex flex-col gap-1.5 text-sm">
-          {audit.seo.checks.slice(0, 4).map((check) => (
-            <li key={check.label} className="flex items-center gap-2">
+          {audit.seo.checks.map((check) => (
+            <li key={check.label} className="flex items-start gap-2">
               <Icon
                 icon={check.ok ? Check : X}
                 anim="pop"
-                className={check.ok ? "size-3.5 text-emerald-ink" : "size-3.5 text-gold-ink"}
+                className={
+                  check.ok ? "mt-0.5 size-3.5 text-emerald-ink" : "mt-0.5 size-3.5 text-gold-ink"
+                }
               />
-              <span className="text-ink">{check.label}</span>
+              <span>
+                <span className="text-ink">{check.label}</span>
+                {/* Pourquoi le point est faux : ce qui a été trouvé, et ce qu'il faut viser. */}
+                {!check.ok && check.detail && (
+                  <span className="block text-xs text-slate">{check.detail}</span>
+                )}
+              </span>
             </li>
           ))}
         </ul>
@@ -157,6 +167,8 @@ function SiteSummary({ siteUrl, audit }: { siteUrl: string; audit: SiteAudit }) 
 type RealHomeProps = {
   siteUrl: string | null;
   audit: SiteAudit | null;
+  /** Date de la dernière analyse du site. */
+  auditedAt?: string | null;
   scriptDetected: boolean;
   revenue: RealRevenue | null;
   visits: RealAcquisition;
@@ -166,7 +178,14 @@ type RealHomeProps = {
  * Accueil sur les vraies données : revenus (Stripe), visiteurs (script) et votre site (analyse).
  * Les sections qui ont des données passent devant ; les autres disent quoi faire. Jamais vide.
  */
-export function RealHome({ siteUrl, audit, scriptDetected, revenue, visits }: RealHomeProps) {
+export function RealHome({
+  siteUrl,
+  audit,
+  auditedAt = null,
+  scriptDetected,
+  revenue,
+  visits,
+}: RealHomeProps) {
   const sections = [
     {
       id: "revenus",
@@ -249,7 +268,15 @@ export function RealHome({ siteUrl, audit, scriptDetected, revenue, visits }: Re
         .sort((a, b) => Number(b.hasData) - Number(a.hasData))
         .map((section) => (
           <section key={section.id} aria-labelledby={`accueil-${section.id}`}>
-            <SectionTitle title={titles[section.id]} id={`accueil-${section.id}`} />
+            <SectionTitle
+              title={titles[section.id]}
+              id={`accueil-${section.id}`}
+              detail={
+                section.id === "site" && siteUrl && audit ? (
+                  <RefreshAuditButton ageLabel={auditAgeLabel(auditedAt, new Date())} />
+                ) : undefined
+              }
+            />
             {section.node}
           </section>
         ))}
