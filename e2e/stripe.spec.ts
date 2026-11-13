@@ -30,7 +30,9 @@ test("Stripe se connecte, ses données sont importées et l'étape est validée"
   await expect(page).toHaveURL(/\/app$/, { timeout: 30_000 });
   const banner = page.getByRole("region", { name: "Configuration à terminer" });
   await expect(banner).toContainText("Plus que 2 étapes");
-  await expect(banner).not.toContainText("Connecter Stripe");
+  // Liste de démarrage : Stripe y reste, coché comme fait, et n'est plus un lien à suivre.
+  await expect(banner).toContainText("1 sur 3");
+  await expect(banner.getByRole("link", { name: /Connecter Stripe/ })).toHaveCount(0);
 
   // Les écrans affichent les vraies données importées (Stripe simulé : 79 € + 758,40 € / an).
   // Next.js garde la page précédente cachée : seule la zone visible compte.
