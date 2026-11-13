@@ -158,6 +158,11 @@ d'emails par l'application elle-même.
 
 ### Lot A — Sécurité (code)
 
+**✅ Fait le 14 novembre (PR n° 5)** : A1, A2, A3, A4 (révocation à la suppression), A5, A6, A8.
+Reportés : A7 (CSP à nonce, double authentification de l'administrateur) ; notification Stripe
+« application déconnectée » (demande un point de terminaison Connect créé dans Stripe, action
+manuelle) ; sonde de santé détaillée laissée publique (test de mise en ligne).
+
 | Étape | Effort | Risque traité |
 |---|---|---|
 | A1. Analyse d'URL : adresse vérifiée figée (contre le rebinding DNS) et limite de 10 analyses par heure et par compte | S | Accès indirect au réseau interne du serveur (gravité moyenne). |

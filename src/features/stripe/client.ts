@@ -73,6 +73,30 @@ export async function exchangeCode(config: StripeConfig, code: string) {
   return { accountId: data.stripe_user_id, livemode: Boolean(data.livemode) };
 }
 
+/**
+ * Coupe l'accès de SaasClair au compte Stripe d'un client (suppression du projet ou du compte).
+ * Sans cela, l'autorisation resterait valable chez Stripe après la suppression (audit, A4).
+ * Renvoie true si Stripe a confirmé (ou si l'accès était déjà coupé).
+ */
+export async function deauthorizeAccount(config: StripeConfig, accountId: string) {
+  const response = await fetch(`${config.connectBase}/oauth/deauthorize`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.secretKey}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ client_id: config.clientId, stripe_user_id: accountId }),
+  }).catch(() => null);
+  if (response?.ok) return true;
+  const body = (await response?.json().catch(() => null)) as { error?: string } | null;
+  // Déjà déconnecté (par le client lui-même, depuis Stripe) : rien à couper.
+  if (body?.error === "invalid_client") return true;
+  console.error(
+    `Déconnexion Stripe refusée (HTTP ${response?.status ?? "?"}) : ${body?.error ?? ""}`,
+  );
+  return false;
+}
+
 /** Lit toutes les pages d'une liste Stripe (100 par page) du compte connecté. */
 export async function listAll<T extends { id: string }>(
   config: StripeConfig,

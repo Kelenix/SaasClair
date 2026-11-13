@@ -65,9 +65,24 @@ describe("protection contre les adresses internes", () => {
     "fd00::1",
     "fe80::1",
     "::ffff:127.0.0.1",
+    // Formes IPv6 qui cachent une adresse interne (audit de sécurité, F6).
+    "::ffff:7f00:1",
+    "::127.0.0.1",
+    "::",
+    "64:ff9b::a9fe:a9fe",
+    "2002:c0a8:0101::1",
+    "ff02::1",
+    "fe80::1%eth0",
+    "198.18.0.1",
+    "pas-une-adresse",
   ])("refuse %s", (address) => expect(isPrivateAddress(address)).toBe(true));
 
-  it.each(["93.184.216.34", "172.32.0.1", "2606:4700::1111"])("accepte %s", (address) =>
-    expect(isPrivateAddress(address)).toBe(false),
-  );
+  it.each([
+    "93.184.216.34",
+    "172.32.0.1",
+    "2606:4700::1111",
+    "::ffff:93.184.216.34",
+    "64:ff9b::5db8:d822",
+    "2002:5db8:d822::1",
+  ])("accepte %s", (address) => expect(isPrivateAddress(address)).toBe(false));
 });

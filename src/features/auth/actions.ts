@@ -2,7 +2,7 @@
 
 import { PAID_PLANS } from "@/features/billing/plans";
 import { firstNameFromEmail } from "./first-name";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   ATTRIBUTION_COOKIE,
@@ -12,6 +12,7 @@ import {
 import { safeRedirectPath, setupPath, withWelcome } from "@/lib/safe-redirect";
 import { SITE_URL } from "@/lib/site";
 import { normalizeSiteUrl } from "@/lib/site-url";
+import { createRateLimiter } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { authErrorMessage } from "./errors";
 import {
@@ -33,6 +34,28 @@ export type AuthState = {
 
 const read = (formData: FormData, key: string) => String(formData.get(key) ?? "");
 
+// Limites contre la force brute et l'envoi d'emails en série (audit de sécurité, A5). Les
+// appels partent du serveur de SaasClair : Supabase ne voit donc pas l'adresse du visiteur, et
+// c'est ici qu'on la freine (adresse transmise par Nginx, jamais enregistrée).
+const FIFTEEN_MINUTES = 15 * 60 * 1000;
+const failedByEmail = createRateLimiter({ limit: 8, windowMs: FIFTEEN_MINUTES });
+const failedByIp = createRateLimiter({ limit: 30, windowMs: FIFTEEN_MINUTES });
+const emailsByIp = createRateLimiter({ limit: 10, windowMs: FIFTEEN_MINUTES });
+const TOO_MANY_ATTEMPTS =
+  "Trop de tentatives. Patientez 15 minutes, ou recevez un lien de connexion par email.";
+const TOO_MANY_EMAILS = "Trop de demandes en peu de temps. Réessayez dans 15 minutes.";
+
+async function clientIp() {
+  const list = await headers();
+  return list.get("x-real-ip") ?? list.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "";
+}
+
+/** Inscription, mot de passe oublié, lien magique : chaque envoi d'email compte. */
+async function emailAllowed() {
+  const ip = await clientIp();
+  return !ip || emailsByIp.take(ip);
+}
+
 export async function signUp(_: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = signUpSchema.safeParse({
     firstName: read(formData, "firstName"),
@@ -41,6 +64,7 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   });
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrorsOf(parsed.error) };
 
+  if (!(await emailAllowed())) return { status: "error", message: TOO_MANY_EMAILS };
   const site = normalizeSiteUrl(read(formData, "site"));
   // Offre choisie sur la page Tarifs : présélectionnée au moment de payer.
   const offer = read(formData, "offre");
@@ -73,9 +97,20 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
   });
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrorsOf(parsed.error) };
 
+  const email = parsed.data.email.toLowerCase();
+  const ip = await clientIp();
+  if (!failedByEmail.allows(email) || (ip && !failedByIp.allows(ip))) {
+    return { status: "error", message: TOO_MANY_ATTEMPTS };
+  }
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { status: "error", message: authErrorMessage(error.code) };
+  if (error) {
+    // Seuls les échecs comptent : une connexion réussie remet le compteur de l'email à zéro.
+    failedByEmail.hit(email);
+    if (ip) failedByIp.hit(ip);
+    return { status: "error", message: authErrorMessage(error.code) };
+  }
+  failedByEmail.reset(email);
   const next = read(formData, "next");
   // Sans page demandée, le super administrateur arrive dans son espace, pas dans la configuration.
   if (!next) {
@@ -93,6 +128,7 @@ export async function requestMagicLink(_: AuthState, formData: FormData): Promis
   const parsed = resetRequestSchema.safeParse({ email: read(formData, "email") });
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrorsOf(parsed.error) };
 
+  if (!(await emailAllowed())) return { status: "error", message: TOO_MANY_EMAILS };
   const next = safeRedirectPath(read(formData, "next"), "/app");
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
@@ -113,6 +149,7 @@ export async function requestMagicLink(_: AuthState, formData: FormData): Promis
 export async function requestPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = resetRequestSchema.safeParse({ email: read(formData, "email") });
   if (!parsed.success) return { status: "error", fieldErrors: fieldErrorsOf(parsed.error) };
+  if (!(await emailAllowed())) return { status: "error", message: TOO_MANY_EMAILS };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
