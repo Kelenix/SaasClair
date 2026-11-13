@@ -77,7 +77,7 @@ dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
 |---|---|---|---|
 | ✅ | **Emails avec Resend (tâche 11)** : fait par vous. J'ai activé la confirmation d'email dans `deploy/compose.prod.yaml` : elle sera en ligne dès la fusion de la PR n° 1. **Juste après la fusion**, testez une inscription avec une vraie adresse, et « mot de passe oublié ». | C'était la faille la plus grave : sans confirmation, n'importe qui pouvait créer un compte avec l'email d'un autre. | 5 min de test |
 | **2** | **Compte super administrateur en production** (tâche 12) | Sans lui, vous ne pouvez pas administrer. | 5 min |
-| **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur. Depuis le lot B, ce même script crée aussi le point de réception des **comptes Stripe de vos clients** (notifications en temps réel, déconnexion depuis Stripe) : **relancez-le une fois** même si vous l'avez déjà lancé, il ne recrée rien d'existant. | Sans lui, vous ne pouvez pas encaisser ; sans la relance, les chiffres de vos clients se mettent à jour chaque heure au lieu de quelques secondes. | 30 min (relance : 1 min) |
+| **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur. Depuis le lot B, ce même script crée aussi le point de réception des **comptes Stripe de vos clients** : ✅ relancé, notifications en temps réel actives. | Sans lui, vous ne pouvez pas encaisser ; sans la relance, les chiffres de vos clients se mettent à jour chaque heure au lieu de quelques secondes. | 30 min (relance : 1 min) |
 | **4** | **Vrais témoignages** (tâche 8). Publier de faux avis est interdit. | Obligation légale. | Variable |
 | **5** | **Mentions légales et relecture juridique** de la confidentialité (tâche 9) | Obligation légale. Points à faire valider : durée de conservation des visites, empreinte des emails (voir lot A). | Avec un juriste |
 | **6** | **Email de contact** dans Administration › Paramètres (tâche 10) | Le bouton « Nous contacter » est vide sinon. | 2 min |
@@ -176,9 +176,8 @@ manuelle) ; sonde de santé détaillée laissée publique (test de mise en ligne
 
 ### Lot B — Exactitude et performance des chiffres
 
-**✅ Fait le 15 novembre (PR n° 6)** : B1 à B6. Une seule action de votre part : relancer
-`billing-setup.sh` sur le serveur (voir section 3, priorité 3) pour activer les notifications
-Stripe en temps réel. Sans cela, tout fonctionne avec le suivi horaire.
+**✅ Fait le 15 novembre (PR n° 6)** : B1 à B6. ✅ `billing-setup.sh` relancé par vous :
+notifications Stripe en temps réel actives (point de réception vérifié en ligne).
 
 - **B1** : le churn affiché est **mensuel** sur toutes les périodes (moyenne des mois de la
   période ; 7 jours ramenés au mois). Le churn en revenu compte départs **et** baisses d'offre.

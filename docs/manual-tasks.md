@@ -66,7 +66,7 @@ Dans votre compte Stripe (le même que pour Connect), en **mode réel** :
    Elle crée aussi le **point de réception des comptes Stripe de vos clients** (Connect,
    `/api/stripe/webhook`) et enregistre son secret `STRIPE_CONNECT_WEBHOOK_SECRET` dans le `.env`.
    Déjà lancée avant le lot B ? **Relancez-la une fois** : elle ne recrée rien d’existant et
-   n’ajoute que ce point. Pour vérifier : Stripe › Développeurs › Webhooks › un point
+   n’ajoute que ce point (fait en production le 15 novembre). Pour vérifier : Stripe › Développeurs › Webhooks › un point
    « SaasClair — comptes Stripe des clients », avec l’option « Comptes connectés ».
 
 Tant que Stripe Tax n’est pas activé, le paiement affiche « Le paiement en ligne n’est pas encore
