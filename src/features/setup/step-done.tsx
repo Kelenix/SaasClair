@@ -63,11 +63,11 @@ export function StepDone({ siteUrl }: { siteUrl: string }) {
   const router = useRouter();
   const [isLeaving, setIsLeaving] = useState(false);
 
+  // Uniquement ce qui est vrai : l'écran final n'apparaît que lorsque les 3 étapes sont faites.
   const summary = [
     displaySiteUrl(siteUrl) + " analysé",
-    "Script installé",
-    "Stripe connecté, en lecture uniquement",
-    "91 % de vos clients reliés à leur provenance",
+    "Votre site est relié : première visite reçue",
+    "Stripe connecté : SaasClair ne fait que lire",
   ];
 
   return (
@@ -100,7 +100,7 @@ export function StepDone({ siteUrl }: { siteUrl: string }) {
           Voir mon tableau de bord <Icon icon={ArrowRight} anim="nudge" />
         </Button>
         <p className="mt-4 text-[13px] text-slate">
-          Vos premières recommandations arrivent sous 24 heures.
+          Vos chiffres se mettent à jour tout seuls, chaque heure pour Stripe.
         </p>
       </Card>
     </m.div>

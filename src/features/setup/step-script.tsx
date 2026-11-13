@@ -85,6 +85,19 @@ function SendToDeveloper({ siteUrl, snippet }: { siteUrl: string; snippet: strin
   const [email, setEmail] = useState("");
   const { subject, body } = developerEmail(displaySiteUrl(siteUrl), snippet);
   const href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const [isMessageCopied, setIsMessageCopied] = useState(false);
+
+  // Sans logiciel de messagerie, le lien email ne fait rien : le message se colle alors où l'on
+  // veut (Slack, WhatsApp, Gmail dans le navigateur…).
+  async function copyMessage() {
+    try {
+      await navigator.clipboard.writeText(`${subject}\n\n${body}`);
+      setIsMessageCopied(true);
+      toast.success("Message copié. Collez-le où vous voulez.");
+    } catch {
+      toast.error("La copie n'a pas fonctionné. Utilisez « Préparer l'email ».");
+    }
+  }
 
   return (
     <Dialog>
@@ -111,6 +124,10 @@ function SendToDeveloper({ siteUrl, snippet }: { siteUrl: string; snippet: strin
           onChange={(event) => setEmail(event.target.value)}
         />
         <DialogFooter>
+          <Button variant="secondary" onClick={copyMessage}>
+            <Icon icon={isMessageCopied ? Check : Copy} anim="pop" />
+            {isMessageCopied ? "Message copié" : "Copier le message"}
+          </Button>
           <Button asChild>
             <a href={href}>Préparer l&apos;email</a>
           </Button>

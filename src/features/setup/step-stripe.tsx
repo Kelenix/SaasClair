@@ -166,7 +166,7 @@ export function StepStripe({ available, readOnly, demo, result, onDone }: StepSt
               <Icon icon={Lock} anim="wiggle" className="size-4 text-emerald-ink" />
               {readOnly
                 ? "Accès en lecture seule. Nous ne pouvons rien modifier."
-                : "SaasClair ne fait que lire vos données : nous ne modifions jamais rien."}
+                : "SaasClair ne fait que lire vos données : nous ne modifions jamais rien. Stripe affichera « lecture et écriture » : c'est la seule autorisation qu'il propose."}
             </p>
             <AnimatePresence>
               {notice && (

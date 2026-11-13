@@ -26,7 +26,7 @@ async function Tunnel() {
         needs="script"
         remaining={context.setupRemaining}
         description="Votre tunnel (visite, inscription, activation, essai, paiement) se dessinera ici dès que le script sera installé sur votre site."
-        waiting="Le script est installé. Votre tunnel se dessinera ici dès les premières visites."
+        waiting="Vos visites arrivent bien. Le calcul du tunnel arrive dans une prochaine version : en attendant, vos canaux sont dans Acquisition."
       />
     );
   }

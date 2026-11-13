@@ -31,7 +31,7 @@ function StripeVisual() {
         Connecter Stripe
       </span>
       <span className="inline-flex items-center gap-1.5 text-[13px] text-slate">
-        <Icon icon={Lock} className="size-4" /> Lecture uniquement
+        <Icon icon={Lock} className="size-4" /> Jamais modifié
       </span>
     </div>
   );

@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <p className="text-center text-[13px] text-slate lg:hidden">
-          Données hébergées en Europe · Stripe : lecture uniquement
+          Données hébergées en Europe · Stripe : jamais modifié
         </p>
       </div>
       <AuthShowcase />

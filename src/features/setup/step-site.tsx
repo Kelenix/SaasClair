@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, useTransition } from "react";
+import { useEffect, useEffectEvent, useId, useState, useTransition } from "react";
 import { AnimatePresence, m } from "motion/react";
 import {
   ArrowRight,
@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { analyzeSite } from "./actions";
 import type { SiteAudit } from "./site-analysis";
 
-const REVEAL_INTERVAL_MS = 550;
+const REVEAL_INTERVAL_MS = 350;
 
 type Result = { siteUrl: string; siteKey: string; audit: SiteAudit };
 
@@ -191,6 +191,14 @@ export function StepSite({ firstName, defaultSite, previousAudit, onDone }: Step
     return () => clearTimeout(timer);
   }, [result, revealed]);
 
+  function launch(site: string) {
+    startTransition(async () => {
+      const response = await analyzeSite(site);
+      if (response.ok) setResult(response.data);
+      else setError(response.message);
+    });
+  }
+
   function analyze(event: React.FormEvent) {
     event.preventDefault();
     if (!normalizeSiteUrl(value)) {
@@ -200,12 +208,15 @@ export function StepSite({ firstName, defaultSite, previousAudit, onDone }: Step
     setError(null);
     setResult(null);
     setRevealed(0);
-    startTransition(async () => {
-      const response = await analyzeSite(value);
-      if (response.ok) setResult(response.data);
-      else setError(response.message);
-    });
+    launch(value);
   }
+
+  // Adresse déjà saisie sur le site vitrine : l'analyse démarre seule, sans clic de plus (l'état
+  // est déjà celui de départ, il n'y a rien à remettre à zéro).
+  const autoStart = useEffectEvent(() => launch(defaultSite));
+  useEffect(() => {
+    if (defaultSite && !previousAudit) autoStart();
+  }, [defaultSite, previousAudit]);
 
   const items = audit ? checklist(audit) : null;
   const hasStarted = isPending || Boolean(audit);

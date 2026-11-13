@@ -84,7 +84,7 @@ export const PLANS = [
     features: [
       "1 SaaS suivi",
       "Jusqu'à 50 000 visites par mois",
-      "Connexion Stripe en un clic, lecture uniquement",
+      "Connexion Stripe en un clic : nous lisons, sans jamais rien modifier",
       "3 recommandations chaque lundi",
       "Rapport hebdomadaire par email",
     ],
