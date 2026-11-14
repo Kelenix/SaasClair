@@ -67,54 +67,13 @@ navigateur. Il faut Docker et Supabase lancés (`npm run up`) : je les fais au p
 
 ## 3. Ce que VOUS devez faire vous-même
 
-Ces actions demandent vos comptes, vos clés ou un accès au serveur. Je ne peux pas les faire à
-votre place. Elles sont classées par urgence. Le détail pas à pas des tâches déjà connues est
-dans `docs/manual-tasks.md` (les numéros renvoient à ce fichier).
+**La liste à jour est dans [`docs/manual-tasks.md`](docs/manual-tasks.md)** (réécrite le
+14 novembre) : ce qui reste à faire, étape par étape, les décisions à me donner, et tout ce qui
+est déjà fait. C'est la seule liste qui fait foi ; cette section n'en garde plus de copie.
 
-### Urgent : avant d'ouvrir les inscriptions au public
-
-| Priorité | Action | Pourquoi | Temps |
-|---|---|---|---|
-| ✅ | **Emails avec Resend (tâche 11)** : fait par vous. J'ai activé la confirmation d'email dans `deploy/compose.prod.yaml` : elle sera en ligne dès la fusion de la PR n° 1. **Juste après la fusion**, testez une inscription avec une vraie adresse, et « mot de passe oublié ». | C'était la faille la plus grave : sans confirmation, n'importe qui pouvait créer un compte avec l'email d'un autre. | 5 min de test |
-| ✅ | **Compte super administrateur en production** (tâche 12) : fait par vous, double authentification reliée et vérifiée. | Rien à faire. | — |
-| **3** | **Paiement des abonnements** (tâche 15) : Stripe Tax, SEPA, PayPal, puis `billing-setup.sh` sur le serveur. Depuis le lot B, ce même script crée aussi le point de réception des **comptes Stripe de vos clients** : ✅ relancé, notifications en temps réel actives. | Sans lui, vous ne pouvez pas encaisser ; sans la relance, les chiffres de vos clients se mettent à jour chaque heure au lieu de quelques secondes. | 30 min (relance : 1 min) |
-| **4** | **Vrais témoignages** (tâche 8). Publier de faux avis est interdit. | Obligation légale. | Variable |
-| **5** | **Mentions légales et relecture juridique** de la confidentialité (tâche 9) | Obligation légale. Points à faire valider : durée de conservation des visites, empreinte des emails (voir lot A). | Avec un juriste |
-| **6** | **Email de contact** dans Administration › Paramètres (tâche 10) | Le bouton « Nous contacter » est vide sinon. | 2 min |
-
-### Important : dans le mois qui suit
-
-| Action | Pourquoi |
-|---|---|
-| ✅ **Connexion Google et GitHub** (tâches 3 et 4) : déjà activées en production (vérifié le 13 novembre après la mise en ligne). | Rien à faire. |
-| **Surveillance externe gratuite** (UptimeRobot ou Better Stack) sur `https://saasclair.com/api/health`, toutes les 5 min, alerte par email | Si le site tombe, personne n'est prévenu. |
-| **Sauvegardes hors du serveur** : activer les sauvegardes Hostinger du VPS, ou un stockage objet | Les sauvegardes de nuit restent sur le même serveur. S'il est perdu, tout est perdu. |
-| **Clé Stripe restreinte en lecture** pour l'import des comptes clients, distincte de la clé de facturation. Je vous guiderai : c'est à confirmer sur votre compte Stripe. | Si la clé actuelle fuitait, elle donnerait l'écriture sur le Stripe de tous vos clients. |
-| **Restreindre la clé SSH de déploiement** à la seule commande `deploy.sh`, dans `authorized_keys` sur le serveur. Je prépare la ligne exacte. | Le compte de déploiement équivaut à un accès administrateur au VPS, qui héberge aussi vos 7 autres sites. |
-| **Mesure de performance mobile** sur PageSpeed Insights (`https://saasclair.com`) | Non mesurable de façon fiable sur votre poste. |
-
-### Décisions à prendre (une réponse courte suffit)
-
-1. **Écrans vides** : afficher une illustration fixe, clairement étiquetée « À quoi ressemblera
-   cet écran », à la place de « Pas encore de données » ? Votre règle « aucune donnée de test en
-   production » reste respectée : c'est un dessin, pas des chiffres.
-2. **Essai de 7 jours** : le faire démarrer **à l'arrivée des premières données** plutôt qu'à la
-   création du compte ? Aujourd'hui, si le développeur met 3 jours à installer la ligne, il ne
-   reste à l'utilisateur que 4 jours de données.
-3. **Durées de conservation** : visites 25 mois et identifiant visiteur 13 mois, comme le
-   recommande la CNIL ? Ce sera à faire valider par votre juriste.
-4. ~~**Ordre des lots**~~ : lot C fait (13 novembre). Suite recommandée : **D → A → B**.
-5. **Relier automatiquement les inscrits à leurs visites (lot C4, partie restante)** : le script
-   lirait l'email saisi dans le formulaire de la page d'inscription détectée, et n'en enverrait
-   que l'empreinte. Aujourd'hui, il faut ajouter une ligne `saasclair("identify", email)`, ce qui
-   contredit un peu la « configuration zéro ». C'est une donnée personnelle (pseudonymisée) :
-   à valider avec votre juriste et à mentionner dans la politique de confidentialité.
-6. **Même visiteur sur `www.` et `app.`** : l'identifiant du visiteur est aujourd'hui gardé dans
-   le navigateur, site par site. Pour le partager entre vos sous-domaines, il faudrait un cookie
-   sur le domaine principal (13 mois au plus). Or le script promet aujourd'hui « sans cookie » :
-   à décider avec la question 5.
-
----
+En bref, au 14 novembre : vérifier que le paiement est ouvert, m'envoyer les informations des
+mentions légales, faire relire la confidentialité, brancher une surveillance gratuite du site et
+activer les sauvegardes Hostinger. Puis 5 décisions courtes.
 
 ## 4. Ce que je propose de faire ensuite (vous me dites « lance le lot X »)
 
