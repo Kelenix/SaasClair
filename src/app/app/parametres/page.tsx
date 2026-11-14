@@ -71,6 +71,7 @@ async function Settings({ searchParams }: Props) {
               pageviewsThisMonth={pageviewsThisMonth ?? 0}
               paymentResult={paiement ?? null}
               now={now}
+              isAdmin={context.isSuperAdmin}
             />
           ),
           confidentialite: (

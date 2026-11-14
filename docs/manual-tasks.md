@@ -7,7 +7,7 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 2 tâches | environ 25 min |
+| **À faire** avant d'ouvrir au public | 2 tâches | environ 10 min |
 | **Facultatif**, quand vous voulez | 5 tâches | — |
 | **Décisions** à me donner | aucune | — |
 | **Déjà fait** | 18 tâches et décisions | rien à faire |
@@ -16,21 +16,25 @@
 
 ## 1. À faire avant d'ouvrir au public
 
-### ⬜ 1. Vérifier que le paiement des abonnements est ouvert (5 à 20 min)
+### ⬜ 1. Paiement des abonnements : un essai (5 min)
 
-**Comment savoir si c'est déjà bon** : connectez-vous à SaasClair avec un compte de test, allez
-dans Paramètres › Abonnement et choisissez une offre.
-- La page de paiement Stripe s'ouvre : **c'est bon**, rien à faire.
-- Vous voyez « Le paiement en ligne n'est pas encore ouvert » : faites les 3 étapes ci-dessous.
+**Vérifié le 14 novembre dans votre Stripe (compte « Kelenix Teck »)** :
+- ✅ Compte actif : paiements et virements vers votre banque ouverts, aucune vérification en
+  attente.
+- ✅ Les 3 offres et leurs 6 prix existent et correspondent au site (Starter 9,99 €, Growth
+  19,99 €, Pro 29,90 € par mois ; −20 % à l'année), hors taxe, catégorie « logiciel en ligne ».
+- ✅ Taxes : siège déclaré en Italie dans Stripe Tax.
+- ✅ Carte bancaire, Apple Pay et Link actifs.
+- ✅ **Google Pay** activé par moi le 14 novembre, avec votre accord.
+- ➖ **Prélèvement SEPA** : laissé désactivé, à votre demande (Stripe exigeait en plus une
+  vérification d'identité). Rien à faire.
+- ➖ **PayPal** : laissé désactivé, à votre demande (il demandait l'adresse de l'entreprise et un
+  compte PayPal). Rien à faire.
 
-Dans votre compte Stripe, en **mode réel** :
-1. **Taxes › Paramètres** : activez **Stripe Tax**, indiquez l'adresse de votre entreprise et
-   votre numéro de TVA.
-2. **Paramètres › Moyens de paiement** : activez **Prélèvement SEPA** et **PayPal**.
-3. **Paramètres › Facturation › Factures et reçus** : vérifiez la raison sociale, l'adresse et
-   le numéro de TVA imprimés sur les factures.
-
-Rien à faire sur le serveur : l'installation (`billing-setup.sh`) est déjà faite.
+**Puis l'essai** : avec un compte SaasClair **autre que votre compte administrateur** (lui ne
+voit pas les offres, il a l'accès complet offert), allez dans Paramètres › Abonnement et
+choisissez une offre : la page de paiement Stripe doit s'ouvrir. Vous pouvez la fermer sans
+payer.
 
 ### ⬜ 2. Sauvegardes hors du serveur (5 min)
 
