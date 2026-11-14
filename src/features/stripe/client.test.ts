@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
-const { STRIPE_VERSION, stripeGet } = await import("./client");
+const { STRIPE_VERSION, platformAccountId, readTarget, stripeGet } = await import("./client");
 
 const config = {
   secretKey: "sk_test_x",
@@ -14,6 +14,35 @@ const json = (status: number, body: unknown, headers: Record<string, string> = {
   new Response(JSON.stringify(body), { status, headers });
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe("compte de SaasClair lui-même", () => {
+  it("sans en-tête Stripe-Account quand le projet lit le compte de la plateforme", async () => {
+    const own = { ...config, secretKey: "sk_test_own" };
+    const fetch = vi.fn(async (url: URL | string) =>
+      String(url).endsWith("/v1/account") ? json(200, { id: "acct_platform" }) : json(200, {}),
+    );
+    vi.stubGlobal("fetch", fetch);
+    expect(await readTarget(own, "acct_platform")).toBe("");
+    expect(await readTarget(own, "acct_client")).toBe("acct_client");
+    // Lu une seule fois, puis gardé.
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    await stripeGet(own, "", "/v1/subscriptions");
+    const [, init] = fetch.mock.calls[1] as unknown as [URL, RequestInit];
+    expect(init.headers).not.toHaveProperty("Stripe-Account");
+  });
+
+  it("compte de la plateforme illisible : l'en-tête reste, nouvel essai 5 minutes plus tard", async () => {
+    const failing = { ...config, secretKey: "sk_test_down" };
+    const fetch = vi.fn(async () => json(500, {}));
+    vi.stubGlobal("fetch", fetch);
+    expect(await readTarget(failing, "acct_client")).toBe("acct_client");
+    expect(await platformAccountId(failing, Date.now() + 60_000)).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await platformAccountId(failing, Date.now() + 6 * 60_000);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+});
 
 describe("stripeGet", () => {
   it("version figée, compte connecté, paramètres répétés (expand[])", async () => {

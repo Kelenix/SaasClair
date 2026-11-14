@@ -7,7 +7,7 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 1 tâche | environ 5 min |
+| **À faire** avant d'ouvrir au public | 2 tâches | environ 7 min |
 | **Facultatif**, quand vous voulez | 6 tâches | — |
 | **Décisions** à me donner | aucune | — |
 | **Déjà fait** | 22 tâches et décisions | rien à faire |
@@ -21,6 +21,20 @@
 Les sauvegardes de chaque nuit restent sur le même serveur : s'il est perdu, elles aussi.
 Dans **hPanel › VPS › Instantanés et sauvegardes**, activez les sauvegardes automatiques de
 Hostinger.
+
+### ⬜ 2. Relier le bon compte Stripe à votre projet saasclair.com (2 min)
+
+Votre projet lit le compte Stripe « Kelenix Tech », alors que vos abonnements SaasClair
+arrivent sur l'autre compte, « Kelenix Teck ». C'est pour cela que Revenus, Churn et Insights
+sont vides. Une fois la correction du 14 novembre en ligne :
+
+1. Connectez-vous à SaasClair avec le compte qui porte le projet saasclair.com (celui qui a payé
+   l'offre Starter).
+2. Ouvrez **Paramètres › Projet**, ligne **Stripe**, et cliquez sur **« Changer de compte »**.
+3. Dans la fenêtre Stripe, choisissez **« Kelenix Teck »**, puis autorisez.
+
+En une minute, votre abonnement Starter apparaît dans Revenus et Churn. L'ancien compte
+« Kelenix Tech » est détaché tout seul, et ses données sont effacées de SaasClair.
 
 ---
 

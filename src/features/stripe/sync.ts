@@ -1,6 +1,6 @@
 import "server-only";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getObject, listAll, type StripeConfig } from "./client";
+import { getObject, listAll, readTarget, type StripeConfig } from "./client";
 import {
   changesOf,
   customerCards,
@@ -110,12 +110,17 @@ async function saveAll(
  * mois. Lancé à la connexion, puis une fois par jour ; les écrans gardent les données
  * précédentes pendant l'import.
  */
-export async function syncStripeAccount(config: StripeConfig, projectId: string, account: string) {
+export async function syncStripeAccount(
+  config: StripeConfig,
+  projectId: string,
+  connected: string,
+) {
   const service = createServiceClient();
   if (!service) return;
   const startedAt = new Date().toISOString();
   await service.from("projects").update({ stripe_sync_status: "importing" }).eq("id", projectId);
   try {
+    const account = await readTarget(config, connected);
     const since = Math.floor(Date.now() / 1000) - INVOICE_DAYS * DAY_S;
     const [customers, subscriptions, invoices, reference] = await Promise.all([
       // Moyens de paiement dépliés : seul le mois d'expiration des cartes est gardé (risque de
@@ -156,11 +161,12 @@ export type StripeChanges = ReturnType<typeof changesOf>;
 export async function refreshStripeObjects(
   config: StripeConfig,
   projectId: string,
-  account: string,
+  connected: string,
   changes: StripeChanges,
 ) {
   const service = createServiceClient();
   if (!service) return;
+  const account = await readTarget(config, connected);
   const customerIds = new Set([...changes.customers, ...changes.subscriptionsOf]);
   const [customers, ownSubscriptions, subscriptions, invoices, reference] = await Promise.all([
     Promise.all(
@@ -250,7 +256,7 @@ export async function syncStripeProject(config: StripeConfig, project: Project) 
     const since = Math.floor(Date.parse(project.stripe_synced_at) / 1000) - OVERLAP_S;
     const events = await listAll<StripeEvent>(
       config,
-      project.stripe_account_id,
+      await readTarget(config, project.stripe_account_id),
       "/v1/events",
       { "created[gt]": String(since), "types[]": TRACKED_EVENTS },
       MAX_CHANGES + 1,

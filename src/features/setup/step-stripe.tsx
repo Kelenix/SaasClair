@@ -189,6 +189,9 @@ export function StepStripe({ available, readOnly, demo, result, onDone, onSkip }
                 ? "Accès en lecture seule. Nous ne pouvons rien modifier."
                 : "SaasClair ne fait que lire vos données : nous ne modifions jamais rien. Stripe affichera « lecture et écriture » : c'est la seule autorisation qu'il propose."}
             </p>
+            <p className="max-w-sm text-[13px] text-slate">
+              Plusieurs comptes Stripe ? Choisissez celui qui encaisse vos abonnements.
+            </p>
             <AnimatePresence>
               {notice && (
                 <m.p

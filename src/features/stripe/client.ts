@@ -105,6 +105,31 @@ export const STRIPE_VERSION = "2025-03-31.basil";
 
 type Params = Record<string, string | string[]>;
 
+/** Compte Stripe de SaasClair lui-même : lu une fois puis gardé (après un échec, 5 minutes). */
+const platformIds = new Map<string, { id: string | null; until: number }>();
+
+export async function platformAccountId(config: StripeConfig, now = Date.now()) {
+  const known = platformIds.get(config.secretKey);
+  if (known && known.until > now) return known.id;
+  const response = await fetch(`${config.apiBase}/v1/account`, {
+    headers: { Authorization: `Bearer ${config.secretKey}`, "Stripe-Version": STRIPE_VERSION },
+  }).catch(() => null);
+  const body = response?.ok
+    ? ((await response.json().catch(() => null)) as { id?: string } | null)
+    : null;
+  const id = body?.id ?? null;
+  platformIds.set(config.secretKey, { id, until: id ? Infinity : now + 5 * 60_000 });
+  return id;
+}
+
+/**
+ * Compte à lire : celui du client (en-tête Stripe-Account), ou "" quand c'est le compte de
+ * SaasClair lui-même (l'éditeur qui mesure son propre SaaS) : Stripe refuse alors l'en-tête.
+ */
+export async function readTarget(config: StripeConfig, account: string) {
+  return account && account === (await platformAccountId(config)) ? "" : account;
+}
+
 const RETRIES = 4;
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -129,7 +154,8 @@ export async function stripeGet(
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${config.secretKey}`,
-        "Stripe-Account": account,
+        // Sans compte : le compte de SaasClair lui-même (voir readTarget).
+        ...(account ? { "Stripe-Account": account } : {}),
         "Stripe-Version": STRIPE_VERSION,
       },
     }).catch(() => null);
