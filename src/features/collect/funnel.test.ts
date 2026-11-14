@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { computeFunnel, funnelFromSummary, pathOf, type FunnelRow } from "./funnel";
+import {
+  adviceFor,
+  computeFunnel,
+  funnelFromSummary,
+  MIN_SAMPLE,
+  pathOf,
+  STEP_ADVICE,
+  type FunnelRow,
+} from "./funnel";
 
 const row = (visitor: string, path: string, extra: Partial<FunnelRow> = {}): FunnelRow => ({
   visitor_id: visitor,
@@ -42,8 +50,8 @@ describe("computeFunnel", () => {
       ["signup", 2],
       ["identified", 1],
     ]);
-    // 1 inscrit sur 2 inscriptions ouvertes (50 %) : la plus forte perte.
-    expect(funnel.weakest).toBe(3);
+    // 4 visiteurs : trop peu pour désigner une étape à corriger.
+    expect(funnel.weakest).toBe(-1);
   });
 
   it("segments par appareil et canal vers la dernière étape", () => {
@@ -108,5 +116,54 @@ describe("tunnel jusqu'au paiement (Stripe connecté)", () => {
     ]);
     // Sans Stripe : le tunnel s'arrête aux inscrits.
     expect(funnelFromSummary(summary, paths).steps.at(-1)?.id).toBe("identified");
+  });
+});
+
+describe("étape à corriger en premier", () => {
+  const group = (extra: object, visitors: number) => ({
+    device: "desktop",
+    channel: "seo",
+    pricing: false,
+    signup: false,
+    identified: false,
+    visitors,
+    ...extra,
+  });
+  const paths = { pricing: "/tarifs", signup: "/essai" };
+
+  it("désignée seulement avec assez de visiteurs à l'étape d'avant", () => {
+    // 100 visiteurs → 40 tarifs → 4 inscriptions ouvertes → 1 inscrit. La chute 4 → 1 est
+    // la plus forte en taux, mais 4 personnes ne suffisent pas : c'est tarifs → inscription.
+    const summary = {
+      groups: [
+        group({}, 60),
+        group({ pricing: true }, 36),
+        group({ pricing: true, signup: true }, 3),
+        group({ pricing: true, signup: true, identified: true }, 1),
+      ],
+      paths: [],
+    };
+    const funnel = funnelFromSummary(summary, paths);
+    expect(funnel.steps.map((step) => step.count)).toEqual([100, 40, 4, 1]);
+    expect(funnel.steps[funnel.weakest].id).toBe("signup");
+  });
+
+  it(`moins de ${MIN_SAMPLE} visiteurs : aucune étape désignée`, () => {
+    const summary = { groups: [group({}, 2)], paths: [] };
+    expect(funnelFromSummary(summary, { pricing: null, signup: "/essai" }).weakest).toBe(-1);
+  });
+
+  it("n'accuse pas les tarifs quand les visiteurs n'en ont pas vu", () => {
+    const visit = { id: "visit", label: "Visiteurs", count: 50 } as const;
+    const pricing = { id: "pricing", label: "Tarifs vus", count: 20 } as const;
+    const signup = { id: "signup", label: "Inscription ouverte", count: 2 } as const;
+    const identified = { id: "identified", label: "Inscrits", count: 1 } as const;
+    expect(adviceFor(signup, visit)?.title).toBe("Peu de visiteurs vont jusqu'à l'inscription.");
+    expect(adviceFor(identified, visit)?.title).toBe(
+      "Peu de visiteurs vont jusqu'à l'inscription.",
+    );
+    expect(adviceFor(signup, pricing)).toBe(STEP_ADVICE.signup);
+    expect(adviceFor(identified, pricing)).toBe(STEP_ADVICE.signup);
+    expect(adviceFor(identified, signup)).toBe(STEP_ADVICE.identified);
   });
 });
