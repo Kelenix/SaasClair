@@ -16,21 +16,24 @@
 
 ## 1. À faire avant d'ouvrir au public
 
-### ⬜ 1. Vérifier que le paiement des abonnements est ouvert (5 à 20 min)
+### ⬜ 1. Paiement des abonnements : 2 réglages, puis un essai (10 min)
 
-**Comment savoir si c'est déjà bon** : connectez-vous à SaasClair avec un compte de test, allez
-dans Paramètres › Abonnement et choisissez une offre.
-- La page de paiement Stripe s'ouvre : **c'est bon**, rien à faire.
-- Vous voyez « Le paiement en ligne n'est pas encore ouvert » : faites les 3 étapes ci-dessous.
+**Vérifié le 14 novembre dans votre Stripe (compte « Kelenix Teck »)** :
+- ✅ Compte actif : paiements et virements vers votre banque ouverts, aucune vérification en
+  attente.
+- ✅ Les 3 offres et leurs 6 prix existent et correspondent au site (Starter 9,99 €, Growth
+  19,99 €, Pro 29,90 € par mois ; −20 % à l'année), hors taxe, catégorie « logiciel en ligne ».
+- ✅ Taxes : siège déclaré en Italie dans Stripe Tax.
+- ✅ Carte bancaire, Apple Pay et Link actifs.
+- ⬜ **Google Pay** et **prélèvement SEPA** désactivés : dites-moi « oui » et je les active
+  (Stripe demande votre accord pour ce réglage), ou faites-le dans Stripe › Paramètres ›
+  Paiements › Moyens de paiement › configuration « Default » › Activer.
+- ⬜ **PayPal** désactivé : à relier vous-même (il demande votre compte PayPal), au même endroit.
 
-Dans votre compte Stripe, en **mode réel** :
-1. **Taxes › Paramètres** : activez **Stripe Tax**, indiquez l'adresse de votre entreprise et
-   votre numéro de TVA.
-2. **Paramètres › Moyens de paiement** : activez **Prélèvement SEPA** et **PayPal**.
-3. **Paramètres › Facturation › Factures et reçus** : vérifiez la raison sociale, l'adresse et
-   le numéro de TVA imprimés sur les factures.
-
-Rien à faire sur le serveur : l'installation (`billing-setup.sh`) est déjà faite.
+**Puis l'essai** : avec un compte SaasClair **autre que votre compte administrateur** (lui ne
+voit pas les offres, il a l'accès complet offert), allez dans Paramètres › Abonnement et
+choisissez une offre : la page de paiement Stripe doit s'ouvrir. Vous pouvez la fermer sans
+payer.
 
 ### ⬜ 2. Sauvegardes hors du serveur (5 min)
 

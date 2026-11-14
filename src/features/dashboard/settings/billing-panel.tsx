@@ -32,6 +32,8 @@ type BillingPanelProps = {
   pageviewsThisMonth: number;
   paymentResult: string | null;
   now: Date;
+  /** Super administrateur : accès complet offert, sans abonnement ni limite. */
+  isAdmin?: boolean;
 };
 
 /** Abonnement et facturation, sur les vraies données du compte (paiement : Stripe, ADR-027). */
@@ -41,11 +43,34 @@ export function BillingPanel({
   pageviewsThisMonth,
   paymentResult,
   now,
+  isAdmin = false,
 }: BillingPanelProps) {
   const plan = (billing.plan in VISIT_LIMIT ? billing.plan : "trial") as keyof typeof VISIT_LIMIT;
   const limit = VISIT_LIMIT[plan];
   const daysLeft = trialDaysLeft(billing.trialEndsAt, now);
   const isPaid = access === "paid" || access === "past_due";
+
+  // Compte administrateur : rien à payer, et les offres ne s'affichent pas pour lui (elles
+  // s'affichent pour les clients en essai). Le dire clairement plutôt que « Essai gratuit ».
+  if (isAdmin) {
+    return (
+      <Card>
+        <CardEyebrow>Votre abonnement</CardEyebrow>
+        <p className="mb-2 font-serif text-xl font-semibold text-forest">
+          Compte administrateur · accès complet offert
+        </p>
+        <p className="text-[15px] text-ink">
+          Aucun paiement, aucune limite de visites. Vos clients en essai voient ici les offres
+          Starter, Growth et Pro, et le bouton de paiement. Pour tester un paiement, utilisez un
+          autre compte que celui-ci.
+        </p>
+        <p className="mt-2 text-sm text-slate">
+          {formatNumber(pageviewsThisMonth)} page{pageviewsThisMonth > 1 ? "s" : ""} vue
+          {pageviewsThisMonth > 1 ? "s" : ""} ce mois-ci.
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
