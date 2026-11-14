@@ -4,6 +4,11 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Ajouté
+- **Mentions légales** (`/mentions-legales`) : éditeur Kelenix Tech, directeur de la publication,
+  contact, hébergeur Hostinger ; lien dans le pied de page et le plan du site. Adresse du siège
+  et SIREN à compléter quand l'éditeur les fournit.
+
 ### Corrigé
 - **Connexion avec Google et GitHub** : elle échouait (« Ce lien n'a pas pu ouvrir votre
   session ») dans un navigateur où une inscription, un « mot de passe oublié » ou un lien par

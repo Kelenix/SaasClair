@@ -71,9 +71,9 @@ navigateur. Il faut Docker et Supabase lancés (`npm run up`) : je les fais au p
 14 novembre) : ce qui reste à faire, étape par étape, les décisions à me donner, et tout ce qui
 est déjà fait. C'est la seule liste qui fait foi ; cette section n'en garde plus de copie.
 
-En bref, au 14 novembre : vérifier que le paiement est ouvert, m'envoyer les informations des
-mentions légales et activer les sauvegardes Hostinger. Puis 4 décisions courtes. (Surveillance
-du site et politique de confidentialité : faites.)
+En bref, au 14 novembre : vérifier que le paiement est ouvert et activer les sauvegardes
+Hostinger. Puis 4 décisions courtes. (Surveillance du site, politique de confidentialité et
+mentions légales : faites.)
 
 ## 4. Ce que je propose de faire ensuite (vous me dites « lance le lot X »)
 
