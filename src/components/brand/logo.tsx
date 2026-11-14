@@ -24,6 +24,9 @@ export function Logo({ variant = "full", className, priority }: LogoProps) {
       height={height}
       alt="SaasClair"
       priority={priority}
+      // Affiché à 40 px de haut au plus (226 px de large) : le navigateur choisit une petite
+      // image, plutôt que la version de 1 920 px (87 Ko pour un logo).
+      sizes={variant === "mark" ? "96px" : "240px"}
       // Taille minimale du brand kit : 120 px de large pour le logo, 24 px pour le monogramme.
       className={cn(variant === "mark" ? "size-8 min-w-6" : "h-7 w-auto min-w-[120px]", className)}
     />

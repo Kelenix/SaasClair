@@ -4,7 +4,7 @@ import type { Period } from "@/features/dashboard/period";
 import { fetchAll } from "@/lib/supabase/fetch-all";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { createClient, getOwnProject } from "@/lib/supabase/server";
 import { computeRevenue, type RealRevenue } from "./metrics";
 
 const MAX_SUBSCRIPTIONS = 20_000;
@@ -19,22 +19,22 @@ type Client = SupabaseClient<Database>;
  * Revenus et churn calculés sur les données Stripe importées du compte connecté (la RLS ne laisse
  * lire que les siennes). Null tant que Stripe n'est pas connecté (import terminé).
  */
-export const getRealRevenue = cache(
-  async (period: Period, now: Date): Promise<RealRevenue | null> => {
-    const user = await getUser();
-    if (!user) return null;
-    const supabase = await createClient();
-    // Filtre explicite : le super administrateur voit aussi les projets des autres (RLS).
-    const { data: project } = await supabase
-      .from("projects")
-      .select("id, stripe_account_id, stripe_connected_at")
-      .eq("owner_id", user.id)
-      .maybeSingle();
-    // Première importation réussie : ensuite, les resynchronisations n'effacent pas l'écran.
-    if (!project?.stripe_account_id || !project.stripe_connected_at) return null;
-    return loadRevenue(supabase, project.id, period, now);
-  },
-);
+export const getRealRevenue = (period: Period, now: Date) =>
+  // Une lecture par période et par minute dans une même requête : l'accueil, les insights et la
+  // barre de question partagent le même calcul au lieu de relire Stripe chacun.
+  revenueFor(period, now.toISOString().slice(0, 16));
+
+const revenueFor = cache(async (period: Period, minute: string): Promise<RealRevenue | null> => {
+  // Fin de la minute : une visite ou un abonnement arrivé dans cette minute est compté.
+  const now = new Date(Date.parse(`${minute}:00.000Z`) + 59_999);
+  // Projet du compte connecté, lu une fois par requête (filtre explicite sur le propriétaire :
+  // le super administrateur voit aussi les projets des autres par la RLS).
+  const project = await getOwnProject();
+  const supabase = await createClient();
+  // Première importation réussie : ensuite, les resynchronisations n'effacent pas l'écran.
+  if (!project?.stripe_account_id || !project.stripe_connected_at) return null;
+  return loadRevenue(supabase, project.id, period, now);
+});
 
 /**
  * Revenus d'un projet, avec le client donné : celui de la session (écrans, RLS), ou celui de la

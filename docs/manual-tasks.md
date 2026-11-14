@@ -7,36 +7,16 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 2 tâches | environ 10 min |
+| **À faire** avant d'ouvrir au public | 1 tâche | environ 5 min |
 | **Facultatif**, quand vous voulez | 5 tâches | — |
 | **Décisions** à me donner | aucune | — |
-| **Déjà fait** | 19 tâches et décisions | rien à faire |
+| **Déjà fait** | 20 tâches et décisions | rien à faire |
 
 ---
 
 ## 1. À faire avant d'ouvrir au public
 
-### ⬜ 1. Paiement des abonnements : un essai (5 min)
-
-**Vérifié le 14 novembre dans votre Stripe (compte « Kelenix Teck »)** :
-- ✅ Compte actif : paiements et virements vers votre banque ouverts, aucune vérification en
-  attente.
-- ✅ Les 3 offres et leurs 6 prix existent et correspondent au site (Starter 9,99 €, Growth
-  19,99 €, Pro 29,90 € par mois ; −20 % à l'année), hors taxe, catégorie « logiciel en ligne ».
-- ✅ Taxes : siège déclaré en Italie dans Stripe Tax.
-- ✅ Carte bancaire, Apple Pay et Link actifs.
-- ✅ **Google Pay** activé par moi le 14 novembre, avec votre accord.
-- ➖ **Prélèvement SEPA** : laissé désactivé, à votre demande (Stripe exigeait en plus une
-  vérification d'identité). Rien à faire.
-- ➖ **PayPal** : laissé désactivé, à votre demande (il demandait l'adresse de l'entreprise et un
-  compte PayPal). Rien à faire.
-
-**Puis l'essai** : avec un compte SaasClair **autre que votre compte administrateur** (lui ne
-voit pas les offres, il a l'accès complet offert), allez dans Paramètres › Abonnement et
-choisissez une offre : la page de paiement Stripe doit s'ouvrir. Vous pouvez la fermer sans
-payer.
-
-### ⬜ 2. Sauvegardes hors du serveur (5 min)
+### ⬜ 1. Sauvegardes hors du serveur (5 min)
 
 Les sauvegardes de chaque nuit restent sur le même serveur : s'il est perdu, elles aussi.
 Dans **hPanel › VPS › Instantanés et sauvegardes**, activez les sauvegardes automatiques de
@@ -73,6 +53,7 @@ Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 nov
 | Connexion avec GitHub | ✅ Active, vérifiée le 13 novembre |
 | Emails (Resend) : confirmation, mot de passe oublié, lien de connexion | ✅ Configuré par vous (les alertes passent aussi par lui : premier envoi à confirmer) |
 | Stripe Connect : vos clients relient leur Stripe | ✅ Clés en place sur le serveur |
+| Paiement des abonnements | ✅ Testé par vous le 14 novembre : fonctionne. Stripe vérifié (compte actif, 6 prix justes, taxes) ; carte, Apple Pay, Google Pay et Link ; SEPA et PayPal laissés désactivés à votre demande |
 | Installation de la facturation dans Stripe (`billing-setup.sh`) | ✅ Lancée par vous, notifications en temps réel actives |
 | Compte super administrateur en production | ✅ Créé, double authentification reliée |
 | Email de contact (bouton « Nous contacter », pied de page) | ✅ En place sur le site |

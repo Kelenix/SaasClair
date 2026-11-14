@@ -1,7 +1,8 @@
 import "server-only";
+import { cache } from "react";
 import type { Period } from "@/features/dashboard/period";
 import { fetchAll } from "@/lib/supabase/fetch-all";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { createClient, getOwnProject } from "@/lib/supabase/server";
 import { CHANNEL_LABELS, type Channel } from "@/features/attribution/attribution";
 import {
   acquisitionFromSummary,
@@ -22,13 +23,17 @@ const MAX_CUSTOMERS = 50_000;
  * propre site), regroupées par la base pour l'écran Acquisition : quelques totaux, quel que soit
  * le nombre de visites.
  */
-export async function getRealAcquisition(period: Period, now: Date): Promise<RealAcquisition> {
-  const user = await getUser();
-  const supabase = await createClient();
-  const { data: project } = user
-    ? await supabase.from("projects").select("id").eq("owner_id", user.id).maybeSingle()
-    : { data: null };
+export const getRealAcquisition = (period: Period, now: Date) =>
+  // Une lecture par période et par minute dans une même requête (voir getRealRevenue).
+  acquisitionFor(period, now.toISOString().slice(0, 16));
+
+const acquisitionFor = cache(async (period: Period, minute: string): Promise<RealAcquisition> => {
+  // Fin de la minute : une visite ou un abonnement arrivé dans cette minute est compté.
+  const now = new Date(Date.parse(`${minute}:00.000Z`) + 59_999);
+  // Projet lu une fois par requête (lib/supabase/server.ts), partagé avec les autres blocs.
+  const project = await getOwnProject();
   if (!project) return acquisitionFromSummary(null, period);
+  const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("acquisition_summary", {
     p_project: project.id,
@@ -38,7 +43,7 @@ export async function getRealAcquisition(period: Period, now: Date): Promise<Rea
   });
   if (error) console.error("Acquisition :", error.message);
   return acquisitionFromSummary((data as AcquisitionSummary | null) ?? null, period);
-}
+});
 
 /**
  * Clients payants reliés à leur canal d'arrivée (empreinte de l'email identifiée par le script,
@@ -46,15 +51,9 @@ export async function getRealAcquisition(period: Period, now: Date): Promise<Rea
  */
 export async function getCustomerLinks(revenue: RealRevenue | null): Promise<CustomerLinks | null> {
   if (!revenue) return null;
-  const user = await getUser();
-  if (!user) return null;
-  const supabase = await createClient();
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id")
-    .eq("owner_id", user.id)
-    .maybeSingle();
+  const project = await getOwnProject();
   if (!project) return null;
+  const supabase = await createClient();
   const [customers, { data: touches }] = await Promise.all([
     fetchAll(
       (from, to) =>
@@ -87,15 +86,9 @@ export async function getRealFunnel(
   paths: KeyPaths,
   options: { stripe?: boolean } = {},
 ): Promise<RealFunnel | null> {
-  const user = await getUser();
-  if (!user) return null;
-  const supabase = await createClient();
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id")
-    .eq("owner_id", user.id)
-    .maybeSingle();
+  const project = await getOwnProject();
   if (!project) return null;
+  const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("funnel_summary", {
     p_project: project.id,
