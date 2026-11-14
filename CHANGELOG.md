@@ -28,6 +28,10 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 - **Logo** : image adaptée à sa taille d'affichage (quelques Ko au lieu de 87 Ko).
 
 ### Corrigé
+- **Tunnel : plus de conclusion hâtive** : « Étape à corriger en premier » n'apparaît qu'avec au
+  moins 20 visiteurs à l'étape d'avant ; en dessous, « Encore trop tôt pour conclure ». Le conseil
+  dépend de l'étape d'avant : sans page de tarifs mesurée, on n'accuse plus les tarifs. Plus de
+  « 0,0 % seulement » : « Aucun des 25 visiteurs n'est passé… ».
 - **Fausse recommandation « Ajoutez un lien Tarifs »** : l'analyse du site ignorait les liens
   vers une section de l'accueil (`/#tarifs`). Une section « Tarifs » compte désormais comme des
   tarifs visibles (une vraie page reste préférée) ; le tunnel, lui, ne la prend pas pour une page

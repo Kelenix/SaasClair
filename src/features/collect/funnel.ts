@@ -26,10 +26,19 @@ export type RealFunnelStep = {
 
 export type Segment = { id: string; name: string; visitors: number; rate: number };
 
+/**
+ * Visiteurs nécessaires avant de conclure (étape à corriger, comparaison d'appareils ou de
+ * canaux) : en dessous, un seul visiteur fait passer un taux à 0 % ou à 100 %.
+ */
+export const MIN_SAMPLE = 20;
+
 export type RealFunnel = {
   visitors: number;
   steps: RealFunnelStep[];
-  /** Étape (index) qui perd le plus de visiteurs par rapport à la précédente, sinon -1. */
+  /**
+   * Étape (index) qui perd le plus de visiteurs par rapport à la précédente, parmi celles où
+   * au moins MIN_SAMPLE visiteurs sont arrivés à l'étape d'avant ; sinon -1.
+   */
   weakest: number;
   /** Part des visiteurs qui atteignent la dernière étape, par appareil et par canal. */
   segments: { device: Segment[]; channel: Segment[] };
@@ -171,11 +180,14 @@ export function funnelFromSummary(
     staged.reduce((total, group) => total + (group.stage >= index ? group.visitors : 0), 0);
   const steps = order.map((id, index) => ({ id, label: labels[id], count: countFrom(index) }));
 
+  // Une étape n'est désignée qu'avec assez de visiteurs avant elle : sur 2 visiteurs, un seul
+  // départ ferait croire à une fuite de 50 %.
   let weakest = -1;
   let worstRate = Infinity;
   for (let i = 1; i < steps.length; i++) {
-    const rate = steps[i - 1].count ? steps[i].count / steps[i - 1].count : 1;
-    if (steps[i - 1].count > 0 && rate < worstRate) {
+    const before = steps[i - 1].count;
+    const rate = steps[i].count / before;
+    if (before >= MIN_SAMPLE && rate < worstRate) {
       worstRate = rate;
       weakest = i;
     }
@@ -267,3 +279,25 @@ export const STEP_ADVICE: Record<
       "Réduisez le formulaire à l'email et au mot de passe, et proposez la connexion avec Google.",
   },
 };
+
+/** Visiteurs qui vont de l'accueil à l'inscription sans page de tarifs mesurée entre les deux. */
+const FROM_HOME_ADVICE = {
+  title: "Peu de visiteurs vont jusqu'à l'inscription.",
+  cause:
+    "L'accueil ne dit pas assez vite ce que fait votre produit, ou le bouton d'inscription est peu visible.",
+  action:
+    "Mettez un bouton « Essai gratuit » en haut de l'accueil, répétez-le après chaque section, et dites en une phrase ce que le client y gagne.",
+};
+
+/**
+ * Conseil pour une étape, selon l'étape d'avant : on n'accuse pas les tarifs quand les
+ * visiteurs n'ont pas vu de page de tarifs.
+ */
+export function adviceFor(step: RealFunnelStep, previous: RealFunnelStep) {
+  if (step.id === "visit") return null;
+  const fromHome = previous.id === "visit" && (step.id === "signup" || step.id === "identified");
+  if (fromHome) return FROM_HOME_ADVICE;
+  // Tarifs vus, puis inscrits (page d'inscription inconnue) : ce sont les tarifs qui freinent.
+  if (previous.id === "pricing" && step.id === "identified") return STEP_ADVICE.signup;
+  return STEP_ADVICE[step.id];
+}

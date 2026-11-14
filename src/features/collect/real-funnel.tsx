@@ -1,4 +1,4 @@
-import { Sparkles, Target } from "lucide-react";
+import { Hourglass, Sparkles, Target } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { GrowBar } from "@/components/data/grow-bar";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,13 @@ import { KpiCards } from "@/features/dashboard/home/kpi-cards";
 import { SectionTitle } from "@/features/dashboard/page-header";
 import { FunnelChart } from "@/features/dashboard/tunnel/tunnel-views";
 import { formatNumber, formatPercent } from "@/lib/format";
-import { STEP_ADVICE, type RealFunnel, type Segment } from "./funnel";
+import {
+  adviceFor,
+  MIN_SAMPLE,
+  type RealFunnel,
+  type RealFunnelStep,
+  type Segment,
+} from "./funnel";
 
 /** Résumé en une phrase : le chiffre d'abord, l'étape à corriger ensuite. */
 export function funnelSummary(funnel: RealFunnel) {
@@ -22,12 +28,42 @@ export function funnelSummary(funnel: RealFunnel) {
   }`;
 }
 
+const visitorsLabel = (count: number) => `${formatNumber(count)} visiteur${count > 1 ? "s" : ""}`;
+
+/** « Seulement 3,2 % passent… : 120 visiteurs perdus », ou « Aucun des 25 visiteurs… ». */
+export function lossSentence(previous: RealFunnelStep, step: RealFunnelStep) {
+  const lost = previous.count - step.count;
+  const passage = `de « ${previous.label} » à « ${step.label} »`;
+  if (!step.count) {
+    return `Aucun des ${visitorsLabel(previous.count)} n'est passé ${passage} sur la période.`;
+  }
+  const rate = (step.count / previous.count) * 100;
+  return `Seulement ${formatPercent(rate)} passent ${passage} : ${visitorsLabel(lost)} perdu${lost > 1 ? "s" : ""} sur la période.`;
+}
+
+/** Trop peu de visites pour désigner une étape : on le dit, sans conclusion hâtive. */
+function TooEarlyCard({ funnel }: { funnel: RealFunnel }) {
+  return (
+    <Card className="flex h-full flex-col" data-icon-trigger>
+      <CardEyebrow>Étape à corriger en premier</CardEyebrow>
+      <p className="mb-3 flex items-center gap-2 font-serif text-xl font-semibold text-forest">
+        <Icon icon={Hourglass} anim="tilt" className="size-5 text-emerald" />
+        Encore trop tôt pour conclure.
+      </p>
+      <p className="text-sm text-ink">
+        {visitorsLabel(funnel.visitors)} sur la période. Dès {MIN_SAMPLE} visiteurs à une étape,
+        SaasClair vous dira laquelle corriger en premier, et pourquoi.
+      </p>
+    </Card>
+  );
+}
+
 function WeakestCard({ funnel }: { funnel: RealFunnel }) {
   const step = funnel.steps[funnel.weakest];
   const previous = funnel.steps[funnel.weakest - 1];
-  if (!step || !previous || step.id === "visit") return null;
-  const advice = STEP_ADVICE[step.id];
-  const rate = previous.count ? (step.count / previous.count) * 100 : 0;
+  if (!step || !previous) return <TooEarlyCard funnel={funnel} />;
+  const advice = adviceFor(step, previous);
+  if (!advice) return null;
   return (
     <Card className="flex h-full flex-col border-gold/60">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -37,10 +73,7 @@ function WeakestCard({ funnel }: { funnel: RealFunnel }) {
         </Badge>
       </div>
       <p className="mb-3 font-serif text-xl font-semibold text-forest">{advice.title}</p>
-      <p className="mb-4 text-sm text-ink">
-        {formatPercent(rate)} seulement passent de « {previous.label} » à « {step.label} » :{" "}
-        {formatNumber(previous.count - step.count)} visiteurs perdus sur la période.
-      </p>
+      <p className="mb-4 text-sm text-ink">{lossSentence(previous, step)}</p>
       <dl className="space-y-3 text-sm">
         <div>
           <dt className="mb-0.5 flex items-center gap-1.5 text-xs font-semibold text-slate">
@@ -59,9 +92,6 @@ function WeakestCard({ funnel }: { funnel: RealFunnel }) {
   );
 }
 
-/** Segments assez grands pour comparer (sinon un seul visiteur ferait passer à 0 % ou 100 %). */
-const MIN_SEGMENT = 20;
-
 function SegmentCard({
   title,
   segments,
@@ -71,7 +101,8 @@ function SegmentCard({
   segments: Segment[];
   label: string;
 }) {
-  const comparable = segments.filter((segment) => segment.visitors >= MIN_SEGMENT);
+  // Segments assez grands pour comparer (sinon un seul visiteur ferait passer à 0 % ou 100 %).
+  const comparable = segments.filter((segment) => segment.visitors >= MIN_SAMPLE);
   const worst =
     comparable.length > 1 ? comparable.reduce((a, b) => (b.rate < a.rate ? b : a)) : null;
   return (

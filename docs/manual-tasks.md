@@ -10,7 +10,7 @@
 | **À faire** avant d'ouvrir au public | 2 tâches | environ 7 min |
 | **Facultatif**, quand vous voulez | 6 tâches | — |
 | **Décisions** à me donner | aucune | — |
-| **Déjà fait** | 22 tâches et décisions | rien à faire |
+| **Déjà fait** | 23 tâches et décisions | rien à faire |
 
 ---
 
@@ -76,6 +76,7 @@ Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 nov
 | Mentions légales | ✅ En ligne sur `saasclair.com/mentions-legales` (éditeur Kelenix Tech, directeur de la publication Lionel, hébergeur Hostinger), lien dans le pied de page |
 | Mesure de saasclair.com avec SaasClair | ✅ Ligne installée le 14 novembre sur tout le site (clé `6eead66e`) : vos visites, leur provenance et vos inscrits par canal arrivent dans votre propre tableau de bord. Politique de confidentialité complétée (mesure sans cookie, bouton « Ne plus compter mes visites ») |
 | Recommandation « Ajoutez un lien Tarifs dans le menu » | ✅ Fausse alerte, corrigée le 14 novembre : votre menu a déjà ce lien (vers la section Tarifs de l'accueil). Rien à faire : elle disparaît seule à la prochaine analyse de votre site (6 heures au plus) |
+| Tunnel « Vos tarifs freinent le passage à l'inscription » (2 visiteurs) | ✅ Conclusion trop hâtive, corrigée le 14 novembre : l'étape à corriger n'est désignée qu'à partir de 20 visiteurs, sinon « Encore trop tôt pour conclure ». Les tarifs ne sont plus accusés quand vos visiteurs ne sont pas passés par une page de tarifs. Rien à faire |
 | Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
 | Décision : écrans vides | ✅ Un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans aucun chiffre |
 | Décision : début de l'essai de 7 jours | ✅ À la création du compte (clic sur « Essai gratuit ») : c'était déjà le cas, rien à changer |
