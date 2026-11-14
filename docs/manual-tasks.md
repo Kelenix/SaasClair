@@ -7,10 +7,10 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 3 tâches | environ 9 min |
+| **À faire** avant d'ouvrir au public | 2 tâches | environ 7 min |
 | **Facultatif**, quand vous voulez | 6 tâches | — |
 | **Décisions** à me donner | aucune | — |
-| **Déjà fait** | 25 tâches et décisions | rien à faire |
+| **Déjà fait** | 26 tâches et décisions | rien à faire |
 
 ---
 
@@ -36,29 +36,6 @@ pas encore enregistré (« Kelenix Tech » toujours relié) :
 
 En une minute, votre abonnement Starter apparaît dans Revenus et Churn. L'ancien compte
 « Kelenix Tech » est détaché tout seul, et ses données sont effacées de SaasClair.
-
-### ⬜ 3. Déclarer saasclair.com à Bing (2 min) — Google est fait
-
-Google et Bing trouvent le site plus vite, et Bing est le moteur où ChatGPT, Copilot et
-DuckDuckGo cherchent leurs réponses. Le reste (robots des IA, fiche lisible par les IA,
-signalement des mises à jour à Bing) est déjà automatique.
-
-✅ **Google : fait par vous le 14 novembre** (propriété « Domaine » validée, plan du site
-envoyé). « Impossible de récupérer le sitemap » juste après l'envoi est normal : Google ne l'a
-pas encore lu (colonne « Dernière lecture » vide). Le plan du site répond bien ; si le message
-est toujours là au bout de 2 jours, envoyez-moi une capture. Pour mémoire, les étapes suivies :
-
-1. **Google** : ouvrez [Google Search Console](https://search.google.com/search-console),
-   « Ajouter une propriété », choisissez **Domaine** et tapez `saasclair.com`. Google affiche
-   une ligne « TXT » : copiez-la.
-2. Dans **hPanel › Domaines › saasclair.com › DNS**, ajoutez un enregistrement **TXT**, nom `@`,
-   valeur : la ligne copiée. Revenez dans Google et cliquez sur « Valider » (quelques minutes).
-3. Toujours dans Google : menu **Sitemaps**, tapez l'adresse complète
-   `https://saasclair.com/sitemap.xml` (avec une propriété « Domaine », `sitemap.xml` seul est
-   refusé), puis « Envoyer ».
-4. ⬜ **Bing, il reste cette étape** : ouvrez [Bing Webmaster Tools](https://www.bing.com/webmasters), connectez-vous avec
-   le même compte Google, puis choisissez **« Importer depuis Google Search Console »** et
-   sélectionnez saasclair.com. C'est tout.
 
 ---
 
@@ -101,8 +78,9 @@ Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 nov
 | Mesure de saasclair.com avec SaasClair | ✅ Ligne installée le 14 novembre sur tout le site (clé `6eead66e`) : vos visites, leur provenance et vos inscrits par canal arrivent dans votre propre tableau de bord. Politique de confidentialité complétée (mesure sans cookie, bouton « Ne plus compter mes visites ») |
 | Recommandation « Ajoutez un lien Tarifs dans le menu » | ✅ Fausse alerte, corrigée le 14 novembre : votre menu a déjà ce lien (vers la section Tarifs de l'accueil). Rien à faire : elle disparaît seule à la prochaine analyse de votre site (6 heures au plus) |
 | Tunnel « Vos tarifs freinent le passage à l'inscription » (2 visiteurs) | ✅ Conclusion trop hâtive, corrigée le 14 novembre : l'étape à corriger n'est désignée qu'à partir de 20 visiteurs, sinon « Encore trop tôt pour conclure ». Les tarifs ne sont plus accusés quand vos visiteurs ne sont pas passés par une page de tarifs. Rien à faire |
-| Référencement dans les IA (ChatGPT, Gemini, Claude, Perplexity) | ✅ En place le 14 novembre : robots des IA nommés et autorisés sur les pages publiques (zones privées toujours fermées), fiche d'identité structurée (éditeur, logiciel, tarifs, questions), résumé `saasclair.com/llms.txt`, réponses de la FAQ lisibles par les robots, Bing prévenu à chaque mise en ligne (IndexNow). Mis en ligne et vérifié le 14 novembre : Bing a accepté les 6 pages. Google déclaré par vous ; il reste Bing (tâche 3) |
+| Référencement dans les IA (ChatGPT, Gemini, Claude, Perplexity) | ✅ En place le 14 novembre : robots des IA nommés et autorisés sur les pages publiques (zones privées toujours fermées), fiche d'identité structurée (éditeur, logiciel, tarifs, questions), résumé `saasclair.com/llms.txt`, réponses de la FAQ lisibles par les robots, Bing prévenu à chaque mise en ligne (IndexNow). Mis en ligne et vérifié le 14 novembre : Bing a accepté les 6 pages. Google et Bing déclarés par vous |
 | Vitesse mesurée avec PageSpeed Insights | ✅ Mesurée par vous le 14 novembre. Ordinateur : 99 / 100 / 92 / 100. Téléphone : 87 / 100 / 96 / 100, puis **92 / 100 / 100 / 100 après la correction du même jour** (le grand aperçu du tableau de bord apparaît dès le premier affichage, site vitrine allégé de 30 Ko, logo 2 fois plus léger). Toutes les notes sont au vert. Rien à faire |
+| Déclaration de saasclair.com à Google et à Bing | ✅ Faite par vous le 14 novembre : Google Search Console (propriété « Domaine », plan du site `https://saasclair.com/sitemap.xml` envoyé) et Bing Webmaster Tools (importé depuis Google). « Impossible de récupérer le sitemap » juste après l'envoi est normal tant que Google ne l'a pas lu ; s'il reste affiché au bout de 2 jours, envoyez-moi une capture |
 | Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
 | Décision : écrans vides | ✅ Un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans aucun chiffre |
 | Décision : début de l'essai de 7 jours | ✅ À la création du compte (clic sur « Essai gratuit ») : c'était déjà le cas, rien à changer |
