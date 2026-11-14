@@ -114,7 +114,8 @@
 - Changer d'appareil : uniquement par SSH (`deploy/scripts/reset-admin-2fa.sh <email>`), jamais
   depuis une session simple.
 - Cookies de session Supabase en `httpOnly` (serveur et proxy) : un script injecté ne peut pas
-  lire la session. Le navigateur n'utilise Supabase que pour démarrer Google et GitHub.
+  lire la session. Le navigateur n'utilise jamais Supabase directement : Google et GitHub sont
+  démarrés par le serveur, qui pose aussi la clé de vérification (PKCE) dans un cookie réservé.
 
 ## Points ouverts
 - CSP avec `'unsafe-inline'` pour les scripts : un nonce est incompatible avec le pré-rendu

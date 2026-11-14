@@ -7,7 +7,7 @@ import type { Database } from "./database.types";
 /**
  * Cookies de session illisibles par le JavaScript de la page (httpOnly) : même si un script
  * malveillant s'y glissait, il ne pourrait pas emporter la session (audit, lot A7). Seul le
- * serveur lit et écrit la session ; le navigateur ne fait que démarrer Google et GitHub.
+ * serveur lit et écrit la session, y compris pour démarrer Google et GitHub (auth/actions.ts).
  */
 export const SESSION_COOKIE_OPTIONS = { httpOnly: true } as const;
 
