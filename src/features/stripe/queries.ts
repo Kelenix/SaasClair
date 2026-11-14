@@ -25,7 +25,8 @@ export const getRealRevenue = (period: Period, now: Date) =>
   revenueFor(period, now.toISOString().slice(0, 16));
 
 const revenueFor = cache(async (period: Period, minute: string): Promise<RealRevenue | null> => {
-  const now = new Date(`${minute}:00.000Z`);
+  // Fin de la minute : une visite ou un abonnement arrivé dans cette minute est compté.
+  const now = new Date(Date.parse(`${minute}:00.000Z`) + 59_999);
   // Projet du compte connecté, lu une fois par requête (filtre explicite sur le propriétaire :
   // le super administrateur voit aussi les projets des autres par la RLS).
   const project = await getOwnProject();

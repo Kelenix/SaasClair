@@ -28,7 +28,8 @@ export const getRealAcquisition = (period: Period, now: Date) =>
   acquisitionFor(period, now.toISOString().slice(0, 16));
 
 const acquisitionFor = cache(async (period: Period, minute: string): Promise<RealAcquisition> => {
-  const now = new Date(`${minute}:00.000Z`);
+  // Fin de la minute : une visite ou un abonnement arrivé dans cette minute est compté.
+  const now = new Date(Date.parse(`${minute}:00.000Z`) + 59_999);
   // Projet lu une fois par requête (lib/supabase/server.ts), partagé avec les autres blocs.
   const project = await getOwnProject();
   if (!project) return acquisitionFromSummary(null, period);
