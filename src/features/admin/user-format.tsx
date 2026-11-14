@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { CHANNEL_LABELS, type Channel } from "@/features/attribution/attribution";
+import { CHANNEL_LABELS, type Channel } from "@/features/attribution/channels";
 import { STATUS_LABELS, type SubscriptionStatus } from "./metrics";
 
 // Petits formats partagés par la liste des utilisateurs et leur fiche.

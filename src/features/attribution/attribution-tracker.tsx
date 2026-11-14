@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ATTRIBUTION_COOKIE, ATTRIBUTION_MAX_AGE, classifyChannel } from "./attribution";
+import { ATTRIBUTION_COOKIE, ATTRIBUTION_MAX_AGE, classifyChannel } from "./channels";
 
 /**
  * Note la provenance du visiteur à son premier passage (paramètres UTM et site d'origine).
