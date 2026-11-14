@@ -7,10 +7,10 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 2 tâches | environ 7 min |
-| **Facultatif**, quand vous voulez | 6 tâches | — |
+| **À faire** avant d'ouvrir au public | 3 tâches | environ 17 min |
+| **Facultatif**, quand vous voulez | 7 tâches | — |
 | **Décisions** à me donner | aucune | — |
-| **Déjà fait** | 23 tâches et décisions | rien à faire |
+| **Déjà fait** | 24 tâches et décisions | rien à faire |
 
 ---
 
@@ -26,7 +26,8 @@ Hostinger.
 
 Votre projet lit le compte Stripe « Kelenix Tech », alors que vos abonnements SaasClair
 arrivent sur l'autre compte, « Kelenix Teck ». C'est pour cela que Revenus, Churn et Insights
-sont vides. Une fois la correction du 14 novembre en ligne :
+sont vides. La correction est en ligne ; vérifié le 14 novembre à 16 h, le changement n'était
+pas encore enregistré (« Kelenix Tech » toujours relié) :
 
 1. Connectez-vous à SaasClair avec le compte qui porte le projet saasclair.com (celui qui a payé
    l'offre Starter).
@@ -35,6 +36,22 @@ sont vides. Une fois la correction du 14 novembre en ligne :
 
 En une minute, votre abonnement Starter apparaît dans Revenus et Churn. L'ancien compte
 « Kelenix Tech » est détaché tout seul, et ses données sont effacées de SaasClair.
+
+### ⬜ 3. Déclarer saasclair.com à Google et à Bing (10 min)
+
+Google et Bing trouvent le site plus vite, et Bing est le moteur où ChatGPT, Copilot et
+DuckDuckGo cherchent leurs réponses. Le reste (robots des IA, fiche lisible par les IA,
+signalement des mises à jour à Bing) est déjà automatique.
+
+1. **Google** : ouvrez [Google Search Console](https://search.google.com/search-console),
+   « Ajouter une propriété », choisissez **Domaine** et tapez `saasclair.com`. Google affiche
+   une ligne « TXT » : copiez-la.
+2. Dans **hPanel › Domaines › saasclair.com › DNS**, ajoutez un enregistrement **TXT**, nom `@`,
+   valeur : la ligne copiée. Revenez dans Google et cliquez sur « Valider » (quelques minutes).
+3. Toujours dans Google : menu **Sitemaps**, tapez `sitemap.xml`, puis « Envoyer ».
+4. **Bing** : ouvrez [Bing Webmaster Tools](https://www.bing.com/webmasters), connectez-vous avec
+   le même compte Google, puis choisissez **« Importer depuis Google Search Console »** et
+   sélectionnez saasclair.com. C'est tout.
 
 ---
 
@@ -46,6 +63,7 @@ En une minute, votre abonnement Starter apparaît dans Revenus et Churn. L'ancie
 | Brancher la **publicité** (Google Ads, GA4, Meta, LinkedIn) | Administration › Paramètres | Ensuite, dites-le-moi : j'ajoute ces outils à la politique de confidentialité. |
 | Mesurer la **vitesse sur mobile** | [PageSpeed Insights](https://pagespeed.web.dev) avec `https://saasclair.com` | Envoyez-moi le score si une note est en orange ou en rouge. |
 | Ne pas compter **vos propres visites** dans vos chiffres | Sur chaque navigateur que vous utilisez (ordinateur, téléphone) : ouvrez `saasclair.com/confidentialite`, puis cliquez sur « Ne plus compter mes visites » | 1 clic par navigateur. Sinon, vos passages quotidiens sur le site et le tableau de bord gonflent vos visites. |
+| Faire **parler de SaasClair ailleurs** | Fiches gratuites sur Product Hunt, G2 et Capterra ; quelques messages sur LinkedIn ou Reddit | C'est ce qui pèse le plus pour être cité par ChatGPT ou Gemini : les IA recommandent les outils dont on parle sur d'autres sites. Les effets prennent quelques semaines. |
 | M'envoyer les **logos en SVG** s'ils existent | Dans la conversation | Ils seraient plus nets sur les grands écrans. |
 | Compléter les **mentions légales** : adresse du siège et numéro SIREN | Dans la conversation | Laissés vides à votre demande. La loi les demande pour une activité commerciale : envoyez-les-moi dès que vous les avez, je les ajoute. |
 
@@ -77,6 +95,7 @@ Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 nov
 | Mesure de saasclair.com avec SaasClair | ✅ Ligne installée le 14 novembre sur tout le site (clé `6eead66e`) : vos visites, leur provenance et vos inscrits par canal arrivent dans votre propre tableau de bord. Politique de confidentialité complétée (mesure sans cookie, bouton « Ne plus compter mes visites ») |
 | Recommandation « Ajoutez un lien Tarifs dans le menu » | ✅ Fausse alerte, corrigée le 14 novembre : votre menu a déjà ce lien (vers la section Tarifs de l'accueil). Rien à faire : elle disparaît seule à la prochaine analyse de votre site (6 heures au plus) |
 | Tunnel « Vos tarifs freinent le passage à l'inscription » (2 visiteurs) | ✅ Conclusion trop hâtive, corrigée le 14 novembre : l'étape à corriger n'est désignée qu'à partir de 20 visiteurs, sinon « Encore trop tôt pour conclure ». Les tarifs ne sont plus accusés quand vos visiteurs ne sont pas passés par une page de tarifs. Rien à faire |
+| Référencement dans les IA (ChatGPT, Gemini, Claude, Perplexity) | ✅ En place le 14 novembre : robots des IA nommés et autorisés sur les pages publiques (zones privées toujours fermées), fiche d'identité structurée (éditeur, logiciel, tarifs, questions), résumé `saasclair.com/llms.txt`, réponses de la FAQ lisibles par les robots, Bing prévenu à chaque mise en ligne (IndexNow). Il reste la déclaration à Google et Bing (tâche 3) |
 | Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
 | Décision : écrans vides | ✅ Un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans aucun chiffre |
 | Décision : début de l'essai de 7 jours | ✅ À la création du compte (clic sur « Essai gratuit ») : c'était déjà le cas, rien à changer |

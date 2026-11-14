@@ -349,8 +349,22 @@
   }
 }
 
+/* Réponse d'une question fréquente (<details>) : glisse doucement à l'ouverture. */
+details[open] > .disclosure-in {
+  animation: disclosure-in var(--dur-micro) var(--ease-out) both;
+}
+@keyframes disclosure-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
 /* « Réduire les animations » : tout devient un simple fondu. */
 @media (prefers-reduced-motion: reduce) {
+  details[open] > .disclosure-in {
+    animation-name: fade-in;
+  }
   html {
     scroll-behavior: auto;
   }

@@ -1,13 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Clock, Lock, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Clock, Lock, ShieldCheck, Trash2 } from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { Reveal } from "@/components/motion/reveal";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { getPublishedFaq } from "@/features/site-content/queries";
 
@@ -54,14 +48,23 @@ export async function Faq() {
           </Button>
         </Reveal>
         <Reveal className="rounded-card border border-line bg-white px-6 py-2 shadow-card sm:px-8 lg:self-start">
-          <Accordion type="single" collapsible>
-            {faq.map((item) => (
-              <AccordionItem key={item.id} value={item.id}>
-                <AccordionTrigger className="font-sans">{item.question}</AccordionTrigger>
-                <AccordionContent>{item.answer}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          {/* <details> natif : les réponses sont dans la page envoyée aux moteurs et aux IA
+              (un accordéon JavaScript ne les écrit qu'à l'ouverture). Une seule ouverte à la fois. */}
+          {faq.map((item) => (
+            <details
+              key={item.id}
+              name="questions-frequentes"
+              className="group border-b border-line last:border-b-0"
+            >
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg py-4 text-left outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-ink [&::-webkit-details-marker]:hidden">
+                <h3 className="font-sans text-base font-semibold text-forest">{item.question}</h3>
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-sand transition-[rotate,background-color] duration-300 ease-spring group-open:rotate-180 group-hover:bg-emerald-tint motion-reduce:transition-none">
+                  <ChevronDown className="size-4" aria-hidden />
+                </span>
+              </summary>
+              <p className="disclosure-in pb-5 text-[15px] text-slate">{item.answer}</p>
+            </details>
+          ))}
         </Reveal>
       </div>
     </section>
