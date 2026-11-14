@@ -197,12 +197,10 @@ export function HeroDashboard() {
         </span>
       </m.div>
 
-      <m.div
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: DURATION.screen * 2, ease: EASE_OUT, delay: 0.35 }}
-        className="rounded-[26px] border border-white/70 bg-white/55 p-1.5 shadow-float backdrop-blur-sm sm:p-2 xl:mr-36"
+      {/* Entrée en CSS, comme le titre : l'aperçu (souvent le plus grand élément affiché sur un
+          téléphone) apparaît dès le premier rendu, sans attendre le JavaScript (PageSpeed). */}
+      <div
+        className="animate-in rounded-[26px] border border-white/70 bg-white/55 p-1.5 shadow-float backdrop-blur-sm duration-700 ease-out fade-in-0 slide-in-from-bottom-10 zoom-in-95 motion-reduce:slide-in-from-bottom-0 motion-reduce:zoom-in-100 sm:p-2 xl:mr-36"
         role="region"
         aria-label="Aperçu interactif du tableau de bord SaasClair"
       >
@@ -308,7 +306,7 @@ export function HeroDashboard() {
             </div>
           </div>
         </div>
-      </m.div>
+      </div>
 
       <HeroPhone className="absolute -right-12 -bottom-6 z-10 hidden xl:block" />
     </div>
