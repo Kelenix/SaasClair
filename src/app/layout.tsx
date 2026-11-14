@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
-import { SITE_URL } from "@/lib/site";
+import { SELF_SITE_KEY, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const fraunces = Fraunces({ subsets: ["latin"], axes: ["opsz"], variable: "--font-fraunces" });
@@ -31,6 +31,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${fraunces.variable} ${inter.variable}`}
     >
       <body className="min-h-dvh">
+        {/* Mesure d'audience de saasclair.com, avec SaasClair lui-même (sans cookie). */}
+        <script async src="/s.js" data-site={SELF_SITE_KEY} />
         <Providers>{children}</Providers>
       </body>
     </html>

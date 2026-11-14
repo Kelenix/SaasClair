@@ -4,6 +4,15 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Ajouté
+- **saasclair.com se mesure avec SaasClair** : la ligne du script (clé `6eead66e`) est sur tout
+  le site, comme chez un client. Rien n'est envoyé depuis un poste de développement ni par les
+  robots de test.
+- **Refus d'être compté en un clic** : bouton « Ne plus compter mes visites » dans la politique
+  de confidentialité (droit d'opposition) ; le script n'envoie plus rien dès ce choix et
+  l'identifiant du visiteur est effacé. Valable aussi sur les sites des clients (`sc_off`).
+- Politique de confidentialité : notre mesure d'audience décrite (finalité, stockage, durée).
+
 ### Performance
 - **Tableau de bord plus rapide** : l'utilisateur et son projet ne sont plus relus à chaque bloc
   de chiffres (une lecture par requête au lieu de 3 à 5), revenus et visites partagés entre

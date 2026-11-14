@@ -74,3 +74,35 @@ test("même visiteur sur www et app, inscrit relié sans ligne à ajouter", asyn
   expect((await sent(page)).some((item) => item.t === "identify")).toBe(false);
   await context.close();
 });
+
+test("visiteur qui refuse d'être compté : plus rien n'est envoyé, dès son choix", async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({ userAgent: BROWSER_UA });
+  await clientSite(context, baseURL!);
+  const page = await context.newPage();
+
+  await page.goto("http://www.monsaas.localhost/");
+  await expect.poll(async () => (await sent(page)).length).toBe(1);
+
+  // Refus pendant la visite : la page suivante n'est pas envoyée.
+  await page.evaluate(() => {
+    localStorage.setItem("sc_off", "1");
+    history.pushState({}, "", "/tarifs");
+  });
+  await page.waitForTimeout(500);
+  expect(await sent(page)).toHaveLength(1);
+
+  // Visite suivante, refus déjà enregistré : le script ne fait rien.
+  await page.goto("http://www.monsaas.localhost/prix");
+  await page.waitForFunction(() => (window as unknown as { __saasclair?: boolean }).__saasclair);
+  await page.waitForTimeout(500);
+  expect(await sent(page)).toHaveLength(0);
+
+  // Choix retiré : les visites sont de nouveau comptées.
+  await page.evaluate(() => localStorage.removeItem("sc_off"));
+  await page.goto("http://www.monsaas.localhost/fonctionnalites");
+  await expect.poll(async () => (await sent(page))[0]?.u).toContain("/fonctionnalites");
+  await context.close();
+});

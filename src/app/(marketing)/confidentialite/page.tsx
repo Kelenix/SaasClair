@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Reveal } from "@/components/motion/reveal";
+import { MeasureOptOut } from "@/features/collect/measure-opt-out";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité",
@@ -107,6 +108,7 @@ export default function PrivacyPage() {
             items={[
               "Fournir le service que vous avez demandé (compte, analyses, alertes) : exécution du contrat.",
               "Protéger le service contre les abus et les intrusions : intérêt légitime.",
+              "Compter les visites de saasclair.com, avec notre propre outil et sans cookie : intérêt légitime. Vous pouvez vous y opposer en un clic (voir plus bas).",
               "Vous envoyer la newsletter, si vous vous y êtes inscrit : votre consentement, retirable à tout moment.",
               "Mesurer nos campagnes publicitaires (Google, Meta, LinkedIn) : uniquement avec votre accord, donné dans le bandeau des cookies.",
             ]}
@@ -121,9 +123,11 @@ export default function PrivacyPage() {
               "sc_periode et sc_barre_repliee : vos préférences d'affichage du tableau de bord.",
               "sc_stripe_state (10 minutes) : protège la connexion à Stripe contre les falsifications.",
               "sc_consentement et sc_notifications_lues (stockage local) : votre choix sur les cookies et les alertes déjà lues.",
+              "sc_vid et sc_vid_t (stockage local, 13 mois au plus) : notre mesure d'audience, faite avec SaasClair lui-même. Un identifiant aléatoire, sans cookie ni adresse IP enregistrée ; les visites ne quittent pas nos serveurs. À l'inscription, seule l'empreinte de votre email (SHA-256, jamais l'email) relie votre compte à la page par laquelle vous êtes arrivé. sc_off : votre refus d'être compté, si vous l'avez demandé.",
               "Traceurs publicitaires (Google Ads, Google Analytics, Meta, LinkedIn) : jamais chargés sans votre accord. « Gérer les cookies », en bas de page, permet de changer d'avis.",
             ]}
           />
+          <MeasureOptOut />
         </Section>
 
         <Section title="Où sont vos données, et qui y a accès">
