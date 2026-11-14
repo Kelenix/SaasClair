@@ -41,6 +41,7 @@ async function Revenue() {
     return (
       <NoData
         title="Revenus"
+        preview="revenue"
         icon={Wallet}
         needs="stripe"
         remaining={context.setupRemaining}

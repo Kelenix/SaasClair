@@ -69,6 +69,8 @@ async function Insights() {
           ) : (
             <NoData
               title="Insights et alertes"
+              preview="insights"
+              previewWhenWaiting={false}
               icon={Lightbulb}
               needs="site"
               remaining={context.setupRemaining}

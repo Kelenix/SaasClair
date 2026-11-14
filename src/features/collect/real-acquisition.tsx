@@ -128,6 +128,21 @@ export function RealAcquisitionView({
         />
       </div>
 
+      {data.signupsTotal > 0 && (
+        <>
+          <SectionTitle
+            title="Qui s'inscrit, et d'où"
+            detail={
+              <p className="text-sm text-slate">
+                {formatNumber(data.signupsTotal)} nouvel{data.signupsTotal > 1 ? "s" : ""} inscrit
+                {data.signupsTotal > 1 ? "s" : ""} sur la période, par canal d&apos;arrivée.
+              </p>
+            }
+          />
+          <RankedCard title="Inscrits par canal" rows={data.signups} empty="" />
+        </>
+      )}
+
       <SectionTitle title="Pages d'entrée et campagnes" />
       <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2">
         <RankedCard title="Pages d'entrée" rows={data.landingPages} empty="Aucune page vue." />

@@ -35,6 +35,7 @@ async function Tunnel() {
       return (
         <NoData
           title="Tunnel de conversion"
+          preview="funnel"
           icon={Filter}
           needs="script"
           remaining={context.setupRemaining}

@@ -4,6 +4,17 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Ajouté (décisions du 14 novembre)
+- **Écrans vides** : un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans
+  aucun chiffre, sous l'action qui le remplit.
+- **Inscrits reliés automatiquement** : le script envoie l'empreinte (SHA-256) de l'email saisi
+  dans un formulaire d'inscription, jamais l'email ; pas sur les pages de connexion ; coupable
+  avec `data-identify="off"`. Écran Acquisition : nouveaux inscrits par canal (migration
+  `signups_by_channel`).
+- **Même visiteur sur `www.` et `app.`**, sans cookie : l'identifiant suit le visiteur dans les
+  liens d'un sous-domaine à l'autre (`_sc`), puis disparaît de l'adresse.
+- Politique de confidentialité mise à jour en conséquence.
+
 ### Ajouté
 - **Mentions légales** (`/mentions-legales`) : éditeur Kelenix Tech, directeur de la publication,
   contact, hébergeur Hostinger ; lien dans le pied de page et le plan du site. Adresse du siège

@@ -45,6 +45,7 @@ async function Acquisition() {
     return (
       <NoData
         title="Acquisition"
+        preview="acquisition"
         icon={Route}
         needs="script"
         remaining={context.setupRemaining}

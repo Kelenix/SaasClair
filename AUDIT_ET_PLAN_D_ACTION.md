@@ -72,8 +72,8 @@ navigateur. Il faut Docker et Supabase lancés (`npm run up`) : je les fais au p
 est déjà fait. C'est la seule liste qui fait foi ; cette section n'en garde plus de copie.
 
 En bref, au 14 novembre : vérifier que le paiement est ouvert et activer les sauvegardes
-Hostinger. Puis 4 décisions courtes. (Surveillance du site, politique de confidentialité et
-mentions légales : faites.)
+Hostinger. Aucune décision en attente. (Surveillance du site, politique de confidentialité,
+mentions légales et les 4 décisions : faites.)
 
 ## 4. Ce que je propose de faire ensuite (vous me dites « lance le lot X »)
 

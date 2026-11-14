@@ -88,3 +88,28 @@ describe("acquisitionFromSummary (réponse de la base)", () => {
     });
   });
 });
+
+describe("inscrits par canal", () => {
+  it("parts calculées sur le total des inscrits, noms de canaux en clair", () => {
+    const result = acquisitionFromSummary(
+      {
+        visitors: 50,
+        pageviews: 80,
+        mobile: 10,
+        trend: [],
+        channels: [],
+        landing: [],
+        campaigns: [],
+        referrers: [],
+        signups: [
+          ["ai", 3],
+          ["seo", 1],
+        ],
+        signupsTotal: 4,
+      },
+      "30j",
+    );
+    expect(result.signupsTotal).toBe(4);
+    expect(result.signups[0]).toEqual({ id: "ai", name: "Assistants IA", visitors: 3, share: 75 });
+  });
+});

@@ -4,6 +4,7 @@ import { StateMessage } from "@/components/states/state-message";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { ActionStep } from "@/features/setup/steps";
+import { ScreenPreview, type PreviewKind } from "./screen-preview";
 
 const STEP_ACTIONS: Record<ActionStep, string> = {
   site: "Ajouter l'adresse de mon SaaS",
@@ -21,14 +22,28 @@ type NoDataProps = {
   remaining: ActionStep[];
   /** Message une fois l'étape faite, en attendant les premières données. */
   waiting: string;
+  /** Dessin de l'écran à venir, clairement étiqueté (jamais de chiffres). */
+  preview?: PreviewKind;
+  /** Garder le dessin une fois l'étape faite (non : « rien à signaler » n'est pas un vide). */
+  previewWhenWaiting?: boolean;
 };
 
 /**
- * Écran sans données : on n'invente rien. Le titre reste, puis ce qui manque et l'étape qui
- * débloque l'écran (lien <a> : voir SetupBanner).
+ * Écran sans données : on n'invente rien. Le titre reste, puis ce qui manque, l'étape qui
+ * débloque l'écran (lien <a> : voir SetupBanner), et un dessin de ce qu'il affichera.
  */
-export function NoData({ title, description, icon, needs, remaining, waiting }: NoDataProps) {
+export function NoData({
+  title,
+  description,
+  icon,
+  needs,
+  remaining,
+  waiting,
+  preview,
+  previewWhenWaiting = true,
+}: NoDataProps) {
   const isStepLeft = remaining.includes(needs);
+  const showPreview = preview && (isStepLeft || previewWhenWaiting);
   return (
     <>
       <header className="mb-7">
@@ -37,7 +52,9 @@ export function NoData({ title, description, icon, needs, remaining, waiting }: 
       <Card>
         <StateMessage
           icon={icon}
-          title="Pas encore de données."
+          title={
+            isStepLeft ? "Une étape, et cet écran se remplit." : "Vos premières données arrivent."
+          }
           description={isStepLeft ? description : waiting}
           action={
             isStepLeft && (
@@ -50,6 +67,11 @@ export function NoData({ title, description, icon, needs, remaining, waiting }: 
           }
         />
       </Card>
+      {showPreview && (
+        <div className="mt-4">
+          <ScreenPreview kind={preview} label={`Dessin de l'écran ${title} une fois rempli.`} />
+        </div>
+      )}
     </>
   );
 }

@@ -97,6 +97,15 @@
 - Stripe simulé : trois verrous (`STRIPE_MOCK`, `DEMO_DATA`, adresse différente de saasclair.com).
 - `main` exige les contrôles quality, secrets, image et e2e ; fusion automatique quand ils passent.
 
+## Script de collecte (liaison des inscrits)
+
+- Email d'un formulaire d'inscription : réduit à son empreinte SHA-256 dans le navigateur du
+  visiteur, jamais envoyé en clair ; aucun envoi sur les pages de connexion ; désactivable par
+  `data-identify="off"`.
+- Identifiant passé d'un sous-domaine à l'autre (`_sc`) : seulement vers le même domaine
+  (hébergeurs partagés exclus), format vérifié (`[A-Za-z0-9_-]{8,64}`), retiré de l'adresse dès
+  l'arrivée. Aucun cookie.
+
 ## Suppression du compte
 
 - Par l'utilisateur (Paramètres › Confidentialité, email retapé) ou par le super administrateur
