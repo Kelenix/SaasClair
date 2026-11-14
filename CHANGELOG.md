@@ -37,6 +37,13 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 - Politique de confidentialité : notre mesure d'audience décrite (finalité, stockage, durée).
 
 ### Performance
+- **Téléphone, premier affichage** (PageSpeed mobile 87, « plus grand élément » à 3,5 s) :
+  le grand aperçu du tableau de bord de l'accueil apparaît en CSS dès le premier rendu, au lieu
+  d'attendre le chargement du JavaScript ; fondu seul si « réduire les animations ».
+- **Site vitrine allégé de 30 Ko** (compressés) : le classement des visites (`channels.ts`) n'a
+  plus de dépendance ; `zod` ne sert plus qu'au serveur pour relire le cookie de provenance.
+- **Logo** : taille d'affichage exacte (160 px) ; image de 14 Ko au lieu de 29 Ko sur un
+  téléphone courant.
 - **Tableau de bord plus rapide** : l'utilisateur et son projet ne sont plus relus à chaque bloc
   de chiffres (une lecture par requête au lieu de 3 à 5), revenus et visites partagés entre
   l'accueil, les insights et la barre de question, lectures de l'écran Acquisition en parallèle.

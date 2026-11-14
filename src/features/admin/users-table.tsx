@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { CHANNEL_LABELS, CHANNELS } from "@/features/attribution/attribution";
+import { CHANNEL_LABELS, CHANNELS } from "@/features/attribution/channels";
 import { formatEuro } from "@/lib/format";
 import { cascade, fadeUp } from "@/lib/motion";
 import { cn } from "@/lib/utils";
