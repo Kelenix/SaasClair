@@ -2,7 +2,16 @@
 
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Check, CreditCard, ExternalLink, Globe, Link2, Rocket } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  CreditCard,
+  ExternalLink,
+  Globe,
+  Link2,
+  RefreshCw,
+  Rocket,
+} from "lucide-react";
 import { Icon } from "@/components/brand/icon";
 import { AnimatedNumber } from "@/components/data/animated-number";
 import { GrowBar } from "@/components/data/grow-bar";
@@ -146,7 +155,16 @@ export function ProjectPanel({ project, demo }: { project: ProjectInfo; demo: bo
           </StatusRow>
           <StatusRow icon={CreditCard} title="Stripe">
             {project.stripeConnected ? (
-              <Badge tone="growth">Connecté · jamais modifié</Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone="growth">Connecté · jamais modifié</Badge>
+                {/* Mauvais compte choisi chez Stripe : on en relie un autre, l'ancien est oublié. */}
+                <Button asChild variant="ghost" size="sm" data-icon-trigger>
+                  <a href="/api/stripe/connect">
+                    <Icon icon={RefreshCw} anim="spin" />
+                    Changer de compte
+                  </a>
+                </Button>
+              </div>
             ) : (
               <Button asChild variant="secondary" size="sm">
                 <a href="/configuration?etape=stripe">Connecter Stripe</a>

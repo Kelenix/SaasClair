@@ -4,6 +4,14 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Corrigé (Stripe)
+- **Un projet peut lire le compte Stripe de SaasClair lui-même** (l'éditeur qui mesure son
+  propre SaaS) : Stripe refuse l'en-tête `Stripe-Account` sur son propre compte, il est donc
+  omis pour ce compte-là.
+- **« Changer de compte »** (Paramètres › Projet › Stripe) : relier un autre compte Stripe quand
+  le mauvais a été choisi. Les données de l'ancien compte sont effacées et son accès est coupé.
+- Étape Stripe : « Plusieurs comptes Stripe ? Choisissez celui qui encaisse vos abonnements. »
+
 ### Ajouté
 - **saasclair.com se mesure avec SaasClair** : la ligne du script (clé `6eead66e`) est sur tout
   le site, comme chez un client. Rien n'est envoyé depuis un poste de développement ni par les
