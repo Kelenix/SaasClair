@@ -35,6 +35,25 @@ describe("analyse de la page d'accueil", () => {
     expect(audit.technologies).toEqual(["WordPress", "Stripe"]);
   });
 
+  it("compte une section « Tarifs » de l'accueil, mais préfère une vraie page", () => {
+    const sections = `<a href="#contenu">Aller au contenu</a><a href="#">Menu</a>
+<a href="/#tarifs">Tarifs</a><a href="#essai">Essai gratuit</a><a href="/blog">Blog</a>`;
+    const audit = analyzeHomepage(sections, "https://monsaas.fr/", {}, 300);
+    expect(audit.pages).toEqual({
+      signup: null,
+      pricing: "https://monsaas.fr/#tarifs",
+      checkout: null,
+    });
+    // Les sections ne sont pas des pages : seul /blog est compté.
+    expect(audit.pageCount).toBe(1);
+
+    const both = extractLinks(
+      `<a href="/#tarifs">Tarifs</a><a href="/prix">Prix</a>`,
+      "https://monsaas.fr/",
+    );
+    expect(detectPages(both).pricing).toBe("https://monsaas.fr/prix");
+  });
+
   it("signale ce qui manque sans planter sur une page vide", () => {
     const audit = analyzeHomepage(
       "<html><body>Bientôt</body></html>",

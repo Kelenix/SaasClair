@@ -15,6 +15,8 @@ describe("pathOf", () => {
     expect(pathOf("https://www.x.fr/tarifs/", "https://x.fr")).toBe("/tarifs");
     expect(pathOf("https://app.x.fr/signup", "https://x.fr")).toBe("/signup");
     expect(pathOf("https://checkout.stripe.com/pay", "https://x.fr")).toBeNull();
+    // Section « Tarifs » de l'accueil : pas une page que le tunnel peut mesurer.
+    expect(pathOf("https://x.fr/#tarifs", "https://x.fr")).toBeNull();
     expect(pathOf(null, "https://x.fr")).toBeNull();
   });
 });
