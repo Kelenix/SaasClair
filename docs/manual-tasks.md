@@ -8,7 +8,7 @@
 | | Combien | Temps |
 |---|---|---|
 | **À faire** avant d'ouvrir au public | 2 tâches | environ 7 min |
-| **Facultatif**, quand vous voulez | 6 tâches | — |
+| **Facultatif**, quand vous voulez | 7 tâches | — |
 | **Décisions** à me donner | aucune | — |
 | **Déjà fait** | 26 tâches et décisions | rien à faire |
 
@@ -46,6 +46,7 @@ En une minute, votre abonnement Starter apparaît dans Revenus et Churn. L'ancie
 | Ajouter de **vrais témoignages**, avec l'accord des personnes | Administration › Témoignages | La section reste cachée tant qu'il n'y en a pas. Jamais de faux avis (interdit). |
 | Brancher la **publicité** (Google Ads, GA4, Meta, LinkedIn) | Administration › Paramètres | Ensuite, dites-le-moi : j'ajoute ces outils à la politique de confidentialité. |
 | Ne pas compter **vos propres visites** dans vos chiffres | Sur chaque navigateur que vous utilisez (ordinateur, téléphone) : ouvrez `saasclair.com/confidentialite`, puis cliquez sur « Ne plus compter mes visites » | 1 clic par navigateur. Sinon, vos passages quotidiens sur le site et le tableau de bord gonflent vos visites. |
+| Publier la **première pub vidéo** (verticale, 30 s) | Fichier `marketing/pub-ugc-verticale/renders/saasclair-pub-verticale-v1.mp4` sur votre ordinateur ; à envoyer sur TikTok, Instagram (Reels) ou YouTube Shorts | Faite le 14 novembre avec les vrais écrans de SaasClair. Ajoutez une musique de la plateforme au moment de publier (la vidéo n'a que des bruitages). Elle renvoie vers « Essai gratuit 7 jours » sur saasclair.com. |
 | Faire **parler de SaasClair ailleurs** | Fiches gratuites sur Product Hunt, G2 et Capterra ; quelques messages sur LinkedIn ou Reddit | C'est ce qui pèse le plus pour être cité par ChatGPT ou Gemini : les IA recommandent les outils dont on parle sur d'autres sites. Les effets prennent quelques semaines. |
 | M'envoyer les **logos en SVG** s'ils existent | Dans la conversation | Ils seraient plus nets sur les grands écrans. |
 | Compléter les **mentions légales** : adresse du siège et numéro SIREN | Dans la conversation | Laissés vides à votre demande. La loi les demande pour une activité commerciale : envoyez-les-moi dès que vous les avez, je les ajoute. |
