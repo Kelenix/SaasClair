@@ -7,10 +7,10 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 4 tâches | environ 45 min, plus le juriste |
+| **À faire** avant d'ouvrir au public | 3 tâches | environ 35 min |
 | **Facultatif**, quand vous voulez | 4 tâches | — |
-| **Décisions** à me donner | 5 questions | une réponse courte chacune |
-| **Déjà fait** | 12 tâches | rien à faire |
+| **Décisions** à me donner | 4 questions | une réponse courte chacune |
+| **Déjà fait** | 13 tâches | rien à faire |
 
 ---
 
@@ -44,14 +44,7 @@ La page est **obligatoire** pour un site commercial, et elle n'existe pas encore
 
 Je crée la page, je complète l'hébergeur (Hostinger) et je l'ajoute au pied de page.
 
-### ⬜ 3. Faire relire la politique de confidentialité par un juriste
-
-La page est en ligne : `saasclair.com/confidentialite`. Points à lui faire valider :
-- visites gardées **25 mois**, identifiant du visiteur **13 mois** ;
-- emails des inscrits réduits à une **empreinte** (SHA-256), jamais en clair ;
-- données Stripe de vos clients effacées à la suppression du compte ou à la déconnexion de Stripe.
-
-### ⬜ 4. Sauvegardes hors du serveur (5 min)
+### ⬜ 3. Sauvegardes hors du serveur (5 min)
 
 Les sauvegardes de chaque nuit restent sur le même serveur : s'il est perdu, elles aussi.
 Dans **hPanel › VPS › Instantanés et sauvegardes**, activez les sauvegardes automatiques de
@@ -76,15 +69,13 @@ Hostinger.
    au lieu de « Pas encore de données » ? (Aucun faux chiffre : c'est un dessin.)
 2. **Essai de 7 jours** : le faire démarrer à l'arrivée des premières visites, plutôt qu'à la
    création du compte ? Aujourd'hui, si l'installation prend 3 jours, il ne reste que 4 jours.
-3. **Durées de conservation** : garder 25 mois pour les visites et 13 mois pour l'identifiant
-   du visiteur (recommandation de la CNIL) ? À confirmer avec le juriste (tâche 3).
-4. **Relier automatiquement les inscrits à leurs visites** : le script lirait l'email saisi sur
+3. **Relier automatiquement les inscrits à leurs visites** : le script lirait l'email saisi sur
    la page d'inscription et n'en enverrait que l'empreinte. Cela débloque « inscrits par canal »
    et le tunnel jusqu'au paiement sans aucune ligne à ajouter. Donnée personnelle
-   (pseudonymisée) : à valider avec le juriste.
-5. **Même visiteur sur `www.` et `app.`** : partager l'identifiant entre vos sous-domaines
+   (pseudonymisée) : à mentionner dans la politique de confidentialité si vous dites oui.
+4. **Même visiteur sur `www.` et `app.`** : partager l'identifiant entre vos sous-domaines
    demande un cookie (13 mois au plus), alors que le script promet « sans cookie ». À décider
-   avec la question 4.
+   avec la question 3.
 
 ---
 
@@ -101,7 +92,8 @@ Hostinger.
 | Installation de la facturation dans Stripe (`billing-setup.sh`) | ✅ Lancée par vous, notifications en temps réel actives |
 | Compte super administrateur en production | ✅ Créé, double authentification reliée |
 | Email de contact (bouton « Nous contacter », pied de page) | ✅ En place sur le site |
-| Politique de confidentialité publiée | ✅ En ligne (relecture par un juriste : tâche 3) |
+| Politique de confidentialité | ✅ En ligne, relue et validée par vous le 14 novembre |
+| Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
 | Surveillance du site (UptimeRobot) | ✅ Toutes les 5 minutes sur `saasclair.com/api/health?complet=1` (site, connexion et base), alerte par email ; réglée le 14 novembre |
 | Docker Desktop pour le développement local | ✅ Utile seulement si vous développez sur votre poste |
 
