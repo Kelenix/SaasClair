@@ -48,7 +48,9 @@ signalement des mises à jour à Bing) est déjà automatique.
    une ligne « TXT » : copiez-la.
 2. Dans **hPanel › Domaines › saasclair.com › DNS**, ajoutez un enregistrement **TXT**, nom `@`,
    valeur : la ligne copiée. Revenez dans Google et cliquez sur « Valider » (quelques minutes).
-3. Toujours dans Google : menu **Sitemaps**, tapez `sitemap.xml`, puis « Envoyer ».
+3. Toujours dans Google : menu **Sitemaps**, tapez l'adresse complète
+   `https://saasclair.com/sitemap.xml` (avec une propriété « Domaine », `sitemap.xml` seul est
+   refusé), puis « Envoyer ».
 4. **Bing** : ouvrez [Bing Webmaster Tools](https://www.bing.com/webmasters), connectez-vous avec
    le même compte Google, puis choisissez **« Importer depuis Google Search Console »** et
    sélectionnez saasclair.com. C'est tout.
