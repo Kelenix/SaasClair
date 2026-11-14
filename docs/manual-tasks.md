@@ -16,7 +16,7 @@
 
 ## 1. À faire avant d'ouvrir au public
 
-### ⬜ 1. Paiement des abonnements : 2 réglages, puis un essai (10 min)
+### ⬜ 1. Paiement des abonnements : SEPA et PayPal, puis un essai (15 min)
 
 **Vérifié le 14 novembre dans votre Stripe (compte « Kelenix Teck »)** :
 - ✅ Compte actif : paiements et virements vers votre banque ouverts, aucune vérification en
@@ -25,9 +25,11 @@
   19,99 €, Pro 29,90 € par mois ; −20 % à l'année), hors taxe, catégorie « logiciel en ligne ».
 - ✅ Taxes : siège déclaré en Italie dans Stripe Tax.
 - ✅ Carte bancaire, Apple Pay et Link actifs.
-- ⬜ **Google Pay** et **prélèvement SEPA** désactivés : dites-moi « oui » et je les active
-  (Stripe demande votre accord pour ce réglage), ou faites-le dans Stripe › Paramètres ›
-  Paiements › Moyens de paiement › configuration « Default » › Activer.
+- ✅ **Google Pay** activé par moi le 14 novembre, avec votre accord.
+- ⬜ **Prélèvement SEPA** : Stripe exige une **vérification d'identité** (pièce d'identité et
+  selfie, par Stripe Identity), que vous seul pouvez faire. Dans Stripe › Paramètres ›
+  Paiements › Moyens de paiement › configuration « Default » › ligne « Addebito SEPA » ›
+  « … » › Abilita, puis « Continua » à chaque étape et suivez la vérification.
 - ⬜ **PayPal** désactivé : à relier vous-même (il demande votre compte PayPal), au même endroit.
 
 **Puis l'essai** : avec un compte SaasClair **autre que votre compte administrateur** (lui ne
