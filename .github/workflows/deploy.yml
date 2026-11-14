@@ -107,3 +107,20 @@ jobs:
             sleep 5
           done
           exit 1
+      # Prévient Bing (où ChatGPT cherche ses réponses) et les autres moteurs IndexNow que les
+      # pages publiques ont changé : relues en quelques heures plutôt qu'en quelques semaines.
+      # La clé est publique par nature (fichier public/<clé>.txt). Un échec ne bloque rien.
+      - name: Pages publiques signalées aux moteurs (IndexNow)
+        continue-on-error: true
+        env:
+          SITE: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+        run: |
+          KEY=$(ls public | grep -E '^[0-9a-f]{32}\.txt$' | head -1 | sed 's/\.txt$//')
+          HOST=$(echo "$SITE" | sed -E 's#^https?://##; s#/.*$##')
+          URLS=$(curl -fsS "$SITE/sitemap.xml" | grep -o '<loc>[^<]*' | sed 's/<loc>//' | jq -R . | jq -sc .)
+          BODY=$(jq -nc --arg host "$HOST" --arg key "$KEY" --arg loc "$SITE/$KEY.txt" --argjson urls "$URLS" \
+            '{host: $host, key: $key, keyLocation: $loc, urlList: $urls}')
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' -d "$BODY")
+          echo "IndexNow : $STATUS ($(echo "$URLS" | jq length) pages)"
+          [ "$STATUS" = 200 ] || [ "$STATUS" = 202 ]

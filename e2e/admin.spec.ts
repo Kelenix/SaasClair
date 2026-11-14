@@ -71,8 +71,15 @@ test.describe("super administrateur", () => {
     await page.goto("/");
     await expect(async () => {
       await page.reload();
-      await expect(page.getByRole("button", { name: question })).toBeVisible({ timeout: 3000 });
+      await expect(page.getByRole("heading", { name: question })).toBeVisible({ timeout: 3000 });
     }).toPass({ timeout: 30_000 });
+    // La réponse est dans la page même fermée : les moteurs et les assistants IA la lisent.
+    const item = page.locator("details", { has: page.getByRole("heading", { name: question }) });
+    const answer = item.getByText("Réponse de test, supprimée à la fin du test.");
+    await expect(answer).toBeAttached();
+    await expect(answer).toBeHidden();
+    await page.getByRole("heading", { name: question }).click();
+    await expect(answer).toBeVisible();
 
     await page.goto("/admin/faq");
     page.once("dialog", (dialog) => dialog.accept());
@@ -81,7 +88,7 @@ test.describe("super administrateur", () => {
     await page.goto("/");
     await expect(async () => {
       await page.reload();
-      await expect(page.getByRole("button", { name: question })).toHaveCount(0, { timeout: 3000 });
+      await expect(page.getByRole("heading", { name: question })).toHaveCount(0, { timeout: 3000 });
     }).toPass({ timeout: 30_000 });
   });
 

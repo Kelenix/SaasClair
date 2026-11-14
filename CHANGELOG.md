@@ -12,6 +12,21 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
   le mauvais a été choisi. Les données de l'ancien compte sont effacées et son accès est coupé.
 - Étape Stripe : « Plusieurs comptes Stripe ? Choisissez celui qui encaisse vos abonnements. »
 
+### Ajouté (référencement, y compris dans les assistants IA)
+- **Robots des IA nommés** dans `robots.txt` (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot,
+  Google-Extended…) : pages publiques ouvertes, zones privées fermées pour chacun (un robot nommé
+  ignore le groupe « * »). Zones privées complétées : `/admin`, `/api/`, `/auth/`, mots de passe.
+- **Données structurées** de l'accueil : éditeur, site, logiciel (fonctions, offres au prix du
+  site, essai sans carte) et questions fréquentes (FAQPage), texte de la FAQ échappé.
+- **`/llms.txt`** : SaasClair en bref pour les assistants IA (définition, réponses, mise en
+  place, tarifs, FAQ et À propos tirés de l'administration), annoncé depuis l'accueil.
+- **FAQ en `<details>` natif** : les réponses sont dans la page envoyée aux robots (l'accordéon
+  JavaScript ne les écrivait qu'à l'ouverture). Une seule ouverte à la fois, même animation.
+- **IndexNow** : après chaque mise en ligne, les pages du plan du site sont signalées à Bing (où
+  ChatGPT cherche) et aux autres moteurs. Plan du site complété (inscription, À propos, llms.txt).
+- Description du site : ce qu'est l'outil (« Outil d'analyse pour SaaS, sans configuration… ») ;
+  la promesse de la marque reste pour les partages.
+
 ### Ajouté
 - **saasclair.com se mesure avec SaasClair** : la ligne du script (clé `6eead66e`) est sur tout
   le site, comme chez un client. Rien n'est envoyé depuis un poste de développement ni par les
