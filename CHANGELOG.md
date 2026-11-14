@@ -4,6 +4,10 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Corrigé
+- **Intégrations** (Paramètres › Intégrations) : « Bientôt » à la place d'un bouton « Connecter »
+  qui n'ouvrait rien. Elles seront construites si les clients les demandent.
+
 ### Ajouté (décisions du 14 novembre)
 - **Écrans vides** : un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans
   aucun chiffre, sous l'action qui le remplit.

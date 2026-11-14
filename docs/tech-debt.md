@@ -22,6 +22,7 @@
 | 11 | Double authentification | Obligatoire pour le super administrateur (lot A7) | Facultative pour les clients, depuis Paramètres | P3 |
 | 12 | Mises à jour majeures | TypeScript 5.9, ESLint 9, @types/node 24 | TypeScript 7, ESLint 10 (corrige les alertes des outils de développement), @types/node 26, une à la fois | P2 |
 | 13 | Anglais | Interface en français uniquement (ADR-005) | Extraction des textes et traduction si le marché l'exige | P3 |
+| 20 | Intégrations facultatives | Google Analytics, Search Console, HubSpot et Pipedrive affichées « Bientôt » (14 novembre) | Applications chez Google (validation de plusieurs semaines pour Analytics et Search Console), HubSpot et Pipedrive, puis connexion OAuth ; seulement si les clients les demandent | P3 |
 | 14 | Paddle et Lemon Squeezy | Annoncés « bientôt » | Connecteurs | P3 |
 | 15 | Mesures de performance mobile | Non fiables sur le poste de développement | PageSpeed Insights sur la production | P1 (déploiement) |
 

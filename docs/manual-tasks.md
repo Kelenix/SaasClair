@@ -10,7 +10,7 @@
 | **À faire** avant d'ouvrir au public | 2 tâches | environ 10 min |
 | **Facultatif**, quand vous voulez | 5 tâches | — |
 | **Décisions** à me donner | aucune | — |
-| **Déjà fait** | 18 tâches et décisions | rien à faire |
+| **Déjà fait** | 19 tâches et décisions | rien à faire |
 
 ---
 
@@ -83,6 +83,7 @@ Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 nov
 | Décision : début de l'essai de 7 jours | ✅ À la création du compte (clic sur « Essai gratuit ») : c'était déjà le cas, rien à changer |
 | Décision : relier les inscrits à leur visite | ✅ Automatique : le script envoie l'empreinte de l'email saisi dans le formulaire d'inscription (coupable avec `data-identify="off"`) ; inscrits par canal dans Acquisition |
 | Décision : même visiteur sur `www.` et `app.` | ✅ Sans cookie : l'identifiant suit le visiteur dans les liens d'un sous-domaine à l'autre |
+| Décision : intégrations (Google Analytics, Search Console, HubSpot, Pipedrive) | ✅ Affichées « Bientôt » dans Paramètres › Intégrations, sans faux bouton ; à construire si vos clients les demandent |
 | Surveillance du site (UptimeRobot) | ✅ Toutes les 5 minutes sur `saasclair.com/api/health?complet=1` (site, connexion et base), alerte par email ; réglée le 14 novembre |
 | Docker Desktop pour le développement local | ✅ Utile seulement si vous développez sur votre poste |
 
