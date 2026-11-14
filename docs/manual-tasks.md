@@ -9,8 +9,8 @@
 |---|---|---|
 | **À faire** avant d'ouvrir au public | 2 tâches | environ 25 min |
 | **Facultatif**, quand vous voulez | 5 tâches | — |
-| **Décisions** à me donner | 4 questions | une réponse courte chacune |
-| **Déjà fait** | 14 tâches | rien à faire |
+| **Décisions** à me donner | aucune | — |
+| **Déjà fait** | 18 tâches et décisions | rien à faire |
 
 ---
 
@@ -52,19 +52,10 @@ Hostinger.
 
 ---
 
-## 3. Décisions à me donner (une réponse courte suffit)
+## 3. Décisions à me donner
 
-1. **Écrans vides** : afficher un dessin clairement étiqueté « À quoi ressemblera cet écran »
-   au lieu de « Pas encore de données » ? (Aucun faux chiffre : c'est un dessin.)
-2. **Essai de 7 jours** : le faire démarrer à l'arrivée des premières visites, plutôt qu'à la
-   création du compte ? Aujourd'hui, si l'installation prend 3 jours, il ne reste que 4 jours.
-3. **Relier automatiquement les inscrits à leurs visites** : le script lirait l'email saisi sur
-   la page d'inscription et n'en enverrait que l'empreinte. Cela débloque « inscrits par canal »
-   et le tunnel jusqu'au paiement sans aucune ligne à ajouter. Donnée personnelle
-   (pseudonymisée) : à mentionner dans la politique de confidentialité si vous dites oui.
-4. **Même visiteur sur `www.` et `app.`** : partager l'identifiant entre vos sous-domaines
-   demande un cookie (13 mois au plus), alors que le script promet « sans cookie ». À décider
-   avec la question 3.
+Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 novembre (voir
+« Déjà fait »).
 
 ---
 
@@ -84,6 +75,10 @@ Hostinger.
 | Politique de confidentialité | ✅ En ligne, relue et validée par vous le 14 novembre |
 | Mentions légales | ✅ En ligne sur `saasclair.com/mentions-legales` (éditeur Kelenix Tech, directeur de la publication Lionel, hébergeur Hostinger), lien dans le pied de page |
 | Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
+| Décision : écrans vides | ✅ Un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans aucun chiffre |
+| Décision : début de l'essai de 7 jours | ✅ À la création du compte (clic sur « Essai gratuit ») : c'était déjà le cas, rien à changer |
+| Décision : relier les inscrits à leur visite | ✅ Automatique : le script envoie l'empreinte de l'email saisi dans le formulaire d'inscription (coupable avec `data-identify="off"`) ; inscrits par canal dans Acquisition |
+| Décision : même visiteur sur `www.` et `app.` | ✅ Sans cookie : l'identifiant suit le visiteur dans les liens d'un sous-domaine à l'autre |
 | Surveillance du site (UptimeRobot) | ✅ Toutes les 5 minutes sur `saasclair.com/api/health?complet=1` (site, connexion et base), alerte par email ; réglée le 14 novembre |
 | Docker Desktop pour le développement local | ✅ Utile seulement si vous développez sur votre poste |
 

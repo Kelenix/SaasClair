@@ -49,6 +49,7 @@ async function Churn({ searchParams }: Props) {
     return (
       <NoData
         title="Churn et rétention"
+        preview="churn"
         icon={HeartPulse}
         needs="stripe"
         remaining={context.setupRemaining}

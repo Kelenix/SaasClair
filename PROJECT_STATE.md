@@ -57,6 +57,7 @@
 
 ## Journal de session (résumé court, le plus récent en haut)
 
+- 2026-11-18 — Décisions du 14 novembre : écrans vides dessinés et étiquetés, inscrits reliés automatiquement par le script (empreinte de l'email), inscrits par canal dans Acquisition, même visiteur sur www et app sans cookie ; essai de 7 jours inchangé (dès la création du compte). Test de bout en bout du script sur un faux site à deux sous-domaines.
 - 2026-11-17 — Suppression du compte par l'utilisateur (Paramètres › Confidentialité) ; arrêt de l'abonnement SaasClair et coupure de Stripe avant tout effacement, aussi depuis l'administration. Test de bout en bout ajouté (`e2e/account.spec.ts`).
 - 2026-11-17 — Lot E (écrans entièrement réels) : raisons de départ tirées de Stripe, fiche client (chronologie, email de relance), tunnel jusqu'à l'essai et au paiement, alertes envoyées par email et Slack (tâche horaire, `alert_deliveries`). Migration `real_screens` vérifiée sur la base locale. 265 tests unitaires.
 - 2026-11-16 — Lot A7 : double authentification obligatoire du super administrateur (TOTP, exigée par la base via `aal2`, réinitialisation par SSH), cookies de session `httpOnly`, CSP durcie sans nonce (incompatible avec le pré-rendu partiel). Testé de bout en bout sur un build de production local (21 tests d'administration, 11 de sécurité, aucune violation de CSP).

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const CONTACT = "lionelkelenix@gmail.com";
-const UPDATED = "31 octobre 2026";
+const UPDATED = "14 novembre 2026";
 
 /** Une section : titre, puis paragraphes ou listes. */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -78,9 +78,14 @@ export default function PrivacyPage() {
                 <strong>Avec le script installé sur votre site</strong> : les pages vues, le site
                 d&apos;origine, les paramètres de campagne (UTM), la largeur d&apos;écran et un
                 identifiant aléatoire du visiteur, gardé 13 mois au plus dans le navigateur sur
-                votre site. Pas de cookie tiers, pas d&apos;adresse IP enregistrée, et les adresses
-                des pages sont gardées sans leurs paramètres. Si vous identifiez un inscrit, seule
-                l&apos;empreinte de son email (SHA-256, jamais l&apos;email lui-même) nous parvient.
+                votre site. Cet identifiant suit le visiteur d&apos;un sous-domaine à l&apos;autre
+                de votre site (par exemple de www à app) dans l&apos;adresse du lien, sans cookie.
+                Pas de cookie, pas d&apos;adresse IP enregistrée, et les adresses des pages sont
+                gardées sans leurs paramètres. Quand un visiteur remplit le formulaire
+                d&apos;inscription de votre site, seule l&apos;empreinte de son email (SHA-256,
+                calculée dans son navigateur, jamais l&apos;email lui-même) nous parvient, pour
+                relier l&apos;inscrit à sa provenance. Vous pouvez couper cette liaison en ajoutant{" "}
+                <code>data-identify=&quot;off&quot;</code> à la ligne du script.
               </>,
               <>
                 <strong>Avec Stripe connecté</strong> : vos clients (nom, email), leurs abonnements

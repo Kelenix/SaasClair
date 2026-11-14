@@ -183,7 +183,8 @@ function RealCoverageCard({ coverage }: { coverage: { share: number; line: strin
       <GrowBar share={coverage.share} />
       {coverage.share < 100 && (
         <p className="mt-3 text-xs text-slate">
-          Pour relier plus de clients : la ligne « identify » est expliquée dans Acquisition.
+          Les nouveaux inscrits sont reliés seuls à leur canal ; les clients plus anciens restent
+          sans provenance connue.
         </p>
       )}
     </Card>

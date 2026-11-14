@@ -28,9 +28,11 @@ export function ChannelRevenue({ links }: { links: CustomerLinks }) {
           {links.paying
             ? `0 % de vos ${links.paying} clients payants sont reliés pour l'instant. `
             : ""}
-          Ajoutez cette ligne là où un inscrit vient de créer son compte : SaasClair saura quel
-          canal vous a amené chaque client, et combien il rapporte. L&apos;email n&apos;est jamais
-          envoyé en clair : seule son empreinte quitte le navigateur.
+          Le script relie seul chaque inscrit à son canal, dès qu&apos;il remplit le formulaire
+          d&apos;inscription de votre site : rien à faire. Les clients apparaîtront ici à leurs
+          prochaines inscriptions. Votre inscription n&apos;utilise pas de formulaire classique ?
+          Ajoutez cette ligne là où le compte est créé. L&apos;email n&apos;est jamais envoyé en
+          clair : seule son empreinte quitte le navigateur.
         </p>
         <CopyBlock snippet={IDENTIFY_SNIPPET} />
       </Card>

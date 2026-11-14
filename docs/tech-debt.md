@@ -5,7 +5,7 @@
 
 | # | Sujet | Situation actuelle | À faire | Priorité |
 |---|-------|--------------------|---------|----------|
-| 1 | Collecte réelle des visites | Script, réception, Acquisition, tunnel (pages clés), revenu par canal et insights réels (lot C) ; regroupement par la base (lot B3) ; visites effacées à 25 mois (lot A) | Identification automatique à l’inscription (décision RGPD), identifiant partagé entre sous-domaines | P1 |
+| 1 | Collecte réelle des visites | Script, réception, Acquisition, tunnel (pages clés), revenu par canal et insights réels (lot C) ; regroupement par la base (lot B3) ; visites effacées à 25 mois (lot A) ; inscrits reliés automatiquement et même visiteur sur www et app, sans cookie (14 novembre) | Formulaires d'inscription sans balise `<form>` (une ligne `identify` reste possible) | P3 |
 | 2 | Stripe (clients) | Import complet à la connexion puis chaque jour, suivi horaire incrémental, notifications en temps réel, historique des factures (expansion, contraction, cohortes), une devise additionnée (lot B) | Conversion des autres devises (taux du jour de la facture), historique au-delà de 13 mois, suppression des clients effacés pendant une coupure de plus de 30 jours | P2 |
 | 19 | Connexion Stripe en vraie lecture seule | OAuth Connect en `read_write` (`read_only` réservé aux extensions, ADR-025) ; SaasClair ne fait que lire | Application Stripe (Stripe Apps) avec droits de lecture uniquement, validée par Stripe, puis `STRIPE_OAUTH_SCOPE=read_only` ou bascule vers l'application | P1 |
 | 3 | Facturation de SaasClair | Stripe Checkout, notifications signées, portail client, accès selon l’abonnement (ADR-027) | Rappel par email avant la fin de l’essai, codes promo dans l’administration | P2 |

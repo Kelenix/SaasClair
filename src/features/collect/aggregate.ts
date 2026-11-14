@@ -28,6 +28,9 @@ export type RealAcquisition = {
   landingPages: Ranked[];
   campaigns: Ranked[];
   referrers: Ranked[];
+  /** Nouveaux inscrits de la période, par canal d'arrivée (part : sur le total des inscrits). */
+  signups: Ranked[];
+  signupsTotal: number;
 };
 
 /** Ce que renvoie acquisition_summary : totaux, tranches et classements [clé, visiteurs]. */
@@ -40,6 +43,9 @@ export type AcquisitionSummary = {
   landing: [string, number][];
   campaigns: [string, number][];
   referrers: [string, number][];
+  /** Nouveaux inscrits par canal (identifications), et leur total. */
+  signups?: [string, number][];
+  signupsTotal?: number;
 };
 
 export const BUCKETS: Record<Period, number> = { "7j": 7, "30j": 30, "90j": 13, "12m": 12 };
@@ -95,6 +101,9 @@ export function summarizeVisits(rows: VisitRow[], period: Period, now: Date): Ac
     landing: top(landing),
     campaigns: top(campaigns),
     referrers: top(referrers),
+    // Les inscriptions viennent des identifications, absentes de ces pages vues.
+    signups: [],
+    signupsTotal: 0,
   };
 }
 
@@ -136,6 +145,12 @@ export function acquisitionFromSummary(
     landingPages: rank(data.landing, visitors),
     campaigns: rank(data.campaigns, visitors),
     referrers: rank(data.referrers, visitors),
+    signups: rank(
+      data.signups ?? [],
+      data.signupsTotal ?? 0,
+      (id) => CHANNEL_LABELS[id as Channel] ?? id,
+    ),
+    signupsTotal: data.signupsTotal ?? 0,
   };
 }
 
