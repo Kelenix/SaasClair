@@ -15,6 +15,7 @@ export async function SiteFooter() {
     { href: "/connexion", label: "Connexion" },
     { href: "/inscription", label: "Essai gratuit" },
     { href: "/confidentialite", label: "Confidentialité" },
+    { href: "/mentions-legales", label: "Mentions légales" },
   ];
 
   return (

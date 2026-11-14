@@ -32,7 +32,7 @@ const List = ({ items }: { items: React.ReactNode[] }) => (
 /**
  * Politique de confidentialité (RGPD). Ne décrit que ce que fait réellement le code (collecte,
  * cookies, sous-traitants, hébergement vérifié) ; toute nouvelle collecte doit y être ajoutée.
- * À faire relire par un juriste (docs/manual-tasks.md, tâche n° 9).
+ * Validée par l'éditeur le 14 novembre 2026 (docs/manual-tasks.md).
  */
 export default function PrivacyPage() {
   return (
@@ -141,7 +141,7 @@ export default function PrivacyPage() {
         <Section title="Combien de temps">
           <List
             items={[
-              "Votre compte et les données de votre SaaS : tant que votre compte existe. Vous pouvez supprimer votre projet et ses données à tout moment, depuis Paramètres › Confidentialité.",
+              "Votre compte et les données de votre SaaS : tant que votre compte existe. Vous pouvez supprimer votre projet, ou votre compte entier, à tout moment, depuis Paramètres › Confidentialité.",
               "Les visites reçues par le script : 25 mois, puis elles sont effacées automatiquement. L'identifiant du visiteur, dans son navigateur : 13 mois au plus.",
               "Les sauvegardes : 14 jours, puis elles sont effacées automatiquement.",
               "La newsletter : jusqu'à votre désinscription.",

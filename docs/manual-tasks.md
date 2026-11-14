@@ -7,10 +7,10 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 3 tâches | environ 35 min |
-| **Facultatif**, quand vous voulez | 4 tâches | — |
+| **À faire** avant d'ouvrir au public | 2 tâches | environ 25 min |
+| **Facultatif**, quand vous voulez | 5 tâches | — |
 | **Décisions** à me donner | 4 questions | une réponse courte chacune |
-| **Déjà fait** | 13 tâches | rien à faire |
+| **Déjà fait** | 14 tâches | rien à faire |
 
 ---
 
@@ -32,19 +32,7 @@ Dans votre compte Stripe, en **mode réel** :
 
 Rien à faire sur le serveur : l'installation (`billing-setup.sh`) est déjà faite.
 
-### ⬜ 2. Mentions légales : m'envoyer vos informations (10 min)
-
-La page est **obligatoire** pour un site commercial, et elle n'existe pas encore
-(`saasclair.com/mentions-legales` donne une erreur). Envoyez-moi dans la conversation :
-- votre nom ou raison sociale, et la forme juridique (micro-entreprise, SAS…) ;
-- l'adresse du siège ;
-- le numéro SIREN (ou RCS) et le numéro de TVA ;
-- le nom du directeur de la publication (vous, en général) ;
-- un email ou un téléphone de contact.
-
-Je crée la page, je complète l'hébergeur (Hostinger) et je l'ajoute au pied de page.
-
-### ⬜ 3. Sauvegardes hors du serveur (5 min)
+### ⬜ 2. Sauvegardes hors du serveur (5 min)
 
 Les sauvegardes de chaque nuit restent sur le même serveur : s'il est perdu, elles aussi.
 Dans **hPanel › VPS › Instantanés et sauvegardes**, activez les sauvegardes automatiques de
@@ -60,6 +48,7 @@ Hostinger.
 | Brancher la **publicité** (Google Ads, GA4, Meta, LinkedIn) | Administration › Paramètres | Ensuite, dites-le-moi : j'ajoute ces outils à la politique de confidentialité. |
 | Mesurer la **vitesse sur mobile** | [PageSpeed Insights](https://pagespeed.web.dev) avec `https://saasclair.com` | Envoyez-moi le score si une note est en orange ou en rouge. |
 | M'envoyer les **logos en SVG** s'ils existent | Dans la conversation | Ils seraient plus nets sur les grands écrans. |
+| Compléter les **mentions légales** : adresse du siège et numéro SIREN | Dans la conversation | Laissés vides à votre demande. La loi les demande pour une activité commerciale : envoyez-les-moi dès que vous les avez, je les ajoute. |
 
 ---
 
@@ -93,6 +82,7 @@ Hostinger.
 | Compte super administrateur en production | ✅ Créé, double authentification reliée |
 | Email de contact (bouton « Nous contacter », pied de page) | ✅ En place sur le site |
 | Politique de confidentialité | ✅ En ligne, relue et validée par vous le 14 novembre |
+| Mentions légales | ✅ En ligne sur `saasclair.com/mentions-legales` (éditeur Kelenix Tech, directeur de la publication Lionel, hébergeur Hostinger), lien dans le pied de page |
 | Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
 | Surveillance du site (UptimeRobot) | ✅ Toutes les 5 minutes sur `saasclair.com/api/health?complet=1` (site, connexion et base), alerte par email ; réglée le 14 novembre |
 | Docker Desktop pour le développement local | ✅ Utile seulement si vous développez sur votre poste |

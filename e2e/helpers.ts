@@ -39,6 +39,7 @@ export const PUBLIC_PAGES = [
   "/",
   "/a-propos",
   "/confidentialite",
+  "/mentions-legales",
   "/connexion",
   "/inscription",
   "/mot-de-passe-oublie",
