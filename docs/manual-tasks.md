@@ -7,7 +7,7 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 2 tâches | environ 25 min |
+| **À faire** avant d'ouvrir au public | 2 tâches | environ 10 min |
 | **Facultatif**, quand vous voulez | 5 tâches | — |
 | **Décisions** à me donner | aucune | — |
 | **Déjà fait** | 18 tâches et décisions | rien à faire |
@@ -16,7 +16,7 @@
 
 ## 1. À faire avant d'ouvrir au public
 
-### ⬜ 1. Paiement des abonnements : PayPal, puis un essai (10 min)
+### ⬜ 1. Paiement des abonnements : un essai (5 min)
 
 **Vérifié le 14 novembre dans votre Stripe (compte « Kelenix Teck »)** :
 - ✅ Compte actif : paiements et virements vers votre banque ouverts, aucune vérification en
@@ -28,7 +28,8 @@
 - ✅ **Google Pay** activé par moi le 14 novembre, avec votre accord.
 - ➖ **Prélèvement SEPA** : laissé désactivé, à votre demande (Stripe exigeait en plus une
   vérification d'identité). Rien à faire.
-- ⬜ **PayPal** désactivé : à relier vous-même (il demande votre compte PayPal), au même endroit.
+- ➖ **PayPal** : laissé désactivé, à votre demande (il demandait l'adresse de l'entreprise et un
+  compte PayPal). Rien à faire.
 
 **Puis l'essai** : avec un compte SaasClair **autre que votre compte administrateur** (lui ne
 voit pas les offres, il a l'accès complet offert), allez dans Paramètres › Abonnement et
