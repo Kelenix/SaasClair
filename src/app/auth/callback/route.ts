@@ -18,7 +18,14 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    // Identifiant du parcours ajouté par Supabase au retour : la bonne clé de vérification est
+    // relue, même si un autre parcours (lien par email, Google) est en attente.
+    const flowId = searchParams.get("sb_flow_id");
+    const { error } = await supabase.auth.exchangeCodeForSession(
+      code,
+      flowId ? { flowId } : undefined,
+    );
+    if (error) console.error("Retour de connexion refusé :", error.code ?? "", error.message);
     if (!error) {
       // Inscription par Google ou GitHub : la provenance est posée au retour (une seule fois).
       const attribution = parseAttribution(request.cookies.get(ATTRIBUTION_COOKIE)?.value);

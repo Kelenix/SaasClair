@@ -9,7 +9,7 @@ import { GitHubLogo, GoogleLogo } from "@/components/brand/provider-logos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DURATION, EASE_OUT } from "@/lib/motion";
-import { createClient } from "@/lib/supabase/client";
+import { startOAuth } from "./actions";
 import { cn } from "@/lib/utils";
 
 type AuthFieldProps = {
@@ -189,28 +189,21 @@ export function OAuthButtons({ next }: { next: string }) {
 
   async function connect(provider: (typeof PROVIDERS)[number]) {
     setPending(provider.id);
-    try {
-      const settings = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
-        headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! },
-      }).then((response) => response.json() as Promise<{ external?: Record<string, boolean> }>);
-      if (!settings.external?.[provider.id]) {
-        toast.info(
-          `La connexion avec ${provider.label} arrive bientôt. Utilisez votre email en attendant.`,
-        );
-        setPending(null);
-        return;
-      }
-      const { error } = await createClient().auth.signInWithOAuth({
-        provider: provider.id,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-        },
-      });
-      if (error) throw error;
-    } catch {
-      toast.error("La connexion n'a pas pu démarrer. Réessayez dans un instant.");
-      setPending(null);
+    // Démarrée par le serveur (auth/actions.ts) : il pose la clé de vérification, puis on part
+    // vers Google ou GitHub.
+    const result = await startOAuth(provider.id, next).catch(() => null);
+    if (result && "url" in result) {
+      window.location.assign(result.url);
+      return;
     }
+    if (result?.status === "disabled") {
+      toast.info(
+        `La connexion avec ${provider.label} arrive bientôt. Utilisez votre email en attendant.`,
+      );
+    } else {
+      toast.error("La connexion n'a pas pu démarrer. Réessayez dans un instant.");
+    }
+    setPending(null);
   }
 
   return (

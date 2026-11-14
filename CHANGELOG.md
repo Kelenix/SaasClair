@@ -5,6 +5,13 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 ## [Non publié]
 
 ### Corrigé
+- **Connexion avec Google et GitHub** : elle échouait (« Ce lien n'a pas pu ouvrir votre
+  session ») dans un navigateur où une inscription, un « mot de passe oublié » ou un lien par
+  email avait été demandé. Depuis le lot A7, la clé de vérification de ces parcours est réservée
+  au serveur, et le navigateur ne pouvait plus la remplacer. Google et GitHub démarrent
+  maintenant par le serveur, et le retour relit la clé de son propre parcours.
+
+### Corrigé
 - **Suppression du compte par l'utilisateur** (droit à l'effacement) : Paramètres ›
   Confidentialité › « Supprimer mon compte », après avoir retapé son email. Le bouton n'existait
   pas : seul le super administrateur pouvait supprimer un compte. L'accès Stripe est coupé et

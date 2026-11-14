@@ -178,6 +178,41 @@ export async function updatePassword(_: AuthState, formData: FormData): Promise<
   redirect("/configuration");
 }
 
+export type OAuthStart = { url: string } | { status: "disabled" | "error" };
+const OAUTH_PROVIDERS = new Set(["google", "github"]);
+
+/**
+ * Connexion avec Google ou GitHub, démarrée par le serveur : la clé de vérification (PKCE) est
+ * posée par le serveur, dans le même cookie réservé que la session. Démarrée dans le navigateur,
+ * elle ne pouvait pas remplacer celle d'une inscription ou d'un lien envoyé par email (cookie
+ * réservé au serveur depuis le lot A7) : le retour de Google échouait alors.
+ */
+export async function startOAuth(provider: string, next: string): Promise<OAuthStart> {
+  if (!OAUTH_PROVIDERS.has(provider)) return { status: "error" };
+  // Fournisseur pas encore activé : un message clair plutôt qu'une page d'erreur de Supabase.
+  const settings = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
+    headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! },
+    cache: "no-store",
+  })
+    .then((response) => response.json() as Promise<{ external?: Record<string, boolean> }>)
+    .catch(() => null);
+  if (!settings) return { status: "error" };
+  if (!settings.external?.[provider]) return { status: "disabled" };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider as "google" | "github",
+    options: {
+      redirectTo: `${SITE_URL}/auth/callback?next=${encodeURIComponent(safeRedirectPath(next))}`,
+    },
+  });
+  if (error || !data.url) {
+    console.error("Connexion OAuth :", error?.message ?? "adresse absente");
+    return { status: "error" };
+  }
+  return { url: data.url };
+}
+
 /** Déconnexion : retour à la page d'accueil du site. */
 export async function signOut() {
   const supabase = await createClient();
