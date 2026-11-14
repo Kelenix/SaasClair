@@ -4,6 +4,12 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 
 ## [Non publié]
 
+### Performance
+- **Tableau de bord plus rapide** : l'utilisateur et son projet ne sont plus relus à chaque bloc
+  de chiffres (une lecture par requête au lieu de 3 à 5), revenus et visites partagés entre
+  l'accueil, les insights et la barre de question, lectures de l'écran Acquisition en parallèle.
+- **Logo** : image adaptée à sa taille d'affichage (quelques Ko au lieu de 87 Ko).
+
 ### Corrigé
 - **Intégrations** (Paramètres › Intégrations) : « Bientôt » à la place d'un bouton « Connecter »
   qui n'ouvrait rien. Elles seront construites si les clients les demandent.

@@ -25,10 +25,15 @@ async function Acquisition() {
   const [context, period] = await Promise.all([getDashboardContext(), getPeriod()]);
 
   // Les vraies visites d'abord ; l'exemple seulement en local ; sinon l'écran vide.
-  const real = await getRealAcquisition(period, new Date());
+  // Visites et revenus lus en même temps, pas l'un après l'autre.
+  const now = new Date();
+  const [real, revenue] = await Promise.all([
+    getRealAcquisition(period, now),
+    getRealRevenue(period, now),
+  ]);
   if (real.visitors > 0) {
     const first = real.channels[0];
-    const links = await getCustomerLinks(await getRealRevenue(period, new Date()));
+    const links = await getCustomerLinks(revenue);
     return (
       <>
         <PageHeader

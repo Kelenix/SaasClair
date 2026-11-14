@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { connection } from "next/server";
 import type { Database } from "./database.types";
 
@@ -33,11 +34,27 @@ export async function createClient() {
   );
 }
 
-/** Utilisateur connecté, vérifié auprès de Supabase (jamais déduit du seul cookie). */
-export async function getUser() {
+/**
+ * Utilisateur connecté, vérifié auprès de Supabase (jamais déduit du seul cookie). Une seule
+ * vérification par requête : la mise en page, la page et chaque bloc de chiffres la partagent
+ * (avant, chacun la refaisait, un aller-retour de plus à chaque fois).
+ */
+export const getUser = cache(async () => {
   // La vérification compare l'heure courante à l'expiration de la session : rendu à la requête.
   await connection();
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   return data.user;
-}
+});
+
+/**
+ * Projet du compte connecté (la ligne entière), lu une seule fois par requête et partagé par la
+ * mise en page, les revenus, les visites, le tunnel et les insights.
+ */
+export const getOwnProject = cache(async () => {
+  const user = await getUser();
+  if (!user) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.from("projects").select("*").eq("owner_id", user.id).maybeSingle();
+  return data;
+});

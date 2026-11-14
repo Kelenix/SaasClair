@@ -5,7 +5,7 @@ import type { SiteAudit } from "@/features/setup/site-analysis";
 import { remainingSteps, type ActionStep } from "@/features/setup/steps";
 import { accessOf, type Access } from "@/features/billing/plans";
 import { isDemoMode } from "@/lib/demo-mode";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { createClient, getOwnProject, getUser } from "@/lib/supabase/server";
 
 export type InsightStatus = "done" | "ignored";
 
@@ -62,8 +62,8 @@ export const getDashboardContext = cache(async (): Promise<DashboardContext> => 
   if (!user) redirect("/connexion?next=/app");
 
   const supabase = await createClient();
-  const [{ data: project }, { data: feedback }, { data: profile }] = await Promise.all([
-    supabase.from("projects").select("*").eq("owner_id", user.id).maybeSingle(),
+  const [project, { data: feedback }, { data: profile }] = await Promise.all([
+    getOwnProject(),
     supabase.from("insight_feedback").select("insight_id, status").eq("owner_id", user.id),
     supabase
       .from("profiles")
