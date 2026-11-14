@@ -7,10 +7,10 @@
 
 | | Combien | Temps |
 |---|---|---|
-| **À faire** avant d'ouvrir au public | 5 tâches | environ 1 h, plus le juriste |
+| **À faire** avant d'ouvrir au public | 4 tâches | environ 45 min, plus le juriste |
 | **Facultatif**, quand vous voulez | 4 tâches | — |
 | **Décisions** à me donner | 5 questions | une réponse courte chacune |
-| **Déjà fait** | 11 tâches | rien à faire |
+| **Déjà fait** | 12 tâches | rien à faire |
 
 ---
 
@@ -51,15 +51,7 @@ La page est en ligne : `saasclair.com/confidentialite`. Points à lui faire vali
 - emails des inscrits réduits à une **empreinte** (SHA-256), jamais en clair ;
 - données Stripe de vos clients effacées à la suppression du compte ou à la déconnexion de Stripe.
 
-### ⬜ 4. Surveillance du site (10 min)
-
-Si le site tombe, personne n'est prévenu. Avec un service gratuit, vous recevrez un email :
-1. Créez un compte sur [UptimeRobot](https://uptimerobot.com) (gratuit).
-2. **Add New Monitor** › type **HTTP(s)**, adresse `https://saasclair.com/api/health`,
-   intervalle **5 minutes**.
-3. Dans **Alert Contacts**, mettez votre email.
-
-### ⬜ 5. Sauvegardes hors du serveur (5 min)
+### ⬜ 4. Sauvegardes hors du serveur (5 min)
 
 Les sauvegardes de chaque nuit restent sur le même serveur : s'il est perdu, elles aussi.
 Dans **hPanel › VPS › Instantanés et sauvegardes**, activez les sauvegardes automatiques de
@@ -110,6 +102,7 @@ Hostinger.
 | Compte super administrateur en production | ✅ Créé, double authentification reliée |
 | Email de contact (bouton « Nous contacter », pied de page) | ✅ En place sur le site |
 | Politique de confidentialité publiée | ✅ En ligne (relecture par un juriste : tâche 3) |
+| Surveillance du site (UptimeRobot) | ✅ Toutes les 5 minutes sur `saasclair.com/api/health?complet=1` (site, connexion et base), alerte par email ; réglée le 14 novembre |
 | Docker Desktop pour le développement local | ✅ Utile seulement si vous développez sur votre poste |
 
 ---
