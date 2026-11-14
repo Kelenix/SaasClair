@@ -20,6 +20,10 @@ Format inspiré de « Keep a Changelog ». Versions sémantiques : `majeure.mine
 - **Logo** : image adaptée à sa taille d'affichage (quelques Ko au lieu de 87 Ko).
 
 ### Corrigé
+- **Fausse recommandation « Ajoutez un lien Tarifs »** : l'analyse du site ignorait les liens
+  vers une section de l'accueil (`/#tarifs`). Une section « Tarifs » compte désormais comme des
+  tarifs visibles (une vraie page reste préférée) ; le tunnel, lui, ne la prend pas pour une page
+  qu'il saurait mesurer. Les sections ne comptent pas parmi les pages détectées.
 - **Intégrations** (Paramètres › Intégrations) : « Bientôt » à la place d'un bouton « Connecter »
   qui n'ouvrait rien. Elles seront construites si les clients les demandent.
 

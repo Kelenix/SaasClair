@@ -56,10 +56,11 @@ const metaContent = (html: string, name: string) =>
   html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*name=["']${name}["']`, "i"))?.[1] ??
   null;
 
-/** Liens de la page : adresse absolue + texte visible. */
+/** Liens de la page : adresse absolue (ancre comprise, « /#tarifs ») + texte visible. */
 export function extractLinks(html: string, baseUrl: string) {
   const links: { href: string; text: string }[] = [];
-  for (const match of html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+  for (const match of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    if (match[1].trim() === "#") continue;
     try {
       const href = new URL(match[1], baseUrl).toString();
       links.push({ href, text: decode(match[2].replace(/<[^>]+>/g, " ")) });
@@ -70,15 +71,23 @@ export function extractLinks(html: string, baseUrl: string) {
   return links;
 }
 
-/** Repère inscription, tarifs et paiement d'après l'adresse et le texte des liens. */
+/** Lien vers une section d'une page (« /#tarifs ») plutôt que vers une page. */
+const isSection = (href: string) => href.includes("#");
+
+/**
+ * Repère inscription, tarifs et paiement d'après l'adresse et le texte des liens. Une section
+ * « Tarifs » de l'accueil (« /#tarifs ») compte comme des tarifs visibles quand aucune page de
+ * tarifs n'existe ; l'inscription et le paiement demandent une vraie page.
+ */
 export function detectPages(links: { href: string; text: string }[]) {
-  const find = (pattern: RegExp) =>
-    links.find(
+  const pages = links.filter(({ href }) => !isSection(href));
+  const find = (pattern: RegExp, among = pages) =>
+    among.find(
       ({ href, text }) => pattern.test(new URL(href).pathname + " " + text) || pattern.test(href),
     )?.href ?? null;
   return {
     signup: find(PAGE_PATTERNS.signup),
-    pricing: find(PAGE_PATTERNS.pricing),
+    pricing: find(PAGE_PATTERNS.pricing) ?? find(PAGE_PATTERNS.pricing, links),
     checkout: find(PAGE_PATTERNS.checkout),
   };
 }
@@ -156,7 +165,9 @@ export function analyzeHomepage(
   const origin = new URL(url).origin;
   const links = extractLinks(html, url);
   const internalPages = new Set(
-    links.filter(({ href }) => href.startsWith(origin)).map(({ href }) => new URL(href).pathname),
+    links
+      .filter(({ href }) => href.startsWith(origin) && !isSection(href))
+      .map(({ href }) => new URL(href).pathname),
   );
   return {
     reachable: true,

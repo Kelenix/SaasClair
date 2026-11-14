@@ -43,6 +43,8 @@ export function pathOf(url: string | null, siteUrl: string | null) {
   try {
     const page = new URL(url);
     const site = new URL(siteUrl);
+    // Section d'une page (« /#tarifs ») : pas une page à part, le tunnel ne peut pas la mesurer.
+    if (page.hash && !/^#!?\//.test(page.hash)) return null;
     // www., app. ou le domaine nu : un seul site.
     return isSameSite(page.hostname, site.hostname)
       ? page.pathname.replace(/\/$/, "") || "/"
