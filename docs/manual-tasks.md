@@ -8,9 +8,9 @@
 | | Combien | Temps |
 |---|---|---|
 | **À faire** avant d'ouvrir au public | 1 tâche | environ 5 min |
-| **Facultatif**, quand vous voulez | 5 tâches | — |
+| **Facultatif**, quand vous voulez | 6 tâches | — |
 | **Décisions** à me donner | aucune | — |
-| **Déjà fait** | 20 tâches et décisions | rien à faire |
+| **Déjà fait** | 21 tâches et décisions | rien à faire |
 
 ---
 
@@ -31,6 +31,7 @@ Hostinger.
 | Ajouter de **vrais témoignages**, avec l'accord des personnes | Administration › Témoignages | La section reste cachée tant qu'il n'y en a pas. Jamais de faux avis (interdit). |
 | Brancher la **publicité** (Google Ads, GA4, Meta, LinkedIn) | Administration › Paramètres | Ensuite, dites-le-moi : j'ajoute ces outils à la politique de confidentialité. |
 | Mesurer la **vitesse sur mobile** | [PageSpeed Insights](https://pagespeed.web.dev) avec `https://saasclair.com` | Envoyez-moi le score si une note est en orange ou en rouge. |
+| Ne pas compter **vos propres visites** dans vos chiffres | Sur chaque navigateur que vous utilisez (ordinateur, téléphone) : ouvrez `saasclair.com/confidentialite`, puis cliquez sur « Ne plus compter mes visites » | 1 clic par navigateur. Sinon, vos passages quotidiens sur le site et le tableau de bord gonflent vos visites. |
 | M'envoyer les **logos en SVG** s'ils existent | Dans la conversation | Ils seraient plus nets sur les grands écrans. |
 | Compléter les **mentions légales** : adresse du siège et numéro SIREN | Dans la conversation | Laissés vides à votre demande. La loi les demande pour une activité commerciale : envoyez-les-moi dès que vous les avez, je les ajoute. |
 
@@ -59,6 +60,7 @@ Aucune décision en attente : les 4 questions ont reçu votre réponse le 14 nov
 | Email de contact (bouton « Nous contacter », pied de page) | ✅ En place sur le site |
 | Politique de confidentialité | ✅ En ligne, relue et validée par vous le 14 novembre |
 | Mentions légales | ✅ En ligne sur `saasclair.com/mentions-legales` (éditeur Kelenix Tech, directeur de la publication Lionel, hébergeur Hostinger), lien dans le pied de page |
+| Mesure de saasclair.com avec SaasClair | ✅ Ligne installée le 14 novembre sur tout le site (clé `6eead66e`) : vos visites, leur provenance et vos inscrits par canal arrivent dans votre propre tableau de bord. Politique de confidentialité complétée (mesure sans cookie, bouton « Ne plus compter mes visites ») |
 | Durées de conservation | ✅ Validées avec la politique : visites 25 mois, identifiant du visiteur 13 mois |
 | Décision : écrans vides | ✅ Un dessin de l'écran, étiqueté « À quoi ressemblera cet écran », sans aucun chiffre |
 | Décision : début de l'essai de 7 jours | ✅ À la création du compte (clic sur « Essai gratuit ») : c'était déjà le cas, rien à changer |

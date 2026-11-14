@@ -2,7 +2,8 @@
 cookie ni adresse IP ; identifiant du visiteur gardé 13 mois au plus, et suivi d'un sous-domaine
 à l'autre du même site (www → app) par les liens. Un inscrit est relié à sa provenance par
 l'empreinte SHA-256 de l'email saisi dans le formulaire d'inscription, jamais l'email en clair
-(désactivable : data-identify="off" ; ou à la main : saasclair("identify", email)). */
+(désactivable : data-identify="off" ; ou à la main : saasclair("identify", email)). Un visiteur
+qui refuse d'être compté : localStorage « sc_off » = "1", rien n'est envoyé. */
 (function () {
   "use strict";
   var script = document.currentScript;
@@ -13,6 +14,16 @@ l'empreinte SHA-256 de l'email saisi dans le formulaire d'inscription, jamais l'
   if (!site || navigator.webdriver || /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname)) {
     return;
   }
+  // Visiteur qui a refusé d'être compté (droit d'opposition) : rien n'est envoyé, sur ce site,
+  // dès son choix (relu à chaque envoi).
+  function optedOut() {
+    try {
+      return localStorage.getItem("sc_off") === "1";
+    } catch {
+      return false;
+    }
+  }
+  if (optedOut()) return;
   var endpoint = new URL("/api/collect", script.src).href;
   var VISITOR_ID = /^[A-Za-z0-9_-]{8,64}$/;
 
@@ -75,6 +86,7 @@ l'empreinte SHA-256 de l'email saisi dans le formulaire d'inscription, jamais l'
   }
 
   function send(type, extra) {
+    if (optedOut()) return;
     var message = { s: site, t: type, u: location.href, r: document.referrer, v: visitor, w: window.innerWidth };
     for (var key in extra) message[key] = extra[key];
     var body = JSON.stringify(message);
